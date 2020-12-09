@@ -1,0 +1,24 @@
+{
+  "name": "boxdb",
+  "version": "0.0.0",
+  "description": "Object relation mapping for IndexedDB",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/leegeunhyeok/box-db.git"
+  },
+  "keywords": [
+    "idb",
+    "indexeddb",
+    "orm"
+  ],
+  "author": "Geunhyeok LEE <dev.ghlee@gmail.com> (https://github.com/leegeunhyeok)",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/leegeunhyeok/box-db/issues"
+  },
+  "homepage": "https://github.com/leegeunhyeok/box-db#readme"
+}
