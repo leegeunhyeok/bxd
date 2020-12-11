@@ -1,3 +1,3 @@
-# box-db
+# bxd
 
 📦 Object relation mapping for IndexedDB
