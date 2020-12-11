@@ -1,5 +1,5 @@
 {
-  "name": "boxdb",
+  "name": "bxd",
   "version": "0.0.0",
   "description": "Object relation mapping for IndexedDB",
   "main": "index.js",
@@ -7,13 +7,13 @@
     "test": "jest",
     "lint": "eslint src",
     "build": "npm run lint & npm run build:umd & npm run build:es & npm run build:unpkg",
-    "build:umd": "rollup --config build/rollup.config.ts --format umd --file dist/box-db.umd.js",
-    "build:es": "rollup --config build/rollup.config.ts --format es --file dist/box-db.esm.js",
-    "build:unpkg": "rollup --config build/rollup.config.ts --format iife --file dist/box-db.min.js"
+    "build:umd": "rollup --config build/rollup.config.ts --format umd --file dist/bxd.umd.js",
+    "build:es": "rollup --config build/rollup.config.ts --format es --file dist/bxd.esm.js",
+    "build:unpkg": "rollup --config build/rollup.config.ts --format iife --file dist/bxd.min.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/leegeunhyeok/box-db.git"
+    "url": "git+https://github.com/leegeunhyeok/bxd.git"
   },
   "keywords": [
     "idb",
@@ -23,9 +23,9 @@
   "author": "Geunhyeok LEE <dev.ghlee@gmail.com> (https://github.com/leegeunhyeok)",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/leegeunhyeok/box-db/issues"
+    "url": "https://github.com/leegeunhyeok/bxd/issues"
   },
-  "homepage": "https://github.com/leegeunhyeok/box-db#readme",
+  "homepage": "https://github.com/leegeunhyeok/bxd#readme",
   "devDependencies": {
     "@babel/core": "^7.12.10",
     "@babel/preset-env": "^7.12.10",
