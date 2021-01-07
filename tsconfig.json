@@ -1,10 +1,11 @@
 {
   "compilerOptions": {
     "module": "es6",
-    "target": "es6",
+    "target": "es5",
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "allowJs": false,
-    "sourceMap": false
+    "sourceMap": false,
+    "resolveJsonModule": true
   }
 }
