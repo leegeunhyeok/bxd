@@ -6,7 +6,7 @@ interface Scheme {
   [key: string]: any;
 }
 
-export class Model {
+export class Field {
   public type: DataTypes;
   public options: IDBIndexParameters;
 
@@ -24,7 +24,7 @@ export class Model {
   }
 }
 
-export class Item {
+export class Model {
   [STORE_NAME]: string = null;
   [SCHEME]: Scheme = null;
 
