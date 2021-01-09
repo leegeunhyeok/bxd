@@ -2,28 +2,17 @@ import { STORE_NAME, SCHEME } from '../constant';
 
 type DataTypes = any;
 
-interface FieldConfig {
-  unique?: boolean;
-}
-
 interface Scheme {
   [key: string]: any;
 }
 
 export class Model {
-  type;
-  options;
-  indexing = false;
-  indexOption: IDBIndexParameters = null;
+  public type: DataTypes;
+  public options: IDBIndexParameters;
 
-  constructor(type: DataTypes, options: FieldConfig) {
+  constructor(type: DataTypes, options: IDBIndexParameters) {
     this.type = type;
     this.options = options;
-  }
-
-  index(options?: IDBIndexParameters) {
-    this.indexing = true;
-    this.indexOption = options;
   }
 
   /**
