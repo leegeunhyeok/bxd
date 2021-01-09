@@ -1,4 +1,4 @@
-import BoxDB from './core/box';
-export * from './core/item';
+import BoxDB from './core/db';
+export * from './core/model';
 
 export default BoxDB;
