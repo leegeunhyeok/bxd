@@ -11,13 +11,13 @@ export default {
       name: 'BoxDB',
       file: 'dist/bxd.js',
       format: 'umd',
-      exports: 'default',
+      exports: 'named',
     },
     {
       name: 'BoxDB',
       file: 'dist/bxd.min.js',
       format: 'umd',
-      exports: 'default',
+      exports: 'named',
       plugins: [terser()],
     },
     {
