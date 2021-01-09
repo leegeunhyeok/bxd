@@ -1,2 +1,2 @@
-export const $storeName: unique symbol = Symbol();
-export const $scheme: unique symbol = Symbol();
+export const STORE_NAME = '__storeName__';
+export const SCHEME = '__scheme__';
