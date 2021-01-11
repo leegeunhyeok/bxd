@@ -29,21 +29,26 @@ type BoxData<Base> = {
   [key in keyof Base]: DataTypes;
 };
 
+// model prototype
+type BoxModelPrototype = {
+  __storeName__: string;
+};
+
 // instance type
-export type BoxModel<S> = InstanceType<{
-  get: <T>(id: T) => void;
+export type BoxModel<S> = {
   new (): BoxData<S>;
-}>;
+  get: <T>(id: T) => BoxData<S>;
+};
 
 export const generateModel = <S extends BoxScheme>(storeName: string, scheme: S): BoxModel<S> => {
-  function Model() {
+  function Model(this: BoxModelPrototype) {
     // create scheme based empty(null) object
     Object.keys(scheme).forEach((k) => (this[k] = null));
   }
   Model.prototype.__storeName__ = storeName;
-  Model.prototype.get = function <T>(id: T) {
+  Model.get = function <T>(id: T): BoxData<S> {
     // sample
-    console.log('get', id);
+    return Object.keys(scheme).reduce((o, k) => void (o[k] = null) || o, {}) as BoxData<S>;
   };
   return (Model as unknown) as BoxModel<S>;
 };
