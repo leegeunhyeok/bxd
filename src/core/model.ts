@@ -1,36 +1,49 @@
-import { STORE_NAME, SCHEME } from '../constant';
-
-type DataTypes = any;
-
-interface Scheme {
-  [key: string]: any;
-}
-
-export class Field {
+export class BoxField {
   public type: DataTypes;
   public options: IDBIndexParameters;
 
-  constructor(type: DataTypes, options: IDBIndexParameters) {
+  constructor(type: DataTypes, options?: IDBIndexParameters) {
     this.type = type;
     this.options = options;
   }
 
   /**
-   * Check data type
-   * @param value Field data
+   * check data type
+   * @param value field data
    */
-  __typeValidation(value: any) {
+  __typeValidation(value: any): boolean {
     return this.type.prototype === value.__proto__;
   }
 }
 
-export class Model {
-  [STORE_NAME]: string = null;
-  [SCHEME]: Scheme = null;
-
-  update(targetVersion: number, newScheme: Scheme) {
-    console.log(targetVersion);
-    console.log(newScheme);
-    this[SCHEME] = newScheme;
-  }
+export interface BoxScheme {
+  [key: string]: BoxField;
 }
+
+// TODO: update to storeable types
+// ref: https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm
+type DataTypes = any;
+
+// change the type
+type BoxData<Base> = {
+  [key in keyof Base]: DataTypes;
+};
+
+// instance type
+export type BoxModel<S> = InstanceType<{
+  get: <T>(id: T) => void;
+  new (): BoxData<S>;
+}>;
+
+export const generateModel = <S extends BoxScheme>(storeName: string, scheme: S): BoxModel<S> => {
+  function Model() {
+    // create scheme based empty(null) object
+    Object.keys(scheme).forEach((k) => (this[k] = null));
+  }
+  Model.prototype.__storeName__ = storeName;
+  Model.prototype.get = function <T>(id: T) {
+    // sample
+    console.log('get', id);
+  };
+  return (Model as unknown) as BoxModel<S>;
+};
