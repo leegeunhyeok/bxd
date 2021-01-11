@@ -1,18 +1,8 @@
 export class BoxField {
-  public type: DataTypes;
   public options: IDBIndexParameters;
 
   constructor(type: DataTypes, options?: IDBIndexParameters) {
-    this.type = type;
     this.options = options;
-  }
-
-  /**
-   * check data type
-   * @param value field data
-   */
-  __typeValidation(value: any): boolean {
-    return this.type.prototype === value.__proto__;
   }
 }
 
@@ -20,9 +10,27 @@ export interface BoxScheme {
   [key: string]: BoxField;
 }
 
-// TODO: update to storeable types
-// ref: https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm
-type DataTypes = any;
+// data types that can be stored in idb
+// referance: https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm
+type DataTypes =
+  | boolean
+  | number
+  | string
+  | Array<DataTypes>
+  | Map<DataTypes, DataTypes>
+  | Set<DataTypes>
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  | object // Record<string, unknown>
+  | undefined
+  | null
+  | RegExp
+  | Blob
+  | File
+  | FileList
+  | ArrayBuffer
+  | ArrayBufferView
+  | ImageBitmap
+  | ImageData;
 
 // change the type
 type BoxData<Base> = {
