@@ -29,4 +29,11 @@ test('Create new Model', () => {
   user.name = 'tom';
 
   expect(user.age).toBe(10);
+  expect(() => {
+    // trying to regist same model name
+    box.model('user', {
+      name: new BoxField(String),
+      age: new BoxField(Number),
+    });
+  }).toThrow();
 });

@@ -1,4 +1,5 @@
 import { generateModel, BoxScheme, BoxModel } from './model';
+import { BoxDBError } from './errors';
 
 class BoxDB {
   private _init = false;
@@ -31,10 +32,10 @@ class BoxDB {
    */
   model<S extends BoxScheme>(storeName: string, scheme: S): BoxModel<S> {
     if (this._init) {
-      // TODO: throw exception;
+      throw new BoxDBError('database already open');
     }
     if (this._models.has(storeName)) {
-      // TODO: throw exception;
+      throw new BoxDBError(`${storeName} model exist`);
     }
     this._models.set(storeName, scheme);
     return generateModel(storeName, scheme);
