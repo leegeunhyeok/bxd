@@ -1,19 +1,49 @@
+import { generateModel, BoxScheme, BoxModel } from './model';
+
 class BoxDB {
   private _init = false;
   private _databaseName: string;
   private _version: number;
-  private _items: Map<string, any> = new Map();
+  private _models: Map<string, BoxScheme> = new Map();
 
+  /**
+   * @constructor
+   * @param databaseName idb name
+   * @param version idb version
+   */
   constructor(databaseName: string, version: number) {
     this._databaseName = databaseName;
     this._version = version;
   }
 
-  item() {
-    // TODO
+  get databaseName(): string {
+    return this._databaseName;
   }
 
-  create() {
+  get version(): number {
+    return this._version;
+  }
+
+  /**
+   * regist data model for create object store
+   * @param storeName object store name
+   * @param scheme object store data structure
+   */
+  model<S extends BoxScheme>(storeName: string, scheme: S): BoxModel<S> {
+    if (this._init) {
+      // TODO: throw exception;
+    }
+    if (this._models.has(storeName)) {
+      // TODO: throw exception;
+    }
+    this._models.set(storeName, scheme);
+    return generateModel(storeName, scheme);
+  }
+
+  /**
+   * create/update object stores and open idb
+   */
+  async open(): Promise<void> {
     this._init = true;
   }
 }
