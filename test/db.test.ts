@@ -1,5 +1,5 @@
 import 'fake-indexeddb/auto';
-import Box, { BoxField } from '../src';
+import Box, { Types } from '../src';
 
 // global instance variable for test
 let box: Box = null;
@@ -22,14 +22,14 @@ test('Create new Box instance', () => {
 test('Create new Model', () => {
   // regist new model
   const User = box.model(1)('user', {
-    name: new BoxField(String),
-    age: new BoxField(Number),
+    name: Types.STRING,
+    age: Types.NUMBER,
   });
 
   // create new data
   const user = new User();
   user.age = 10;
-  user.name = 'tom';
+  user.name = 'Tom';
 
   // #1. change test data
   expect(user.age).toBe(10);
@@ -38,17 +38,17 @@ test('Create new Model', () => {
   expect(() => {
     // trying to register same target version and model name
     box.model(1)('user', {
-      name: new BoxField(String),
-      age: new BoxField(Number),
+      name: Types.STRING,
+      age: Types.NUMBER,
     });
   }).toThrow();
 
   // #3. to be not thrown exception
   expect(() => {
-    // trying to register same model name (with diffrent target version)
+    // trying to register same model name (but, diffrent target version)
     box.model(2)('user', {
-      name: new BoxField(String),
-      age: new BoxField(Number),
+      name: Types.STRING,
+      age: Types.NUMBER,
     });
   }).not.toThrow();
 });

@@ -1,5 +1,5 @@
 import BoxDB from './core/db';
-export * from './core/db';
-export * from './core/model';
+export { BoxDBError } from './core/errors';
+export { BoxScheme, BoxModel, Types } from './core/model';
 
 export default BoxDB;
