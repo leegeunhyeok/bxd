@@ -1,40 +1,36 @@
-export class BoxField {
-  public options: IDBIndexParameters;
-
-  constructor(type: DataTypes, options?: IDBIndexParameters) {
-    this.options = options;
-  }
-}
-
 export interface BoxScheme {
-  [key: string]: BoxField;
+  readonly [key: string]: Types;
 }
 
-// data types that can be stored in idb
-// referance: https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm
-type DataTypes =
-  | boolean
-  | number
-  | string
-  | Array<DataTypes>
-  | Map<DataTypes, DataTypes>
-  | Set<DataTypes>
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  | object // Record<string, unknown>
-  | undefined
-  | null
-  | RegExp
-  | Blob
-  | File
-  | FileList
-  | ArrayBuffer
-  | ArrayBufferView
-  | ImageBitmap
-  | ImageData;
+export enum Types {
+  BOOLEAN = 'boolean',
+  NUMBER = 'number',
+  STRING = 'string',
+  ARRAY = 'array',
+  OBJECT = 'object',
+  ANY = 'any',
+}
+
+type AsType<T extends Types> = T extends Types.BOOLEAN
+  ? boolean
+  : T extends Types.NUMBER
+  ? number
+  : T extends Types.STRING
+  ? string
+  : T extends Types.ARRAY
+  ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    any[]
+  : T extends Types.OBJECT
+  ? // eslint-disable-next-line @typescript-eslint/ban-types
+    object
+  : T extends Types.ANY
+  ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    any
+  : never;
 
 // change the type
-type BoxData<Base> = {
-  [key in keyof Base]: DataTypes;
+type BoxData<S extends BoxScheme> = {
+  [key in keyof S]: AsType<S[key]> | null;
 };
 
 // model prototype
@@ -43,9 +39,9 @@ type BoxModelPrototype = {
 };
 
 // instance type
-export type BoxModel<S> = {
+export type BoxModel<S extends BoxScheme> = {
   new (): BoxData<S>;
-  get: <T>(id: T) => BoxData<S>;
+  readonly get: <T>(id: T) => BoxData<S>;
 };
 
 export const generateModel = <S extends BoxScheme>(storeName: string, scheme: S): BoxModel<S> => {
@@ -53,6 +49,7 @@ export const generateModel = <S extends BoxScheme>(storeName: string, scheme: S)
     // create scheme based empty(null) object
     Object.keys(scheme).forEach((k) => (this[k] = null));
   }
+
   Model.prototype.__storeName__ = storeName;
   Model.get = function <T>(id: T): BoxData<S> {
     // sample
