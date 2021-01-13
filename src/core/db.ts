@@ -33,6 +33,31 @@ class BoxDB {
   }
 
   /**
+   * regist new model scheme with exist checking
+   * @param targetVersion target idb version
+   * @param storeName object store name
+   * @param scheme scheme object
+   */
+  private _registModel<S extends BoxScheme>(
+    targetVersion: number,
+    storeName: string,
+    scheme: S,
+  ): void {
+    if (this._init) {
+      throw new BoxDBError('database already open');
+    }
+
+    // create new Map if version map is not exist
+    this._models.has(targetVersion) || this._models.set(targetVersion, new Map());
+
+    const versionMap = this._models.get(targetVersion);
+    if (versionMap.has(storeName)) {
+      throw new BoxDBError(`version ${targetVersion}, ${storeName} model exist`);
+    }
+    versionMap.set(storeName, { scheme, targetVersion });
+  }
+
+  /**
    * regist data model for create object store
    * @param targetVersion target idb version
    */
@@ -43,18 +68,7 @@ class BoxDB {
      * @param scheme object store data structure
      */
     return <S extends BoxScheme>(storeName: string, scheme: S): BoxModel<S> => {
-      if (this._init) {
-        throw new BoxDBError('database already open');
-      }
-
-      // create new Map if version map is not exist
-      this._models.has(targetVersion) || this._models.set(targetVersion, new Map());
-
-      const versionMap = this._models.get(targetVersion);
-      if (versionMap.has(storeName)) {
-        throw new BoxDBError(`version ${targetVersion}, ${storeName} model exist`);
-      }
-      versionMap.set(storeName, { scheme, targetVersion });
+      this._registModel(targetVersion, storeName, scheme);
       return generateModel(storeName, scheme);
     };
   }
