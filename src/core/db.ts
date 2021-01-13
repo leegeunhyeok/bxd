@@ -52,7 +52,9 @@ class BoxDB {
 
     const versionMap = this._models.get(targetVersion);
     if (versionMap.has(storeName)) {
-      throw new BoxDBError(`version ${targetVersion}, ${storeName} model exist`);
+      throw new BoxDBError(
+        `${storeName} model already registered on targetVersion: ${targetVersion})`,
+      );
     }
     versionMap.set(storeName, { scheme, targetVersion });
   }
