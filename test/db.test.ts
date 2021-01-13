@@ -4,11 +4,6 @@ import Box, { Types } from '../src';
 // global instance variable for test
 let box: Box = null;
 
-test('Check IndexedDB is available', () => {
-  // #1. checking about idb supports
-  expect(self.indexedDB).not.toBe(undefined);
-});
-
 test('Create new Box instance', () => {
   const name = 'test-db';
   const version = 1;
