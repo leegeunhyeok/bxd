@@ -26,10 +26,20 @@ test('Create new Model', () => {
   user.age = 10;
   user.name = 'Tom';
 
+  User.get(1);
+
   // #1. change test data
   expect(user.age).toBe(10);
 
-  // #2. to be thrown exception
+  // #2. create new data with initial value
+  expect(() => {
+    new User({
+      name: 'Tom',
+      age: 1,
+    });
+  }).not.toThrow();
+
+  // #3. to be thrown exception
   expect(() => {
     // trying to register same target version and model name
     box.model(1)('user', {
@@ -38,7 +48,7 @@ test('Create new Model', () => {
     });
   }).toThrow();
 
-  // #3. to be not thrown exception
+  // #4. to be not thrown exception
   expect(() => {
     // trying to register same model name (but, diffrent target version)
     box.model(2)('user', {
