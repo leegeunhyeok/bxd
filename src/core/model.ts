@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import BoxDB from './db';
 import { BoxDBError } from './errors';
 
 export interface BoxScheme {
@@ -44,10 +45,11 @@ type BoxData<S extends BoxScheme> = {
 // instance type
 export interface BoxModel<S extends BoxScheme> {
   new (initalData?: BoxData<S>): BoxData<S>;
-  readonly get: <T>(id: T) => BoxData<S>;
+  get: <T>(id: T) => BoxData<S>;
 }
 
 export interface BoxModelPrototype {
+  readonly __context__: BoxDB;
   readonly __storeName__: string;
   readonly __scheme__: BoxScheme;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -84,11 +86,25 @@ const typeValidator = (type: Types, value: any): boolean => {
 const schemeValidator = function (this: BoxModelPrototype, target: UncheckedData): boolean {
   const schemeKeys = Object.keys(this.__scheme__);
   const targetKeys = Object.keys(target);
+
   return (
     schemeKeys.length === targetKeys.length &&
-    schemeKeys.every((k) => k in targetKeys) &&
+    schemeKeys.every((k) => ~targetKeys.indexOf(k)) &&
     Object.entries(this.__scheme__).every(([k, v]) => typeValidator(v, target[k]))
   );
+};
+
+const actionWrapper = {
+  _getModelPrototype<S extends BoxScheme>(model: BoxModel<S>) {
+    return model.prototype as BoxModelPrototype;
+  },
+  test<S extends BoxScheme>(model: BoxModel<S>) {
+    return () => {
+      const modelPrototype = model.prototype as BoxModelPrototype;
+      modelPrototype.__context__.test(modelPrototype.__storeName__);
+      return {} as BoxData<S>;
+    };
+  },
 };
 
 /**
@@ -96,24 +112,27 @@ const schemeValidator = function (this: BoxModelPrototype, target: UncheckedData
  * @param storeName Object store name
  * @param scheme Data scheme
  */
-export const generateModel = <S extends BoxScheme>(storeName: string, scheme: S): BoxModel<S> => {
-  function Model(this: BoxModelPrototype, initalData?: BoxData<S>) {
+export const generateModel = <S extends BoxScheme>(
+  context: BoxDB,
+  storeName: string,
+  scheme: S,
+): BoxModel<S> => {
+  const Model = (function Model(this: BoxModelPrototype, initalData?: BoxData<S>) {
     if (initalData && !this.__validate(initalData)) {
       throw new BoxDBError('data not valid');
     }
 
     // create scheme based empty(null) object
     Object.keys(scheme).forEach((k) => (this[k] = initalData ? initalData[k] : null));
-  }
+  } as unknown) as BoxModel<S>;
 
+  Model.prototype.__context__ = context;
   Model.prototype.__storeName__ = storeName;
   Model.prototype.__scheme__ = scheme;
-  Model.prototype.__validate = schemeValidator.bind(Model);
+  Model.prototype.__validate = schemeValidator.bind(Model.prototype);
 
-  Model.get = function <T>(id: T): BoxData<S> {
-    // sample
-    return Object.keys(scheme).reduce((o, k) => void (o[k] = null) || o, {}) as BoxData<S>;
-  };
+  // static methods
+  Model.get = actionWrapper.test(Model);
 
-  return (Model as unknown) as BoxModel<S>;
+  return Model;
 };

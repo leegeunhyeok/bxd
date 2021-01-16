@@ -71,8 +71,13 @@ class BoxDB {
      */
     return <S extends BoxScheme>(storeName: string, scheme: S): BoxModel<S> => {
       this._registModel(targetVersion, storeName, scheme);
-      return generateModel(storeName, scheme);
+      return generateModel(this, storeName, scheme);
     };
+  }
+
+  // TEST
+  test(name: string): void {
+    console.log('from ' + name);
   }
 
   /**
