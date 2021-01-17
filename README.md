@@ -38,6 +38,7 @@ user._id = 1;
 user.name = 'Tom';
 user.age = 12;
 
+// In async function..
 await User.add(user);
 await User.get(1);
 await User.put({
