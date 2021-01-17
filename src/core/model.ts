@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import BoxDB from './db';
+import BoxDB from './database';
 import { BoxDBError } from './errors';
 
 export interface BoxScheme {
