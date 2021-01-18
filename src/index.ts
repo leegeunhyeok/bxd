@@ -1,4 +1,4 @@
-import BoxDB from './core/db';
+import BoxDB from './core/database';
 export { BoxDBError } from './core/errors';
 export { BoxScheme, BoxModel, Types } from './core/model';
 
