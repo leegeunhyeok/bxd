@@ -1,6 +1,11 @@
 import { generateModel, BoxScheme, BoxModel } from './model';
 import { BoxDBError } from './errors';
 
+interface ModelMap {
+  [key: number]: {
+    [key: string]: BoxModelMeta;
+  };
+}
 interface BoxModelMeta {
   scheme: BoxScheme;
   targetVersion: number;
@@ -12,7 +17,7 @@ class BoxDB {
   private _init = false;
   private _databaseName: string;
   private _version: number;
-  private _models: Map<number, Map<string, BoxModelMeta>> = new Map();
+  private _models: ModelMap = {};
 
   /**
    * @constructor
@@ -47,16 +52,30 @@ class BoxDB {
       throw new BoxDBError('database already open');
     }
 
-    // create new Map if version map is not exist
-    this._models.has(targetVersion) || this._models.set(targetVersion, new Map());
+    // create new object(for map) if version map is not exist
+    if (!this._models[targetVersion]) {
+      this._models[targetVersion] = {};
+    }
 
-    const versionMap = this._models.get(targetVersion);
-    if (versionMap.has(storeName)) {
+    const versionMap = this._models[targetVersion];
+    if (versionMap[storeName]) {
       throw new BoxDBError(
         `${storeName} model already registered on targetVersion: ${targetVersion})`,
       );
     }
-    versionMap.set(storeName, { scheme, targetVersion });
+    versionMap[storeName] = { scheme, targetVersion };
+  }
+
+  private _update(idb: IDBDatabase, event: IDBVersionChangeEvent) {
+    Object.keys(this._models)
+      .map((k) => parseInt(k))
+      .sort((a, b) => a - b)
+      .forEach((targetVersion) => {
+        const models = this._models[targetVersion];
+        Object.entries(models).forEach(([objectStoreName, scheme]) => {
+          console.log(targetVersion, objectStoreName, scheme);
+        });
+      });
   }
 
   /**
@@ -83,8 +102,21 @@ class BoxDB {
   /**
    * create/update object stores and open idb
    */
-  async open(): Promise<void> {
-    this._init = true;
+  async open(): Promise<Event> {
+    return new Promise((resolve, reject) => {
+      const openRequest = self.indexedDB.open(this._databaseName, this._version);
+
+      // IDB Open successfully
+      openRequest.onsuccess = (event) => {
+        this._init = true;
+        resolve(event);
+      };
+
+      openRequest.onupgradeneeded = (event) => this._update(openRequest.result, event);
+
+      // Error occurs
+      openRequest.onerror = (event) => reject(event);
+    });
   }
 }
 
