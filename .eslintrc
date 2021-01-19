@@ -20,7 +20,7 @@
     "no-multi-spaces": "off",
     "keyword-spacing": "error",
     "space-before-blocks": "error",
-    "indent": ["error", 2, { "SwitchCase": 1 }],
+    "indent": "off",
     "prefer-const": "error",
     "array-bracket-spacing": "error",
     "semi": ["error", "always"],
