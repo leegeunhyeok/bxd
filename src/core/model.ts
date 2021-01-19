@@ -13,6 +13,10 @@ export interface BoxScheme {
   [key: string]: ConfiguredType | Types;
 }
 
+export interface ConfiguredBoxScheme {
+  [key: string]: ConfiguredType;
+}
+
 export enum Types {
   BOOLEAN = 'boolean',
   NUMBER = 'number',
