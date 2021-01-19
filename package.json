@@ -19,7 +19,7 @@
     "orm"
   ],
   "author": "Geunhyeok LEE <dev.ghlee@gmail.com> (https://github.com/leegeunhyeok)",
-  "license": "Apache-2.0",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/leegeunhyeok/bxd/issues"
   },
