@@ -63,7 +63,13 @@ class BoxDB {
         `${storeName} model already registered on targetVersion: ${targetVersion})`,
       );
     }
-    versionMap[storeName] = { scheme, targetVersion };
+
+    const boxScheme = Object.entries(scheme).reduce((prev, [k, v]) => {
+      prev[k] = typeof v === 'string' ? { type: v } : v;
+      return prev;
+    }, {} as BoxScheme);
+
+    versionMap[storeName] = { scheme: boxScheme, targetVersion };
   }
 
   private _update(idb: IDBDatabase, event: IDBVersionChangeEvent) {

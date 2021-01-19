@@ -2,8 +2,15 @@
 import BoxDB from './database';
 import { BoxDBError } from './errors';
 
+export type ConfiguredType = {
+  type: Types;
+  key?: boolean;
+  index?: boolean;
+  unique?: boolean;
+};
+
 export interface BoxScheme {
-  readonly [key: string]: Types;
+  [key: string]: ConfiguredType | Types;
 }
 
 export enum Types {
@@ -37,9 +44,12 @@ type UncheckedData = {
   [key: string]: any;
 };
 
+// pick type from type configuration
+type PickType<P> = P extends ConfiguredType ? P['type'] : P extends Types ? P : never;
+
 // change the type
 type BoxData<S extends BoxScheme> = {
-  [key in keyof S]: AsType<S[key]> | null;
+  [key in keyof S]: AsType<PickType<S[key]>> | null;
 };
 
 // instance type
@@ -90,7 +100,9 @@ const schemeValidator = function (this: BoxModelPrototype, target: UncheckedData
   return (
     schemeKeys.length === targetKeys.length &&
     schemeKeys.every((k) => ~targetKeys.indexOf(k)) &&
-    Object.entries(this.__scheme__).every(([k, v]) => typeValidator(v, target[k]))
+    Object.entries(this.__scheme__).every(([k, v]) =>
+      typeValidator(typeof v === 'string' ? v : v.type, target[k]),
+    )
   );
 };
 
