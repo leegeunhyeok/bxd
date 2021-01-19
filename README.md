@@ -28,8 +28,14 @@ import BoxDB, { Types } from 'bxd';
 const box = new BoxDB('my-database', 1);
 
 const User = box.model(1)('user', {
-  _id: Types.NUMBER,
-  name: Types.STRING,
+  _id: {
+    type: Types.NUMBER,
+    key: true,
+  }
+  name: {
+    type: Types.STRING,
+    index: true,
+  }
   age: Types.NUMBER,
 });
 

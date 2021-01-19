@@ -17,7 +17,10 @@ test('Create new Box instance', () => {
 test('Create new Model', () => {
   // regist new model
   const User = box.model(1)('user', {
-    name: Types.STRING,
+    name: {
+      type: Types.STRING,
+      index: true,
+    },
     age: Types.NUMBER,
   });
 
@@ -25,8 +28,6 @@ test('Create new Model', () => {
   const user = new User();
   user.age = 10;
   user.name = 'Tom';
-
-  User.get(1);
 
   // #1. change test data
   expect(user.age).toBe(10);
