@@ -185,30 +185,40 @@ class BoxDB {
     });
   }
 
-  private _update(idb: IDBDatabase, event: IDBVersionChangeEvent) {
+  private _createObjectStore(openRequest: IDBOpenDBRequest, boxMeta: BoxModelMeta) {
+    const idb = openRequest.result;
+
+    // Create object store
+    const objectStore = idb.createObjectStore(boxMeta.name, {
+      autoIncrement: boxMeta.autoIncrement,
+      ...(boxMeta.keyPath ? { keyPath: boxMeta.keyPath } : null),
+    });
+
+    // Create index with configuration
+    Object.values(boxMeta.index).forEach(({ keyPath, unique }) => {
+      objectStore.createIndex(keyPath, keyPath, { unique });
+    });
+  }
+
+  private _update(openRequest: IDBOpenDBRequest, event: IDBVersionChangeEvent) {
     Object.keys(this._models)
-      .map((k) => parseInt(k))
-      .sort((a, b) => a - b)
+      .map((k) => parseInt(k)) // Version keys to integer
+      .filter((version) => version <= this._version) // Filtering (<= Current idb version)
+      .sort((a, b) => a - b) // Sort by ascending
       .forEach((targetVersion) => {
         // Get target version models
         const currentVersionModels = this._models[targetVersion];
 
-        console.log(currentVersionModels);
-
         Object.values(currentVersionModels).forEach((boxMeta) => {
-          if (event.oldVersion < boxMeta.targetVersion && boxMeta.targetVersion <= this._version) {
-            const objectStoreOptions: IDBObjectStoreParameters = {
-              autoIncrement: boxMeta.autoIncrement,
-              ...(boxMeta.keyPath ? { keyPath: boxMeta.keyPath } : null),
-            };
+          if (event.oldVersion < boxMeta.targetVersion) {
+            const previousModel = this._getPreviousModel(targetVersion, boxMeta.name);
+            const isNewObjectStore = previousModel ? true : false;
 
-            // Create object store
-            const objectStore = idb.createObjectStore(boxMeta.name, objectStoreOptions);
-
-            // Create index with configuration
-            Object.values(boxMeta.index).forEach(({ keyPath, unique }) => {
-              objectStore.createIndex(keyPath, keyPath, { unique });
-            });
+            if (isNewObjectStore) {
+              this._createObjectStore(openRequest, boxMeta);
+            } else {
+              // TODO: update
+            }
           }
         });
       });
@@ -252,7 +262,7 @@ class BoxDB {
         resolve(event);
       };
 
-      openRequest.onupgradeneeded = (event) => this._update(openRequest.result, event);
+      openRequest.onupgradeneeded = (event) => this._update(openRequest, event);
 
       // Error occurs
       openRequest.onerror = (event) => reject(event);
