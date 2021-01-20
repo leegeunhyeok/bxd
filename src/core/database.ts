@@ -84,7 +84,7 @@ class BoxDB {
       // Get last version's model metadata
       // or if not exist, returns null
       if (orderedIndex.length) {
-        const index = orderedIndex[modelVersionIndex.length - 1];
+        const index = orderedIndex[orderedIndex.length - 1];
         return this._models[index][storeName];
       } else {
         return null;
