@@ -145,13 +145,6 @@ class BoxDB {
       } else {
         // If this field use to object store keyPath
         if (v.key) {
-          // Change keyPath not available
-          if (previousModel && previousModel.keyPath !== k) {
-            throw new BoxDBError(
-              `Can not change ${storeName} model's keyPath. (exist: ${previousModel.keyPath})`,
-            );
-          }
-
           // Multiple keyPath not available
           if (primaryKeyPath) {
             throw new BoxDBError(
@@ -169,11 +162,19 @@ class BoxDB {
             unique: !!v.unique,
           });
         }
+
         prev[k] = v;
       }
 
       return prev;
     }, {} as ConfiguredBoxScheme);
+
+    // Change keyPath not available
+    if (previousModel && previousModel.keyPath !== primaryKeyPath) {
+      throw new BoxDBError(
+        `Can not change ${storeName} model's keyPath. (exist: ${previousModel.keyPath})`,
+      );
+    }
 
     this._addModel({
       name: storeName,
