@@ -2,17 +2,30 @@ import { generateModel, BoxScheme, BoxModel, ConfiguredBoxScheme } from './model
 import { BoxDBError } from './errors';
 
 interface ModelMap {
-  [key: number]: {
-    [key: string]: BoxModelMeta;
+  [version: number]: {
+    [objectStoreName: string]: BoxModelMeta;
   };
+}
+
+interface ModelIndex {
+  [objectStoreName: string]: number[];
 }
 
 interface BoxOptions {
   autoIncreament?: boolean;
 }
+
+interface BoxIndexConfig {
+  keyPath: string;
+  unique: boolean;
+}
+
 interface BoxModelMeta {
+  name: string;
   scheme: ConfiguredBoxScheme;
+  keyPath: string;
   autoIncrement: boolean;
+  index: BoxIndexConfig[];
   targetVersion: number;
 }
 
@@ -27,6 +40,7 @@ class BoxDB {
   private _databaseName: string;
   private _version: number;
   private _models: ModelMap = {};
+  private _modelVersionIndex: ModelIndex = {};
 
   /**
    * @constructor
@@ -47,7 +61,57 @@ class BoxDB {
   }
 
   /**
-   * regist new model scheme with exist checking
+   * Get model metadata based on current idb version
+   * @param storeName object store name
+   */
+  private _getCurrentModel(storeName: string): BoxModelMeta {
+    return this._models[this._version][storeName];
+  }
+
+  /**
+   * Get previous model metadata
+   * @param baseVersion base idb version
+   * @param storeName object store name
+   */
+  private _getPreviousModel(baseVersion: number, storeName: string): null | BoxModelMeta {
+    const modelVersionIndex = this._modelVersionIndex[storeName];
+    if (modelVersionIndex) {
+      // Filter and sort versions (< currentVersion)
+      const orderedIndex = modelVersionIndex
+        .filter((version) => version < baseVersion)
+        .sort((a, b) => a - b);
+
+      // Get last version's model metadata
+      // or if not exist, returns null
+      if (orderedIndex.length) {
+        const index = orderedIndex[modelVersionIndex.length - 1];
+        return this._models[index][storeName];
+      } else {
+        return null;
+      }
+    } else {
+      // If not has index, returns null
+      return null;
+    }
+  }
+
+  /**
+   * Save model metadata, and version indexing for search
+   * @param modelMeta model metadata for save
+   */
+  private _addModel(modelMeta: BoxModelMeta): void {
+    const { targetVersion, name } = modelMeta;
+    this._models[targetVersion][name] = modelMeta;
+
+    // If not exist model version index array, create new one
+    if (!this._modelVersionIndex[name]) {
+      this._modelVersionIndex[name] = [];
+    }
+    this._modelVersionIndex[name].push(targetVersion);
+  }
+
+  /**
+   * Regist new model scheme with exist checking
    * @param targetVersion target idb version
    * @param storeName object store name
    * @param scheme scheme object
@@ -62,28 +126,63 @@ class BoxDB {
       throw new BoxDBError('database already open');
     }
 
-    // create new object(for map) if version map is not exist
+    // Assign new object literal if version map is not exist
     if (!this._models[targetVersion]) {
       this._models[targetVersion] = {};
     }
 
     const versionMap = this._models[targetVersion];
     if (versionMap[storeName]) {
-      throw new BoxDBError(
-        `${storeName} model already registered on (targetVersion: ${targetVersion})`,
-      );
+      throw new BoxDBError(`${storeName} model already registered. (in version: ${targetVersion})`);
     }
 
+    let primaryKeyPath: string = null;
+    const previousModel = this._getPreviousModel(targetVersion, storeName);
+    const indexList: BoxIndexConfig[] = [];
     const boxScheme = Object.entries(scheme).reduce((prev, [k, v]) => {
-      prev[k] = typeof v === 'string' ? { type: v } : v;
+      if (typeof v === 'string') {
+        prev[k] = { type: v };
+      } else {
+        // If this field use to object store keyPath
+        if (v.key) {
+          // Change keyPath not available
+          if (previousModel && previousModel.keyPath !== k) {
+            throw new BoxDBError(
+              `Can not change ${storeName} model's keyPath. (exist: ${previousModel.keyPath})`,
+            );
+          }
+
+          // Multiple keyPath not available
+          if (primaryKeyPath) {
+            throw new BoxDBError(
+              `Can not define multiple keyPath in ${storeName} model. (exist: ${previousModel.keyPath})`,
+            );
+          }
+
+          primaryKeyPath = k;
+        }
+
+        // If this field is index
+        if (v.index) {
+          indexList.push({
+            keyPath: k,
+            unique: !!v.unique,
+          });
+        }
+        prev[k] = v;
+      }
+
       return prev;
     }, {} as ConfiguredBoxScheme);
 
-    versionMap[storeName] = {
+    this._addModel({
+      name: storeName,
       scheme: boxScheme,
+      keyPath: primaryKeyPath,
+      autoIncrement: !!options?.autoIncreament,
+      index: indexList,
       targetVersion,
-      autoIncrement: options?.autoIncreament || false,
-    };
+    });
   }
 
   private _update(idb: IDBDatabase, event: IDBVersionChangeEvent) {
@@ -91,41 +190,37 @@ class BoxDB {
       .map((k) => parseInt(k))
       .sort((a, b) => a - b)
       .forEach((targetVersion) => {
-        // get target version models
-        const models = this._models[targetVersion];
+        // Get target version models
+        const currentVersionModels = this._models[targetVersion];
 
-        Object.entries(models).forEach(([objectStoreName, boxMeta]) => {
-          if (event.oldVersion < boxMeta.targetVersion) {
-            // find keyPath
-            const keyPath = Object.keys(boxMeta.scheme).find((k) => boxMeta.scheme[k].key);
+        console.log(currentVersionModels);
+
+        Object.values(currentVersionModels).forEach((boxMeta) => {
+          if (event.oldVersion < boxMeta.targetVersion && boxMeta.targetVersion <= this._version) {
             const objectStoreOptions: IDBObjectStoreParameters = {
               autoIncrement: boxMeta.autoIncrement,
-              ...(keyPath ? { keyPath } : null),
+              ...(boxMeta.keyPath ? { keyPath: boxMeta.keyPath } : null),
             };
 
-            // create object store
-            const objectStore = idb.createObjectStore(objectStoreName, objectStoreOptions);
+            // Create object store
+            const objectStore = idb.createObjectStore(boxMeta.name, objectStoreOptions);
 
-            // create index with configuration
-            Object.keys(boxMeta.scheme)
-              .filter((k) => boxMeta.scheme[k].index)
-              .forEach((k) => {
-                objectStore.createIndex(k, k, {
-                  unique: boxMeta.scheme[k].unique,
-                });
-              });
+            // Create index with configuration
+            Object.values(boxMeta.index).forEach(({ keyPath, unique }) => {
+              objectStore.createIndex(keyPath, keyPath, { unique });
+            });
           }
         });
       });
   }
 
   /**
-   * regist data model for create object store
+   * Regist data model for create object store
    * @param targetVersion target idb version
    */
   model(targetVersion: number): BoxModelRegister {
     /**
-     * regist data model for create object store
+     * Regist data model for create object store
      * @param storeName object store name
      * @param scheme object store data structure
      */
@@ -145,7 +240,7 @@ class BoxDB {
   }
 
   /**
-   * create/update object stores and open idb
+   * Create/update object stores and open idb
    */
   async open(): Promise<Event> {
     return new Promise((resolve, reject) => {
