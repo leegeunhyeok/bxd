@@ -13,10 +13,6 @@ const plugins = [
     browser: true,
   }),
   commonjs(),
-  babel({
-    babelHelpers: 'bundled',
-    babelrc: true,
-  }),
   typescript(),
 ];
 
@@ -46,7 +42,29 @@ export default [
         plugins: [terser()],
       },
     ],
-    plugins,
+    plugins: [
+      ...plugins,
+      babel({
+        babelHelpers: 'bundled',
+        presets: [
+          [
+            '@babel/preset-env',
+            {
+              targets: '> 0.5%, ie >= 11',
+              modules: false,
+              spec: true,
+              useBuiltIns: 'usage',
+              forceAllTransforms: true,
+              corejs: {
+                version: 3,
+                proposals: false,
+              },
+            },
+          ],
+          '@babel/preset-typescript',
+        ],
+      }),
+    ],
   },
   {
     input: 'src/index.ts',
