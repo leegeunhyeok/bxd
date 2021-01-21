@@ -1,5 +1,5 @@
 import 'fake-indexeddb/auto';
-import Box, { Types } from '../src';
+import Box, { Types } from '../src/index.es';
 
 // global instance variable for test
 let box: Box = null;

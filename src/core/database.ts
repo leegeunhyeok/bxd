@@ -1,4 +1,4 @@
-import { generateModel, BoxScheme, BoxModel, ConfiguredBoxScheme } from './model';
+import { Types, BoxScheme, ConfiguredBoxScheme, BoxModel, generateModel } from './model';
 import { BoxDBError } from './errors';
 
 interface ModelMap {
@@ -36,6 +36,7 @@ type BoxModelRegister = <S extends BoxScheme>(
 ) => BoxModel<S>;
 
 class BoxDB {
+  public static Types = Types;
   private _init = false;
   private _databaseName: string;
   private _version: number;

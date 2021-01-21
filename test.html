@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    Test
+    <script src="./dist/bxd.min.js"></script>
+    <script>
+      const req = window.indexedDB.open('test', 1);
+      req.onupgradeneeded = function (event) {
+        const db = event.target.result;
+
+        if (event.oldVersion < 2) {
+          db.createObjectStore('test', { keyPath: 'id' });
+        }
+
+        // if (event.oldVersion < 2) {
+        //   const objectStore = req.transaction.objectStore('test', { keyPath: 'id' });
+        // }
+      };
+    </script>
+  </body>
+</html>
