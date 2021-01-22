@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import BoxDB from './database';
 import { BoxDBError } from './errors';
+import { Operator } from './operations';
 
 export type ConfiguredType = {
   type: Types;
@@ -52,7 +53,7 @@ type UncheckedData = {
 type PickType<P> = P extends ConfiguredType ? P['type'] : P extends Types ? P : never;
 
 // change the type
-type BoxData<S extends BoxScheme> = {
+export type BoxData<S extends BoxScheme> = {
   [key in keyof S]: AsType<PickType<S[key]>> | null;
 };
 
@@ -60,15 +61,19 @@ type BoxData<S extends BoxScheme> = {
 export interface BoxModel<S extends BoxScheme> {
   new (initalData?: BoxData<S>): BoxData<S>;
   get: <T>(id: T) => BoxData<S>;
+  find: <T>(filter?: BoxModelFilter<S>) => BoxData<S>;
 }
 
 export interface BoxModelPrototype {
-  readonly __context__: BoxDB;
   readonly __storeName__: string;
   readonly __scheme__: BoxScheme;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   readonly __validate: (target: UncheckedData) => boolean;
 }
+
+export type BoxModelFilter<S extends BoxScheme> = {
+  [key in keyof S]?: Operator;
+};
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const typeValidator = (type: Types, value: any): boolean => {
@@ -110,19 +115,6 @@ const schemeValidator = function (this: BoxModelPrototype, target: UncheckedData
   );
 };
 
-const actionWrapper = {
-  _getModelPrototype<S extends BoxScheme>(model: BoxModel<S>) {
-    return model.prototype as BoxModelPrototype;
-  },
-  test<S extends BoxScheme>(model: BoxModel<S>) {
-    return () => {
-      const modelPrototype = model.prototype as BoxModelPrototype;
-      modelPrototype.__context__.test(modelPrototype.__storeName__);
-      return {} as BoxData<S>;
-    };
-  },
-};
-
 /**
  * Generate new model
  * @param storeName Object store name
@@ -142,13 +134,12 @@ export const generateModel = <S extends BoxScheme>(
     Object.keys(scheme).forEach((k) => (this[k] = initalData ? initalData[k] : null));
   } as unknown) as BoxModel<S>;
 
-  Model.prototype.__context__ = context;
   Model.prototype.__storeName__ = storeName;
   Model.prototype.__scheme__ = scheme;
   Model.prototype.__validate = schemeValidator.bind(Model.prototype);
 
   // static methods
-  Model.get = actionWrapper.test(Model);
+  // TODO
 
   return Model;
 };
