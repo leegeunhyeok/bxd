@@ -77,6 +77,7 @@ class BoxDB {
 
   /**
    * Get model metadata based on current idb version
+   *
    * @param storeName object store name
    */
   private _getCurrentModel(storeName: string): BoxModelMeta {
@@ -85,6 +86,7 @@ class BoxDB {
 
   /**
    * Get previous model metadata
+   *
    * @param baseVersion base idb version
    * @param storeName object store name
    */
@@ -112,6 +114,7 @@ class BoxDB {
 
   /**
    * Save model metadata, and version indexing for search
+   *
    * @param modelMeta model metadata for save
    */
   private _addModel(modelMeta: BoxModelMeta): void {
@@ -126,7 +129,8 @@ class BoxDB {
   }
 
   /**
-   * Regist new model scheme with exist checking
+   * Model exist checking and regist new model scheme
+   *
    * @param targetVersion target idb version
    * @param storeName object store name
    * @param scheme scheme object
@@ -201,6 +205,12 @@ class BoxDB {
     });
   }
 
+  /**
+   * Create new object store in this idb
+   *
+   * @param openRequest
+   * @param boxMeta
+   */
   private _createObjectStore(openRequest: IDBOpenDBRequest, boxMeta: BoxModelMeta) {
     const idb = openRequest.result;
 
@@ -216,6 +226,12 @@ class BoxDB {
     });
   }
 
+  /**
+   * Update defined object stores
+   *
+   * @param openRequest IDBOpenRequest
+   * @param event Event from onupgradeneeded event
+   */
   private _update(openRequest: IDBOpenDBRequest, event: IDBVersionChangeEvent) {
     Object.keys(this._models)
       .map((k) => parseInt(k)) // Version keys to integer
@@ -242,7 +258,9 @@ class BoxDB {
 
   /**
    * Basic handler for object store transactions
-   * `add`, `get`, `put`, `delete`, `clear`
+   *
+   * - Supports: `add`, `get`, `put`, `delete`, `clear`
+   *
    * @param storeName target object store name
    * @param action object store transaction type
    * @param mode transaction mode
@@ -269,6 +287,7 @@ class BoxDB {
 
   /**
    * Regist data model for create object store
+   *
    * @param targetVersion target idb version
    */
   model(targetVersion: number): BoxModelRegister {
@@ -310,6 +329,7 @@ class BoxDB {
 
   /**
    * Add new record into target object store
+   *
    * @param storeName object store name for open transaction
    * @param value idb object store keyPath value
    */
@@ -326,6 +346,9 @@ class BoxDB {
 
   /**
    * Get data from object store
+   *
+   * If data is not exist, returns `null`
+   *
    * @param storeName object store name for open transaction
    * @param key idb object store keyPath value
    */
@@ -336,7 +359,7 @@ class BoxDB {
       BasicTransactionActions.GET,
       'readonly',
       key,
-    );
+    ).then((data) => data || null);
   }
 }
 

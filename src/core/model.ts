@@ -19,6 +19,7 @@ export interface ConfiguredBoxScheme {
   [key: string]: ConfiguredType;
 }
 
+// Check available types
 export enum Types {
   BOOLEAN = 'boolean',
   NUMBER = 'number',
@@ -47,15 +48,15 @@ type UncheckedData = {
   [key: string]: any;
 };
 
-// pick type from type configuration
+// Pick type from type configuration
 type PickType<P> = P extends ConfiguredType ? P['type'] : P extends Types ? P : never;
 
-// change the type
+// BoxData based on BoxScheme
 export type BoxData<S extends BoxScheme> = {
   [key in keyof S]: AsType<PickType<S[key]>> | null;
 };
 
-// instance type
+//  BoxModel
 export interface BoxModel<S extends BoxScheme> {
   new (initalData?: BoxData<S>): BoxData<S>;
   add: <S>(value: S, key?: IDBValidKey) => Promise<any>;
@@ -63,16 +64,25 @@ export interface BoxModel<S extends BoxScheme> {
   find: <T>(filter?: BoxModelFilter<S>) => BoxData<S>;
 }
 
+// BoxModel Prototype
+
 export interface BoxModelPrototype {
   readonly __storeName__: string;
   readonly __scheme__: BoxScheme;
   readonly __validate: (target: UncheckedData) => boolean;
 }
 
+// Filter type
 export type BoxModelFilter<S extends BoxScheme> = {
   [key in keyof S]?: Operator;
 };
 
+/**
+ * Check about target value has same type with type identifier
+ *
+ * @param type Type identifier (from enum)
+ * @param value Value for check
+ */
 const typeValidator = (type: Types, value: any): boolean => {
   const targetPrototype = value.__proto__;
 
@@ -96,6 +106,11 @@ const typeValidator = (type: Types, value: any): boolean => {
 
 /**
  * Check object keys matching and data types
+ *
+ * 1. Target's key length is same with model scheme's key length
+ * 2. Check target's keys in scheme
+ * 3. Target's value types are correct with scheme
+ *
  * @param this Model
  * @param target target data
  */
@@ -114,6 +129,7 @@ const schemeValidator = function (this: BoxModelPrototype, target: UncheckedData
 
 /**
  * Generate new model
+ *
  * @param storeName Object store name
  * @param scheme Data scheme
  */
@@ -123,11 +139,12 @@ export const generateModel = <S extends BoxScheme>(
   scheme: S,
 ): BoxModel<S> => {
   const Model = (function Model(this: BoxModelPrototype, initalData?: BoxData<S>) {
+    // Check scheme if initial data provided
     if (initalData && !this.__validate(initalData)) {
       throw new BoxDBError('data not valid');
     }
 
-    // create scheme based empty(null) object
+    // Create empty(null) object or initalData based on scheme
     Object.keys(scheme).forEach((k) => (this[k] = initalData ? initalData[k] : null));
   } as unknown) as BoxModel<S>;
 
@@ -135,7 +152,9 @@ export const generateModel = <S extends BoxScheme>(
   Model.prototype.__scheme__ = scheme;
   Model.prototype.__validate = schemeValidator.bind(Model.prototype);
 
-  // static methods
+  /**
+   * @static Model's static methods
+   */
   Model.add = (value, key) => context.add(storeName, value, key);
   Model.get = (key) => context.get(storeName, key);
 
