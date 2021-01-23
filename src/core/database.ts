@@ -227,6 +227,31 @@ class BoxDB {
   }
 
   /**
+   * Update object store of idb
+   *
+   * @param openRequest
+   * @param boxMeta
+   */
+  private _updateObjectStore(openRequest: IDBOpenDBRequest, boxMeta: BoxModelMeta) {
+    const indexNameExtractor = (indexConfig) => indexConfig.keyPath;
+    const previousModel = this._getPreviousModel(boxMeta.targetVersion, boxMeta.name);
+    const previousIndexNameList = previousModel.index.map(indexNameExtractor);
+    const currentIndexNameList = boxMeta.index.map(indexNameExtractor);
+    const objectStore = openRequest.transaction.objectStore(boxMeta.name);
+
+    // Delete old index if index not found in current scheme
+    previousIndexNameList.forEach(
+      (keyPath) => ~currentIndexNameList.indexOf(keyPath) && objectStore.deleteIndex(keyPath),
+    );
+
+    // Create new index if not exist in old scheme
+    boxMeta.index.forEach(({ keyPath, unique }) => {
+      !~previousIndexNameList.indexOf(keyPath) &&
+        objectStore.createIndex(keyPath, keyPath, { unique });
+    });
+  }
+
+  /**
    * Update defined object stores
    *
    * @param openRequest IDBOpenRequest
@@ -249,7 +274,7 @@ class BoxDB {
             if (isNewObjectStore) {
               this._createObjectStore(openRequest, boxMeta);
             } else {
-              // TODO: update
+              this._updateObjectStore(openRequest, boxMeta);
             }
           }
         });
