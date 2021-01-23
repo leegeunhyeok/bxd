@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Types, BoxScheme, ConfiguredBoxScheme, BoxModel, generateModel } from './model';
 import { BoxDBError } from './errors';
 
@@ -35,6 +36,14 @@ type BoxModelRegister = <S extends BoxScheme>(
   options?: BoxOptions,
 ) => BoxModel<S>;
 
+enum BasicTransactionActions {
+  ADD = 'add',
+  GET = 'get',
+  PUT = 'put',
+  DELETE = 'delete',
+  CLEAR = 'clear',
+}
+
 class BoxDB {
   public static Types = Types;
   private _init = false;
@@ -42,6 +51,7 @@ class BoxDB {
   private _version: number;
   private _models: ModelMap = {};
   private _modelVersionIndex: ModelIndex = {};
+  private _idb: IDBDatabase = null;
 
   /**
    * @constructor
@@ -59,6 +69,10 @@ class BoxDB {
 
   get version(): number {
     return this._version;
+  }
+
+  get ready(): boolean {
+    return this._init;
   }
 
   /**
@@ -227,6 +241,33 @@ class BoxDB {
   }
 
   /**
+   * Basic handler for object store transactions
+   * `add`, `get`, `put`, `delete`, `clear`
+   * @param storeName target object store name
+   * @param action object store transaction type
+   * @param mode transaction mode
+   * @param args transaction arguments
+   */
+  private _basicTransactionHandler(
+    storeName: string,
+    action: BasicTransactionActions,
+    mode: IDBTransactionMode,
+    ...args: any[]
+  ) {
+    return new Promise((resolve, reject) => {
+      const tx = this._idb.transaction(storeName, mode);
+      const objectStore = tx.objectStore(storeName);
+      const request = objectStore[action](args);
+
+      // On success
+      request.onsuccess = () => resolve(request.result);
+
+      // On error
+      tx.onerror = () => reject(new BoxDBError(tx.error.message));
+    });
+  }
+
+  /**
    * Regist data model for create object store
    * @param targetVersion target idb version
    */
@@ -246,11 +287,6 @@ class BoxDB {
     };
   }
 
-  // TEST
-  test(name: string): void {
-    console.log('from ' + name);
-  }
-
   /**
    * Create/update object stores and open idb
    */
@@ -261,6 +297,7 @@ class BoxDB {
       // IDB Open successfully
       openRequest.onsuccess = (event) => {
         this._init = true;
+        this._idb = openRequest.result;
         resolve(event);
       };
 
@@ -269,6 +306,21 @@ class BoxDB {
       // Error occurs
       openRequest.onerror = (event) => reject(event);
     });
+  }
+
+  /**
+   * Get data from object store
+   * @param storeName object store name for open transaction
+   * @param key idb object store keyPath value
+   */
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+  async get(storeName: string, key: any): Promise<any> {
+    return await this._basicTransactionHandler(
+      storeName,
+      BasicTransactionActions.GET,
+      'readonly',
+      key,
+    );
   }
 }
 
