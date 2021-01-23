@@ -253,7 +253,7 @@ class BoxDB {
     action: BasicTransactionActions,
     mode: IDBTransactionMode,
     ...args: any[]
-  ) {
+  ): Promise<any> {
     return new Promise((resolve, reject) => {
       const tx = this._idb.transaction(storeName, mode);
       const objectStore = tx.objectStore(storeName);
@@ -306,6 +306,22 @@ class BoxDB {
       // Error occurs
       openRequest.onerror = (event) => reject(event);
     });
+  }
+
+  /**
+   * Add new record into target object store
+   * @param storeName object store name for open transaction
+   * @param value idb object store keyPath value
+   */
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+  async add(storeName: string, value: any, key?: IDBValidKey): Promise<any> {
+    return await this._basicTransactionHandler(
+      storeName,
+      BasicTransactionActions.ADD,
+      'readwrite',
+      value,
+      key,
+    );
   }
 
   /**
