@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import BoxDB from './database';
 import { BoxDBError } from './errors';
@@ -34,18 +35,15 @@ type AsType<T extends Types> = T extends Types.BOOLEAN
   : T extends Types.STRING
   ? string
   : T extends Types.ARRAY
-  ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    any[]
+  ? any[]
   : T extends Types.OBJECT
   ? // eslint-disable-next-line @typescript-eslint/ban-types
     object
   : T extends Types.ANY
-  ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    any
+  ? any
   : never;
 
 type UncheckedData = {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 };
 
@@ -60,14 +58,14 @@ export type BoxData<S extends BoxScheme> = {
 // instance type
 export interface BoxModel<S extends BoxScheme> {
   new (initalData?: BoxData<S>): BoxData<S>;
-  get: <T>(id: T) => BoxData<S>;
+  add: <S>(value: S, key?: IDBValidKey) => Promise<any>;
+  get: <T>(key: T) => Promise<any>;
   find: <T>(filter?: BoxModelFilter<S>) => BoxData<S>;
 }
 
 export interface BoxModelPrototype {
   readonly __storeName__: string;
   readonly __scheme__: BoxScheme;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   readonly __validate: (target: UncheckedData) => boolean;
 }
 
@@ -75,7 +73,6 @@ export type BoxModelFilter<S extends BoxScheme> = {
   [key in keyof S]?: Operator;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const typeValidator = (type: Types, value: any): boolean => {
   const targetPrototype = value.__proto__;
 
@@ -139,7 +136,8 @@ export const generateModel = <S extends BoxScheme>(
   Model.prototype.__validate = schemeValidator.bind(Model.prototype);
 
   // static methods
-  // TODO
+  Model.add = (value, key) => context.add(storeName, value, key);
+  Model.get = (key) => context.get(storeName, key);
 
   return Model;
 };
