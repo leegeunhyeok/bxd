@@ -13,7 +13,7 @@ interface ModelIndex {
 }
 
 interface BoxOptions {
-  autoIncreament?: boolean;
+  autoIncrement?: boolean;
 }
 
 interface BoxIndexConfig {
@@ -195,7 +195,7 @@ class BoxDB {
       name: storeName,
       scheme: boxScheme,
       keyPath: primaryKeyPath,
-      autoIncrement: !!options?.autoIncreament,
+      autoIncrement: !!options?.autoIncrement,
       index: indexList,
       targetVersion,
     });
@@ -228,7 +228,7 @@ class BoxDB {
         Object.values(currentVersionModels).forEach((boxMeta) => {
           if (event.oldVersion < boxMeta.targetVersion) {
             const previousModel = this._getPreviousModel(targetVersion, boxMeta.name);
-            const isNewObjectStore = previousModel ? true : false;
+            const isNewObjectStore = !previousModel;
 
             if (isNewObjectStore) {
               this._createObjectStore(openRequest, boxMeta);
@@ -257,7 +257,7 @@ class BoxDB {
     return new Promise((resolve, reject) => {
       const tx = this._idb.transaction(storeName, mode);
       const objectStore = tx.objectStore(storeName);
-      const request = objectStore[action](args);
+      const request = objectStore[action].call(objectStore, ...args);
 
       // On success
       request.onsuccess = () => resolve(request.result);
