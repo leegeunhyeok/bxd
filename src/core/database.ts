@@ -28,6 +28,13 @@ interface BoxModelMeta {
   autoIncrement: boolean;
   index: BoxIndexConfig[];
   targetVersion: number;
+  action: BoxModelHistoryActions;
+}
+
+enum BoxModelHistoryActions {
+  CREATE,
+  DROP,
+  UPDATE,
 }
 
 type BoxModelRegister = <S extends BoxScheme>(
@@ -73,6 +80,10 @@ class BoxDB {
 
   get ready(): boolean {
     return this._init;
+  }
+
+  private _isPrepared() {
+    if (!this._init) throw new BoxDBError('BoxDB not ready');
   }
 
   /**
@@ -202,7 +213,21 @@ class BoxDB {
       autoIncrement: !!options?.autoIncrement,
       index: indexList,
       targetVersion,
+      action: previousModel ? BoxModelHistoryActions.UPDATE : BoxModelHistoryActions.CREATE,
     });
+  }
+
+  /**
+   * Unregistration from history (drop object store -> all data clear)
+   * - Delete all <= version of target object store.
+   *
+   * @param storeName Object store name for unregistration
+   */
+  private _unregistModel(storeName: string) {
+    Object.entries(this._models)
+      .filter(([version]) => this._version >= parseInt(version))
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      .forEach(([_, currentModels]) => delete currentModels[storeName]);
   }
 
   /**
@@ -297,6 +322,8 @@ class BoxDB {
     mode: IDBTransactionMode,
     ...args: any[]
   ): Promise<any> {
+    this._isPrepared();
+
     return new Promise((resolve, reject) => {
       const tx = this._idb.transaction(storeName, mode);
       const objectStore = tx.objectStore(storeName);
@@ -385,6 +412,11 @@ class BoxDB {
       'readonly',
       key,
     ).then((data) => data || null);
+  }
+
+  drop(storeName: string): void {
+    this._isPrepared();
+    this._unregistModel(storeName);
   }
 }
 
