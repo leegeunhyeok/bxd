@@ -28,10 +28,10 @@ interface BoxModelMeta {
   autoIncrement: boolean;
   index: BoxIndexConfig[];
   targetVersion: number;
-  action: BoxModelHistoryActions;
+  action: BoxModelActionType;
 }
 
-enum BoxModelHistoryActions {
+enum BoxModelActionType {
   CREATE,
   DROP,
   UPDATE,
@@ -213,21 +213,34 @@ class BoxDB {
       autoIncrement: !!options?.autoIncrement,
       index: indexList,
       targetVersion,
-      action: previousModel ? BoxModelHistoryActions.UPDATE : BoxModelHistoryActions.CREATE,
+      action: previousModel ? BoxModelActionType.UPDATE : BoxModelActionType.CREATE,
     });
   }
 
   /**
-   * Unregistration from history (drop object store -> all data clear)
-   * - Delete all <= version of target object store.
+   * Update object store action to BoxModelActionType.DROP (for delete object store)
    *
    * @param storeName Object store name for unregistration
    */
   private _unregistModel(storeName: string) {
-    Object.entries(this._models)
-      .filter(([version]) => this._version >= parseInt(version))
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      .forEach(([_, currentModels]) => delete currentModels[storeName]);
+    let dropped = false;
+    Object.keys(this._models)
+      .map((version) => parseInt(version))
+      .filter((version) => this._version >= version)
+      .sort((a, b) => a - b)
+      .forEach((filteredVersion) => {
+        const targetVersionModels = [filteredVersion];
+        if (dropped) return;
+        if (storeName in targetVersionModels) {
+          targetVersionModels[storeName].action = BoxModelActionType.DROP;
+          dropped = true;
+        }
+      });
+
+    // If target object store not found in any version
+    if (!dropped) {
+      throw new BoxDBError(`Can not drop ${storeName} because target object store not registered`);
+    }
   }
 
   /**
@@ -277,6 +290,17 @@ class BoxDB {
   }
 
   /**
+   * Delete object store
+   *
+   * @param openRequest
+   * @param boxMeta
+   */
+  private _deleteObjectStore(openRequest: IDBOpenDBRequest, boxMeta: BoxModelMeta) {
+    const idb = openRequest.result;
+    idb.deleteObjectStore(boxMeta.name);
+  }
+
+  /**
    * Update defined object stores
    *
    * @param openRequest IDBOpenRequest
@@ -293,13 +317,18 @@ class BoxDB {
 
         Object.values(currentVersionModels).forEach((boxMeta) => {
           if (event.oldVersion < boxMeta.targetVersion) {
-            const previousModel = this._getPreviousModel(targetVersion, boxMeta.name);
-            const isNewObjectStore = !previousModel;
+            switch (boxMeta.action) {
+              case BoxModelActionType.CREATE:
+                this._createObjectStore(openRequest, boxMeta);
+                break;
 
-            if (isNewObjectStore) {
-              this._createObjectStore(openRequest, boxMeta);
-            } else {
-              this._updateObjectStore(openRequest, boxMeta);
+              case BoxModelActionType.UPDATE:
+                this._updateObjectStore(openRequest, boxMeta);
+                break;
+
+              case BoxModelActionType.DROP:
+                this._deleteObjectStore(openRequest, boxMeta);
+                break;
             }
           }
         });
@@ -415,8 +444,11 @@ class BoxDB {
   }
 
   drop(storeName: string): void {
-    this._isPrepared();
-    this._unregistModel(storeName);
+    if (!this._init) {
+      this._unregistModel(storeName);
+    } else {
+      throw new BoxDBError('Can not drop model after opened');
+    }
   }
 }
 

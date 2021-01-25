@@ -61,6 +61,7 @@ export interface BoxModel<S extends BoxScheme> {
   new (initalData?: BoxData<S>): BoxData<S>;
   add: <S>(value: S, key?: IDBValidKey) => Promise<any>;
   get: <T>(key: T) => Promise<any>;
+  drop: () => void;
   find: <T>(filter?: BoxModelFilter<S>) => BoxData<S>;
 }
 
@@ -157,6 +158,8 @@ export const generateModel = <S extends BoxScheme>(
    */
   Model.add = (value, key) => context.add(storeName, value, key);
   Model.get = (key) => context.get(storeName, key);
+
+  Model.drop = () => context.drop(storeName);
 
   return Model;
 };
