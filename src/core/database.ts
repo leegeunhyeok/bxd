@@ -66,6 +66,8 @@ class BoxDB {
    * @param version idb version
    */
   constructor(databaseName: string, version: number) {
+    if (typeof databaseName !== 'string') throw new BoxDBError('databaseName must be string');
+    if (typeof version !== 'number') throw new BoxDBError('version must be version');
     this._databaseName = databaseName;
     this._version = version;
   }
@@ -223,17 +225,22 @@ class BoxDB {
    * @param storeName Object store name for unregistration
    */
   private _unregistModel(storeName: string) {
-    let dropped = false;
-    Object.keys(this._models)
+    const dropped = Object.keys(this._models)
       .map((version) => parseInt(version))
       .filter((version) => this._version >= version)
       .sort((a, b) => a - b)
-      .forEach((filteredVersion) => {
-        const targetVersionModels = [filteredVersion];
-        if (dropped) return;
+      .some((filteredVersion) => {
+        const targetVersionModels = this._models[filteredVersion];
         if (storeName in targetVersionModels) {
-          targetVersionModels[storeName].action = BoxModelActionType.DROP;
-          dropped = true;
+          // Add new metadata into targetVersion map
+          this._models[1][storeName] = {
+            ...targetVersionModels[storeName],
+            targetVersion: 1,
+            action: BoxModelActionType.DROP,
+          };
+          return true;
+        } else {
+          return false;
         }
       });
 
@@ -279,7 +286,7 @@ class BoxDB {
 
     // Delete old index if index not found in current scheme
     previousIndexNameList.forEach(
-      (keyPath) => ~currentIndexNameList.indexOf(keyPath) && objectStore.deleteIndex(keyPath),
+      (keyPath) => ~currentIndexNameList.indexOf(keyPath) || objectStore.deleteIndex(keyPath),
     );
 
     // Create new index if not exist in old scheme
