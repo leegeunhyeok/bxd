@@ -53,10 +53,10 @@ enum BasicTransactionActions {
 
 class BoxDB {
   public static Types = Types;
-  private _init = false;
+  private _ready = false;
   private _databaseName: string;
   private _version: number;
-  private _models: ModelMap = {};
+  private _modelVersionMap: ModelMap = {};
   private _modelVersionIndex: ModelIndex = {};
   private _idb: IDBDatabase = null;
 
@@ -81,11 +81,11 @@ class BoxDB {
   }
 
   get ready(): boolean {
-    return this._init;
+    return this._ready;
   }
 
   private _isPrepared() {
-    if (!this._init) throw new BoxDBError('BoxDB not ready');
+    if (!this._ready) throw new BoxDBError('BoxDB not ready');
   }
 
   /**
@@ -94,7 +94,7 @@ class BoxDB {
    * @param storeName object store name
    */
   private _getCurrentModel(storeName: string): BoxModelMeta {
-    return this._models[this._version][storeName];
+    return this._modelVersionMap[this._version][storeName];
   }
 
   /**
@@ -114,8 +114,11 @@ class BoxDB {
       // Get last version's model metadata
       // or if not exist, returns null
       if (orderedIndex.length) {
-        const index = orderedIndex[orderedIndex.length - 1];
-        return this._models[index][storeName];
+        const indexedVersion = orderedIndex[orderedIndex.length - 1];
+        const previousModel = this._modelVersionMap[indexedVersion][storeName];
+
+        // If model was dropped, returns null (need a create new one)
+        return previousModel.action === BoxModelActionType.DROP ? null : previousModel;
       } else {
         return null;
       }
@@ -132,13 +135,18 @@ class BoxDB {
    */
   private _addModel(modelMeta: BoxModelMeta): void {
     const { targetVersion, name } = modelMeta;
-    this._models[targetVersion][name] = modelMeta;
+    this._modelVersionMap[targetVersion][name] = modelMeta;
 
     // If not exist model version index array, create new one
     if (!this._modelVersionIndex[name]) {
       this._modelVersionIndex[name] = [];
     }
     this._modelVersionIndex[name].push(targetVersion);
+  }
+
+  private _isRegistered(targetVersion: number, storeName: string): boolean {
+    const versionMap = this._modelVersionMap[targetVersion];
+    return !!(versionMap && storeName in versionMap);
   }
 
   /**
@@ -148,24 +156,18 @@ class BoxDB {
    * @param storeName object store name
    * @param scheme scheme object
    */
-  private _registModel<S extends BoxScheme>(
-    targetVersion: number,
-    storeName: string,
-    scheme: S,
-    options: BoxOptions,
-  ): void {
-    if (this._init) {
-      throw new BoxDBError('database already open');
+  private _registModel<S extends BoxScheme>(model: BoxModel<S>, options?: BoxOptions): void {
+    if (this._ready) {
+      throw new BoxDBError('database already opened');
     }
+
+    const targetVersion = model.prototype.__targetVersion__;
+    const storeName = model.prototype.__storeName__;
+    const scheme = model.prototype.__scheme__;
 
     // Assign new object literal if version map is not exist
-    if (!this._models[targetVersion]) {
-      this._models[targetVersion] = {};
-    }
-
-    const versionMap = this._models[targetVersion];
-    if (versionMap[storeName]) {
-      throw new BoxDBError(`${storeName} model already registered. (in version: ${targetVersion})`);
+    if (!this._modelVersionMap[targetVersion]) {
+      this._modelVersionMap[targetVersion] = {};
     }
 
     let primaryKeyPath: string = null;
@@ -175,7 +177,7 @@ class BoxDB {
       if (typeof v === 'string') {
         prev[k] = { type: v };
       } else {
-        // If this field use to object store keyPath
+        // If this field use to object store keyPath(primary key)
         if (v.key) {
           // Multiple keyPath not available
           if (primaryKeyPath) {
@@ -222,20 +224,21 @@ class BoxDB {
   /**
    * Update object store action to BoxModelActionType.DROP (for delete object store)
    *
+   * @param targetVersion Target version
    * @param storeName Object store name for unregistration
    */
-  private _unregistModel(storeName: string) {
-    const dropped = Object.keys(this._models)
+  private _unregistModel(targetVersion: number, storeName: string) {
+    const dropped = Object.keys(this._modelVersionMap)
       .map((version) => parseInt(version))
-      .filter((version) => this._version >= version)
+      .filter((version) => targetVersion >= version)
       .sort((a, b) => a - b)
       .some((filteredVersion) => {
-        const targetVersionModels = this._models[filteredVersion];
+        const targetVersionModels = this._modelVersionMap[filteredVersion];
         if (storeName in targetVersionModels) {
           // Add new metadata into targetVersion map
-          this._models[1][storeName] = {
+          this._modelVersionMap[targetVersion][storeName] = {
             ...targetVersionModels[storeName],
-            targetVersion: 1,
+            targetVersion,
             action: BoxModelActionType.DROP,
           };
           return true;
@@ -314,13 +317,13 @@ class BoxDB {
    * @param event Event from onupgradeneeded event
    */
   private _update(openRequest: IDBOpenDBRequest, event: IDBVersionChangeEvent) {
-    Object.keys(this._models)
+    Object.keys(this._modelVersionMap)
       .map((k) => parseInt(k)) // Version keys to integer
       .filter((version) => version <= this._version) // Filtering (<= Current idb version)
       .sort((a, b) => a - b) // Sort by ascending
       .forEach((targetVersion) => {
         // Get target version models
-        const currentVersionModels = this._models[targetVersion];
+        const currentVersionModels = this._modelVersionMap[targetVersion];
 
         Object.values(currentVersionModels).forEach((boxMeta) => {
           if (event.oldVersion < boxMeta.targetVersion) {
@@ -389,15 +392,18 @@ class BoxDB {
       scheme: S,
       options?: BoxOptions,
     ): BoxModel<S> => {
-      this._registModel(targetVersion, storeName, scheme, options);
-      const Model = generateModel(storeName, scheme);
+      if (this._isRegistered(targetVersion, storeName)) {
+        throw new BoxDBError(`${storeName} model already registered in version: ${targetVersion}`);
+      }
+      const Model = generateModel(targetVersion, storeName, scheme);
+      this._registModel(Model, options);
 
       /**
        * @static Model's static methods
        */
-      Model.add = (value, key) => this.add(storeName, value, key);
-      Model.get = (key) => this.get(storeName, key);
-      Model.drop = () => this.drop(storeName);
+      Model.add = (value, key) => this._add(storeName, value, key);
+      Model.get = (key) => this._get(storeName, key);
+      Model.drop = (targetVersion) => this._drop(targetVersion, storeName);
 
       return Model;
     };
@@ -412,7 +418,7 @@ class BoxDB {
 
       // IDB Open successfully
       openRequest.onsuccess = (event) => {
-        this._init = true;
+        this._ready = true;
         this._idb = openRequest.result;
         resolve(event);
       };
@@ -431,7 +437,7 @@ class BoxDB {
    * @param value idb object store keyPath value
    */
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  private async add(storeName: string, value: any, key?: IDBValidKey): Promise<any> {
+  private async _add(storeName: string, value: any, key?: IDBValidKey): Promise<any> {
     return await this._basicTransactionHandler(
       storeName,
       BasicTransactionActions.ADD,
@@ -450,7 +456,7 @@ class BoxDB {
    * @param key idb object store keyPath value
    */
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  private async get(storeName: string, key: any): Promise<any> {
+  private async _get(storeName: string, key: any): Promise<any> {
     return await this._basicTransactionHandler(
       storeName,
       BasicTransactionActions.GET,
@@ -459,9 +465,9 @@ class BoxDB {
     ).then((data) => data || null);
   }
 
-  private drop(storeName: string): void {
-    if (!this._init) {
-      this._unregistModel(storeName);
+  private _drop(targetVersion: number, storeName: string): void {
+    if (!this._ready) {
+      this._unregistModel(targetVersion, storeName);
     } else {
       throw new BoxDBError('Can not drop model after opened');
     }
