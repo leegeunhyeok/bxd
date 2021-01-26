@@ -60,13 +60,16 @@ export interface BoxModel<S extends BoxScheme> {
   new (initalData?: BoxData<S>): BoxData<S>;
   add: <S>(value: S, key?: IDBValidKey) => Promise<any>;
   get: <T>(key: T) => Promise<any>;
-  drop: () => void;
   find: <T>(filter?: BoxModelFilter<S>) => BoxData<S>;
+  drop: (targetVersion: number) => void;
+  getObjectStoreName: () => string;
+  prototype: BoxModelPrototype;
 }
 
 // BoxModel Prototype
 
 export interface BoxModelPrototype {
+  readonly __targetVersion__: number;
   readonly __storeName__: string;
   readonly __scheme__: BoxScheme;
   readonly __validate: (target: UncheckedData) => boolean;
@@ -127,13 +130,24 @@ const schemeValidator = function (this: BoxModelPrototype, target: UncheckedData
   );
 };
 
+const mergeObject = <T>(baseObject: T, targetObject?: T): T => {
+  Object.keys(baseObject).forEach((k) => {
+    baseObject[k] = (targetObject && targetObject[k]) || null;
+  });
+  return baseObject;
+};
+
 /**
  * Generate new model
  *
  * @param storeName Object store name
  * @param scheme Data scheme
  */
-export const generateModel = <S extends BoxScheme>(storeName: string, scheme: S): BoxModel<S> => {
+export const generateModel = <S extends BoxScheme>(
+  targetVersion: number,
+  storeName: string,
+  scheme: S,
+): BoxModel<S> => {
   const Model = (function Model(this: BoxModelPrototype, initalData?: BoxData<S>) {
     // Check scheme if initial data provided
     if (initalData && !this.__validate(initalData)) {
@@ -141,12 +155,15 @@ export const generateModel = <S extends BoxScheme>(storeName: string, scheme: S)
     }
 
     // Create empty(null) object or initalData based on scheme
-    Object.keys(scheme).forEach((k) => (this[k] = initalData ? initalData[k] : null));
+    Object.assign(this, mergeObject(scheme, initalData));
   } as unknown) as BoxModel<S>;
 
-  Model.prototype.__storeName__ = storeName;
-  Model.prototype.__scheme__ = scheme;
-  Model.prototype.__validate = schemeValidator.bind(Model.prototype);
+  Object.assign(Model.prototype, {
+    __targetVersion__: targetVersion,
+    __storeName__: storeName,
+    __scheme__: scheme,
+    __validate: schemeValidator.bind(Model.prototype),
+  });
 
   return Model;
 };
