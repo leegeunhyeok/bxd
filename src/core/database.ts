@@ -173,6 +173,12 @@ class BoxDB {
     let primaryKeyPath: string = null;
     const previousModel = this._getPreviousModel(targetVersion, storeName);
     const indexList: BoxIndexConfig[] = [];
+
+    // Change autoIncrement option not available
+    if (previousModel && previousModel.autoIncrement !== !!options?.autoIncrement) {
+      throw new BoxDBError(`Can not change ${storeName} model's autoIncrement option`);
+    }
+
     const boxScheme = Object.entries(scheme).reduce((prev, [k, v]) => {
       if (typeof v === 'string') {
         prev[k] = { type: v };

@@ -117,7 +117,7 @@ describe('Basic of BoxDB', () => {
     }).toBeTruthy();
   });
 
-  test('trying to update object store keyPath/index', () => {
+  test('trying to change keyPath', () => {
     // Change keyPath
     expect(() => {
       box.model(3)('user', {
@@ -131,7 +131,18 @@ describe('Basic of BoxDB', () => {
         age: BoxDB.Types.NUMBER,
       });
     }).toThrow();
+  });
 
+  test('trying to change autoIncrement option', () => {
+    // Change autoIncrement option
+    expect(() => {
+      box.model(3)('user', User.prototype.__scheme__, {
+        autoIncrement: true, // before: false
+      });
+    }).toThrow();
+  });
+
+  test('trying to change index', () => {
     // Change index
     expect(() => {
       User = box.model(3)('user', {
