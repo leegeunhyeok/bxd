@@ -431,7 +431,7 @@ class BoxDB {
    * @param value idb object store keyPath value
    */
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  async add(storeName: string, value: any, key?: IDBValidKey): Promise<any> {
+  private async add(storeName: string, value: any, key?: IDBValidKey): Promise<any> {
     return await this._basicTransactionHandler(
       storeName,
       BasicTransactionActions.ADD,
@@ -450,7 +450,7 @@ class BoxDB {
    * @param key idb object store keyPath value
    */
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  async get(storeName: string, key: any): Promise<any> {
+  private async get(storeName: string, key: any): Promise<any> {
     return await this._basicTransactionHandler(
       storeName,
       BasicTransactionActions.GET,
@@ -459,7 +459,7 @@ class BoxDB {
     ).then((data) => data || null);
   }
 
-  drop(storeName: string): void {
+  private drop(storeName: string): void {
     if (!this._init) {
       this._unregistModel(storeName);
     } else {
