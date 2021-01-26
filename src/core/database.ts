@@ -390,7 +390,16 @@ class BoxDB {
       options?: BoxOptions,
     ): BoxModel<S> => {
       this._registModel(targetVersion, storeName, scheme, options);
-      return generateModel(this, storeName, scheme);
+      const Model = generateModel(storeName, scheme);
+
+      /**
+       * @static Model's static methods
+       */
+      Model.add = (value, key) => this.add(storeName, value, key);
+      Model.get = (key) => this.get(storeName, key);
+      Model.drop = () => this.drop(storeName);
+
+      return Model;
     };
   }
 

@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import BoxDB from './database';
 import { BoxDBError } from './errors';
 import { Operator } from './operations';
 
@@ -134,11 +133,7 @@ const schemeValidator = function (this: BoxModelPrototype, target: UncheckedData
  * @param storeName Object store name
  * @param scheme Data scheme
  */
-export const generateModel = <S extends BoxScheme>(
-  context: BoxDB,
-  storeName: string,
-  scheme: S,
-): BoxModel<S> => {
+export const generateModel = <S extends BoxScheme>(storeName: string, scheme: S): BoxModel<S> => {
   const Model = (function Model(this: BoxModelPrototype, initalData?: BoxData<S>) {
     // Check scheme if initial data provided
     if (initalData && !this.__validate(initalData)) {
@@ -152,14 +147,6 @@ export const generateModel = <S extends BoxScheme>(
   Model.prototype.__storeName__ = storeName;
   Model.prototype.__scheme__ = scheme;
   Model.prototype.__validate = schemeValidator.bind(Model.prototype);
-
-  /**
-   * @static Model's static methods
-   */
-  Model.add = (value, key) => context.add(storeName, value, key);
-  Model.get = (key) => context.get(storeName, key);
-
-  Model.drop = () => context.drop(storeName);
 
   return Model;
 };
