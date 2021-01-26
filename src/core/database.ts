@@ -12,7 +12,7 @@ interface ModelIndex {
   [objectStoreName: string]: number[];
 }
 
-interface BoxOptions {
+interface BoxOption {
   autoIncrement?: boolean;
 }
 
@@ -40,7 +40,7 @@ enum BoxModelActionType {
 type BoxModelRegister = <S extends BoxScheme>(
   storeName: string,
   scheme: S,
-  options?: BoxOptions,
+  options?: BoxOption,
 ) => BoxModel<S>;
 
 enum BasicTransactionActions {
@@ -156,7 +156,7 @@ class BoxDB {
    * @param storeName object store name
    * @param scheme scheme object
    */
-  private _registModel<S extends BoxScheme>(model: BoxModel<S>, options?: BoxOptions): void {
+  private _registModel<S extends BoxScheme>(model: BoxModel<S>, options?: BoxOption): void {
     if (this._ready) {
       throw new BoxDBError('database already opened');
     }
@@ -390,7 +390,7 @@ class BoxDB {
     return <S extends BoxScheme>(
       storeName: string,
       scheme: S,
-      options?: BoxOptions,
+      options?: BoxOption,
     ): BoxModel<S> => {
       if (this._isRegistered(targetVersion, storeName)) {
         throw new BoxDBError(`${storeName} model already registered in version: ${targetVersion}`);
