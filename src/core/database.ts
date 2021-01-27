@@ -2,23 +2,20 @@
 import { Types, BoxScheme, ConfiguredBoxScheme, BoxModel, generateModel } from './model';
 import { BoxDBError } from './errors';
 
+export interface BoxOption {
+  autoIncrement?: boolean;
+}
+
+export type BoxModelRegister = <S extends BoxScheme>(
+  storeName: string,
+  scheme: S,
+  options?: BoxOption,
+) => BoxModel<S>;
+
 interface ModelMap {
   [version: number]: {
     [objectStoreName: string]: BoxModelMeta;
   };
-}
-
-interface ModelIndex {
-  [objectStoreName: string]: number[];
-}
-
-interface BoxOption {
-  autoIncrement?: boolean;
-}
-
-interface BoxIndexConfig {
-  keyPath: string;
-  unique: boolean;
 }
 
 interface BoxModelMeta {
@@ -30,6 +27,14 @@ interface BoxModelMeta {
   targetVersion: number;
   action: BoxModelActionType;
 }
+interface ModelIndex {
+  [objectStoreName: string]: number[];
+}
+
+interface BoxIndexConfig {
+  keyPath: string;
+  unique: boolean;
+}
 
 enum BoxModelActionType {
   CREATE,
@@ -37,13 +42,7 @@ enum BoxModelActionType {
   UPDATE,
 }
 
-type BoxModelRegister = <S extends BoxScheme>(
-  storeName: string,
-  scheme: S,
-  options?: BoxOption,
-) => BoxModel<S>;
-
-enum BasicTransactionActions {
+enum BasicTransactionAction {
   ADD = 'add',
   GET = 'get',
   PUT = 'put',
@@ -368,7 +367,7 @@ class BoxDB {
    */
   private _basicTransactionHandler(
     storeName: string,
-    action: BasicTransactionActions,
+    action: BasicTransactionAction,
     mode: IDBTransactionMode,
     ...args: any[]
   ): Promise<any> {
@@ -475,7 +474,7 @@ class BoxDB {
   private async _add(storeName: string, value: any, key?: IDBValidKey): Promise<any> {
     return await this._basicTransactionHandler(
       storeName,
-      BasicTransactionActions.ADD,
+      BasicTransactionAction.ADD,
       'readwrite',
       value,
       key,
@@ -494,7 +493,7 @@ class BoxDB {
   private async _get(storeName: string, key: any): Promise<any> {
     return await this._basicTransactionHandler(
       storeName,
-      BasicTransactionActions.GET,
+      BasicTransactionAction.GET,
       'readonly',
       key,
     ).then((data) => data || null);

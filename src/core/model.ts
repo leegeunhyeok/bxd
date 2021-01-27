@@ -3,6 +3,36 @@
 import { BoxDBError } from './errors';
 import { Operator } from './operations';
 
+// BoxData based on BoxScheme
+export type BoxData<S extends BoxScheme> = {
+  [key in keyof S]: AsType<PickType<S[key]>> | null;
+};
+
+// BoxModel
+export interface BoxModel<S extends BoxScheme> {
+  new (initalData?: BoxData<S>): BoxData<S>;
+  add: <S>(value: S, key?: IDBValidKey) => Promise<any>;
+  get: <T>(key: T) => Promise<any>;
+  find: <T>(filter?: BoxModelFilter<S>) => BoxData<S>;
+  drop: (targetVersion: number) => void;
+  getObjectStoreName: () => string;
+  prototype: BoxModelPrototype;
+}
+
+// BoxModel Prototype
+
+export interface BoxModelPrototype {
+  readonly __targetVersion__: number;
+  readonly __storeName__: string;
+  readonly __scheme__: BoxScheme;
+  readonly __validate: (target: UncheckedData) => boolean;
+}
+
+// Filter type
+export type BoxModelFilter<S extends BoxScheme> = {
+  [key in keyof S]?: Operator;
+};
+
 export type ConfiguredType = {
   type: Types;
   key?: boolean;
@@ -49,36 +79,6 @@ type UncheckedData = {
 
 // Pick type from type configuration
 type PickType<P> = P extends ConfiguredType ? P['type'] : P extends Types ? P : never;
-
-// BoxData based on BoxScheme
-export type BoxData<S extends BoxScheme> = {
-  [key in keyof S]: AsType<PickType<S[key]>> | null;
-};
-
-// BoxModel
-export interface BoxModel<S extends BoxScheme> {
-  new (initalData?: BoxData<S>): BoxData<S>;
-  add: <S>(value: S, key?: IDBValidKey) => Promise<any>;
-  get: <T>(key: T) => Promise<any>;
-  find: <T>(filter?: BoxModelFilter<S>) => BoxData<S>;
-  drop: (targetVersion: number) => void;
-  getObjectStoreName: () => string;
-  prototype: BoxModelPrototype;
-}
-
-// BoxModel Prototype
-
-export interface BoxModelPrototype {
-  readonly __targetVersion__: number;
-  readonly __storeName__: string;
-  readonly __scheme__: BoxScheme;
-  readonly __validate: (target: UncheckedData) => boolean;
-}
-
-// Filter type
-export type BoxModelFilter<S extends BoxScheme> = {
-  [key in keyof S]?: Operator;
-};
 
 /**
  * Check about target value has same type with type identifier
