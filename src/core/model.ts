@@ -55,7 +55,7 @@ export type BoxData<S extends BoxScheme> = {
   [key in keyof S]: AsType<PickType<S[key]>> | null;
 };
 
-//  BoxModel
+// BoxModel
 export interface BoxModel<S extends BoxScheme> {
   new (initalData?: BoxData<S>): BoxData<S>;
   add: <S>(value: S, key?: IDBValidKey) => Promise<any>;
