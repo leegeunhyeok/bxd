@@ -106,15 +106,13 @@ class BoxDB {
   private _getPreviousModel(baseVersion: number, storeName: string): null | BoxModelMeta {
     const modelVersionIndex = this._modelVersionIndex[storeName];
     if (modelVersionIndex) {
-      // Filter and sort versions (< currentVersion)
-      const orderedIndex = modelVersionIndex
-        .filter((version) => version < baseVersion)
-        .sort((a, b) => a - b);
+      // Filter versions (< currentVersion)
+      const filtedIndex = modelVersionIndex.filter((version) => version < baseVersion);
 
       // Get last version's model metadata
       // or if not exist, returns null
-      if (orderedIndex.length) {
-        const indexedVersion = orderedIndex[orderedIndex.length - 1];
+      if (filtedIndex.length) {
+        const indexedVersion = filtedIndex[filtedIndex.length - 1];
         const previousModel = this._modelVersionMap[indexedVersion][storeName];
 
         // If model was dropped, returns null (need a create new one)
@@ -142,6 +140,7 @@ class BoxDB {
       this._modelVersionIndex[name] = [];
     }
     this._modelVersionIndex[name].push(targetVersion);
+    this._modelVersionIndex[name].sort((a, b) => a - b);
   }
 
   private _isRegistered(targetVersion: number, storeName: string): boolean {
@@ -247,6 +246,12 @@ class BoxDB {
             targetVersion,
             action: BoxModelActionType.DROP,
           };
+
+          // Remove all of previous versions from index (<= targetVersion)
+          this._modelVersionIndex[storeName] = this._modelVersionIndex[storeName]
+            .filter((version) => version > targetVersion)
+            .sort((a, b) => a - b);
+
           return true;
         } else {
           return false;
@@ -407,8 +412,9 @@ class BoxDB {
       /**
        * @static Model's static methods
        */
-      Model.add = (value, key) => this._add(storeName, value, key);
-      Model.get = (key) => this._get(storeName, key);
+      Model.add = <S>(value: S, key) =>
+        this._mustAvailable(Model) && this._add(storeName, value, key);
+      Model.get = (key) => this._mustAvailable(Model) && this._get(storeName, key);
       Model.drop = (targetVersion) => this._drop(targetVersion, storeName);
 
       return Model;
@@ -434,6 +440,29 @@ class BoxDB {
       // Error occurs
       openRequest.onerror = (event) => reject(event);
     });
+  }
+
+  /**
+   * Check about model is available (droped/updated)
+   *
+   * @param targetModel Target model
+   */
+  available<S extends BoxScheme>(targetModel: BoxModel<S>): boolean {
+    const currentStoreIndex = this._modelVersionIndex[targetModel.prototype.__storeName__];
+    return (
+      currentStoreIndex[currentStoreIndex.length - 1] === targetModel.prototype.__targetVersion__
+    );
+  }
+
+  /**
+   * Target model must be available.
+   * If not available, throws exception
+   *
+   * @param targetModel Target model
+   */
+  private _mustAvailable<S extends BoxScheme>(targetModel: BoxModel<S>): true | never {
+    if (!this.available(targetModel)) throw new BoxDBError('This model is not available');
+    return true;
   }
 
   /**
@@ -472,10 +501,10 @@ class BoxDB {
   }
 
   private _drop(targetVersion: number, storeName: string): void {
-    if (!this._ready) {
-      this._unregistModel(targetVersion, storeName);
+    if (this._ready) {
+      throw new BoxDBError('Can not drop model after open()');
     } else {
-      throw new BoxDBError('Can not drop model after opened');
+      this._unregistModel(targetVersion, storeName);
     }
   }
 }
