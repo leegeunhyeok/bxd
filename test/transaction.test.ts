@@ -1,6 +1,5 @@
 import 'fake-indexeddb/auto';
 import BoxDB from '../src/index.es';
-import { BoxModel } from '../src/core/model';
 
 describe('Basic of object store transactions via model', () => {
   // global variable for test
@@ -34,7 +33,7 @@ describe('Basic of object store transactions via model', () => {
     },
   ];
 
-  const box = new BoxDB('test-db', 2);
+  const box = new BoxDB('transaction-db', 2);
   const OldUser = box.model(1)('user', testScheme);
   const User = box.model(2)('user', {
     ...testScheme,
@@ -47,7 +46,11 @@ describe('Basic of object store transactions via model', () => {
 
   test('trying to use old model', async () => {
     expect.assertions(1);
-    await expect(OldUser.get(1)).rejects.toThrow();
+    try {
+      await OldUser.get(1);
+    } catch (e) {
+      expect(e.message).toEqual('This model is not available');
+    }
   });
 
   test('add records', async () => {
