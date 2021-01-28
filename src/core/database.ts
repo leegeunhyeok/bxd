@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Types, BoxScheme, ConfiguredBoxScheme, BoxModel, generateModel } from './model';
 import { BoxDBError } from './errors';
+import getTaskMapper, { TransactionTask } from './task';
 
 export interface BoxOption {
   autoIncrement?: boolean;
@@ -85,15 +86,6 @@ class BoxDB {
 
   private _isPrepared() {
     if (!this._ready) throw new BoxDBError('BoxDB not ready');
-  }
-
-  /**
-   * Get model metadata based on current idb version
-   *
-   * @param storeName object store name
-   */
-  private _getCurrentModel(storeName: string): BoxModelMeta {
-    return this._modelVersionMap[this._version][storeName];
   }
 
   /**
@@ -356,8 +348,7 @@ class BoxDB {
   }
 
   /**
-   * Basic handler for object store transactions
-   *
+   * Basic handler for object store single task
    * - Supports: `add`, `get`, `put`, `delete`, `clear`
    *
    * @param storeName target object store name
@@ -376,10 +367,49 @@ class BoxDB {
     return new Promise((resolve, reject) => {
       const tx = this._idb.transaction(storeName, mode);
       const objectStore = tx.objectStore(storeName);
-      const request = objectStore[action].call(objectStore, ...args);
+      const request = objectStore[action].call(objectStore, ...args) as IDBRequest;
 
-      // On success
-      request.onsuccess = () => resolve(request.result);
+      // On complete
+      tx.oncomplete = () => resolve(request.result);
+
+      // On error
+      tx.onerror = () => reject(new BoxDBError(tx.error.message));
+    });
+  }
+
+  /**
+   * Fulfill multiple tasks on transaction
+   *
+   * @param tasks Transaction tasks
+   */
+  private _taskTransactionHandler(tasks: TransactionTask[]): Promise<void> {
+    this._isPrepared();
+
+    // Get store names from tasks
+    const storeNames = Object.keys(
+      tasks
+        .map((task) => task.storeName)
+        .reduce((set, curr) => {
+          set[curr] = undefined || set;
+          return set;
+        }, {}),
+    );
+
+    return new Promise((resolve, reject) => {
+      // Open transaction
+      const tx = this._idb.transaction(storeNames, 'readwrite');
+
+      // Do each tasks
+      tasks.forEach(({ type, storeName, args }) => {
+        const objectStore = tx.objectStore(storeName);
+        const request = objectStore[type].call(objectStore, ...args) as IDBRequest;
+
+        // Abort transaction if error occurs during task
+        request.onerror = () => tx.abort();
+      });
+
+      // On complete
+      tx.oncomplete = () => resolve();
 
       // On error
       tx.onerror = () => reject(new BoxDBError(tx.error.message));
@@ -406,15 +436,16 @@ class BoxDB {
         throw new BoxDBError(`${storeName} model already registered in version: ${targetVersion}`);
       }
       const Model = generateModel(targetVersion, storeName, scheme);
-      this._registModel(Model, options);
 
       /**
        * @static Model's static methods
        */
-      Model.add = <S>(value: S, key) =>
-        this._mustAvailable(Model) && this._add(storeName, value, key);
+      Model.add = (value, key) => this._mustAvailable(Model) && this._add(storeName, value, key);
       Model.get = (key) => this._mustAvailable(Model) && this._get(storeName, key);
       Model.drop = (targetVersion) => this._drop(targetVersion, storeName);
+      Model.task = getTaskMapper(storeName);
+
+      this._registModel(Model, options);
 
       return Model;
     };
@@ -439,6 +470,10 @@ class BoxDB {
       // Error occurs
       openRequest.onerror = (event) => reject(event);
     });
+  }
+
+  async transaction(tasks: TransactionTask[]): Promise<void> {
+    return this._taskTransactionHandler(tasks);
   }
 
   /**
@@ -499,6 +534,12 @@ class BoxDB {
     ).then((data) => data || null);
   }
 
+  /**
+   * Register drop object store task
+   *
+   * @param targetVersion Target version of object store
+   * @param storeName Object store name to delete
+   */
   private _drop(targetVersion: number, storeName: string): void {
     if (this._ready) {
       throw new BoxDBError('Can not drop model after open()');
