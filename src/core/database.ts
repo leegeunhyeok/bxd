@@ -442,6 +442,7 @@ class BoxDB {
        */
       Model.add = (value, key) => this._mustAvailable(Model) && this._add(storeName, value, key);
       Model.get = (key) => this._mustAvailable(Model) && this._get(storeName, key);
+      Model.put = (value, key) => this._mustAvailable(Model) && this._put(storeName, value, key);
       Model.drop = (targetVersion) => this._drop(targetVersion, storeName);
       Model.task = getTaskMapper(storeName);
 
@@ -473,6 +474,9 @@ class BoxDB {
   }
 
   async transaction(tasks: TransactionTask[]): Promise<void> {
+    if (!tasks.every((task) => task instanceof TransactionTask)) {
+      throw new BoxDBError('transaction() tasks must be TransactionTask instance');
+    }
     return this._taskTransactionHandler(tasks);
   }
 
@@ -503,7 +507,8 @@ class BoxDB {
    * Add new record into target object store
    *
    * @param storeName object store name for open transaction
-   * @param value idb object store keyPath value
+   * @param value object to store
+   * @param key optional key
    */
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   private async _add(storeName: string, value: any, key?: IDBValidKey): Promise<any> {
@@ -532,6 +537,24 @@ class BoxDB {
       'readonly',
       key,
     ).then((data) => data || null);
+  }
+
+  /**
+   * Update record or create new one to target object store
+   *
+   * @param storeName object store name for open transaction
+   * @param value object to store
+   * @param key optional key
+   */
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+  private async _put(storeName: string, value: any, key?: IDBValidKey): Promise<any> {
+    return await this._basicTransactionHandler(
+      storeName,
+      BasicTransactionAction.PUT,
+      'readwrite',
+      value,
+      key,
+    );
   }
 
   /**
