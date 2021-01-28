@@ -401,9 +401,9 @@ class BoxDB {
 
       // Do each tasks
       tasks.forEach((task) => {
-        const { type, storeName, args } = task.valueOf();
+        const { action, storeName, args } = task.valueOf();
         const objectStore = tx.objectStore(storeName);
-        const request = objectStore[type].call(objectStore, ...args) as IDBRequest;
+        const request = objectStore[action].call(objectStore, ...args) as IDBRequest;
 
         // Abort transaction if error occurs during task
         request.onerror = () => tx.abort();

@@ -9,17 +9,17 @@ export enum TaskType {
 export type TaskArguments = any[];
 
 export interface TransactionTaskObject {
-  type: TaskType;
+  action: TaskType;
   storeName: string;
   args: TaskArguments;
 }
 
 export class TransactionTask {
-  constructor(public type: TaskType, public storeName: string, public args: TaskArguments) {}
+  constructor(public action: TaskType, public storeName: string, public args: TaskArguments) {}
 
   valueOf(): TransactionTaskObject {
     return {
-      type: this.type,
+      action: this.action,
       storeName: this.storeName,
       args: this.args,
     };
