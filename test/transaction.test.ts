@@ -67,4 +67,18 @@ describe('Basic of object store transactions via model', () => {
     expect(record1).toEqual(target);
     expect(record2).toBeNull();
   });
+
+  test('do multiple tasks with transaction', async () => {
+    await box.transaction([
+      User.task.add({ id: 5, name: 'unknown', code: -1 }),
+      User.task.add({ id: 6, name: 'critial', code: -99 }),
+      User.task.delete(5),
+    ]);
+
+    const record1 = await User.get(6);
+    const record2 = await User.get(5);
+
+    expect(record1.code).toEqual(-99);
+    expect(record2).toBeNull();
+  });
 });
