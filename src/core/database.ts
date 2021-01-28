@@ -51,6 +51,12 @@ enum BasicTransactionAction {
   CLEAR = 'clear',
 }
 
+type ListenerMap = {
+  [key in BoxDBEvent]: BoxDBEventListener[];
+};
+type BoxDBEvent = 'versionchange' | 'error' | 'abort' | 'close';
+type BoxDBEventListener = (event: Event) => void;
+
 class BoxDB {
   public static Types = Types;
   private _ready = false;
@@ -58,6 +64,12 @@ class BoxDB {
   private _version: number;
   private _modelVersionMap: ModelMap = {};
   private _modelVersionIndex: ModelIndex = {};
+  private _eventListener: ListenerMap = {
+    versionchange: [],
+    error: [],
+    abort: [],
+    close: [],
+  };
   private _idb: IDBDatabase = null;
 
   /**
@@ -469,6 +481,21 @@ class BoxDB {
       openRequest.onsuccess = (event) => {
         this._ready = true;
         this._idb = openRequest.result;
+
+        // Global event listener
+        openRequest.result.onversionchange = (event) => {
+          this._eventListener['versionchange'].forEach((f) => f(event));
+        };
+        openRequest.result.onabort = (event) => {
+          this._eventListener['abort'].forEach((f) => f(event));
+        };
+        openRequest.result.onerror = (event) => {
+          this._eventListener['error'].forEach((f) => f(event));
+        };
+        openRequest.result.onclose = (event) => {
+          this._eventListener['close'].forEach((f) => f(event));
+        };
+
         resolve(event);
       };
 
@@ -479,11 +506,38 @@ class BoxDB {
     });
   }
 
+  /**
+   * Tasks are performed as transactions
+   *
+   * @param tasks Transaction tasks
+   */
   async transaction(tasks: TransactionTask[]): Promise<void> {
     if (!tasks.every((task) => task instanceof TransactionTask)) {
       throw new BoxDBError('transaction() tasks must be TransactionTask instance');
     }
     return this._taskTransactionHandler(tasks);
+  }
+
+  /**
+   * Add idb global event listener
+   *
+   * @param type BoxDBEvent
+   * @param listener
+   */
+  addEventListener(type: BoxDBEvent, listener: BoxDBEventListener): void {
+    this._eventListener[type].push(listener);
+  }
+
+  /**
+   * Remove registed event listener
+   *
+   * @param type BoxDBEvent
+   * @param listener
+   */
+  removeEventListener(type: BoxDBEvent, listener: BoxDBEventListener): void {
+    const listenerIdx = this._eventListener[type].indexOf(listener);
+    if (~listenerIdx) return;
+    this._eventListener[type].splice(listenerIdx, 1);
   }
 
   /**
