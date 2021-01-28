@@ -373,7 +373,7 @@ class BoxDB {
       tx.oncomplete = () => resolve(request.result);
 
       // On error
-      tx.onerror = () => reject(new BoxDBError(tx.error.message));
+      tx.onerror = () => reject(tx.error || request.error);
     });
   }
 
@@ -400,7 +400,8 @@ class BoxDB {
       const tx = this._idb.transaction(storeNames, 'readwrite');
 
       // Do each tasks
-      tasks.forEach(({ type, storeName, args }) => {
+      tasks.forEach((task) => {
+        const { type, storeName, args } = task.valueOf();
         const objectStore = tx.objectStore(storeName);
         const request = objectStore[type].call(objectStore, ...args) as IDBRequest;
 
@@ -408,11 +409,16 @@ class BoxDB {
         request.onerror = () => tx.abort();
       });
 
+      const errorHandler = (event: Event) => {
+        reject(tx.error || (event.target as IDBRequest).error);
+      };
+
       // On complete
       tx.oncomplete = () => resolve();
 
-      // On error
-      tx.onerror = () => reject(new BoxDBError(tx.error.message));
+      // On abord & error
+      tx.onabort = errorHandler;
+      tx.onerror = errorHandler;
     });
   }
 

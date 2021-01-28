@@ -8,10 +8,22 @@ export enum TaskType {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type TaskArguments = any[];
 
-export interface TransactionTask {
+export interface TransactionTaskObject {
   type: TaskType;
   storeName: string;
   args: TaskArguments;
+}
+
+export class TransactionTask {
+  constructor(public type: TaskType, public storeName: string, public args: TaskArguments) {}
+
+  valueOf(): TransactionTaskObject {
+    return {
+      type: this.type,
+      storeName: this.storeName,
+      args: this.args,
+    };
+  }
 }
 
 /**
@@ -21,17 +33,8 @@ export interface TransactionTask {
  * @param storeName
  * @param taskArgs
  */
-export const toTask = (
-  type: TaskType,
-  storeName: string,
-  taskArgs: TaskArguments,
-): TransactionTask => {
-  return {
-    type,
-    storeName,
-    args: taskArgs,
-  };
-};
+export const toTask = (type: TaskType, storeName: string, args: TaskArguments): TransactionTask =>
+  new TransactionTask(type, storeName, args);
 
 /**
  * Returns task mapper
