@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { BoxDBError } from './errors';
 import { Operator } from './operations';
+import { TransactionTask } from './task';
 
 // BoxData based on BoxScheme
 export type BoxData<S extends BoxScheme> = {
@@ -11,12 +12,30 @@ export type BoxData<S extends BoxScheme> = {
 // BoxModel
 export interface BoxModel<S extends BoxScheme> {
   new (initalData?: BoxData<S>): BoxData<S>;
-  add: <S>(value: S, key?: IDBValidKey) => Promise<any>;
-  get: <T>(key: T) => Promise<any>;
-  find: <T>(filter?: BoxModelFilter<S>) => BoxData<S>;
+  add: (value: BoxData<S>, key?: IDBValidKey) => Promise<void>;
+  get: (
+    key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
+  ) => Promise<BoxData<S>>;
+  put: (value: BoxData<S>, key?: IDBValidKey) => Promise<void>;
+  delete(
+    key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
+  ): Promise<void>;
+  find: (filter?: BoxModelFilter<S>) => BoxData<S>;
   drop: (targetVersion: number) => void;
-  getObjectStoreName: () => string;
+  task: BoxTask<S>;
+  name: string;
   prototype: BoxModelPrototype;
+}
+
+export interface BoxTask<S extends BoxScheme> {
+  add: (value: BoxData<S>, key?: IDBValidKey) => TransactionTask;
+  get: (
+    key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
+  ) => TransactionTask;
+  put: (value: BoxData<S>, key?: IDBValidKey) => TransactionTask;
+  delete: (
+    key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
+  ) => TransactionTask;
 }
 
 // BoxModel Prototype
@@ -158,12 +177,16 @@ export const generateModel = <S extends BoxScheme>(
     Object.assign(this, mergeObject(scheme, initalData));
   } as unknown) as BoxModel<S>;
 
+  // Model prototype
   Object.assign(Model.prototype, {
     __targetVersion__: targetVersion,
     __storeName__: storeName,
     __scheme__: scheme,
     __validate: schemeValidator.bind(Model.prototype),
   });
+
+  // Model static fields
+  Object.defineProperty(Model, 'name', { value: storeName });
 
   return Model;
 };
