@@ -24,6 +24,8 @@ export interface TransactionTaskObject {
   args: TaskArguments;
 }
 
+export type FilterFunction = (data: any) => boolean;
+
 /**
  * VO for transaction task
  */
@@ -142,5 +144,55 @@ export default class BoxQuery {
 
   transaction(tasks: TransactionTask[]): Promise<void> {
     return this._taskTransactionHandler(tasks);
+  }
+
+  cursor(
+    transactionType: TransactionType,
+    storeName: string,
+    filter: FilterFunction[],
+  ): Promise<any> {
+    return new Promise((resolve, reject) => {
+      const tx = this._idb.transaction(storeName, 'readonly'); // TODO: From args
+      const objectStore = tx.objectStore(storeName);
+
+      const request = objectStore.openCursor();
+
+      const pass = (value) => (filter.length ? filter.every((f) => f(value)) : true);
+      const res = [];
+
+      request.onsuccess = () => {
+        const cursor = request.result;
+
+        if (cursor) {
+          const value = cursor.value;
+
+          switch (transactionType) {
+            case TransactionType.GET:
+              pass(value) && res.push(value);
+              break;
+
+            case TransactionType.PUT:
+              pass(value) &&
+                cursor.update({
+                  ...value,
+                  // TODO: spread update value
+                });
+              break;
+
+            case TransactionType.DELETE:
+              pass(value) && cursor.delete();
+              break;
+          }
+
+          cursor.continue();
+        }
+      };
+
+      // On complete
+      tx.oncomplete = () => resolve(transactionType === TransactionType.GET ? res : void null);
+
+      // On error
+      tx.onerror = () => reject(tx.error || request.error);
+    });
   }
 }
