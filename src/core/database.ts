@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Types, BoxScheme, ConfiguredBoxScheme, BoxModel, generateModel } from './model';
 import { BoxDBError } from './errors';
-import getTaskMapper, { TransactionTask } from './task';
-
+import BoxQuery, { TransactionMode, TransactionTask, TransactionType } from './query';
 export interface BoxOption {
   autoIncrement?: boolean;
 }
@@ -43,14 +42,6 @@ enum BoxModelActionType {
   UPDATE,
 }
 
-enum BasicTransactionAction {
-  ADD = 'add',
-  GET = 'get',
-  PUT = 'put',
-  DELETE = 'delete',
-  CLEAR = 'clear',
-}
-
 type ListenerMap = {
   [key in BoxDBEvent]: BoxDBEventListener[];
 };
@@ -71,6 +62,7 @@ class BoxDB {
     close: [],
   };
   private _idb: IDBDatabase = null;
+  private _query: BoxQuery = null;
 
   /**
    * @constructor
@@ -360,81 +352,6 @@ class BoxDB {
   }
 
   /**
-   * Basic handler for object store single task
-   * - Supports: `add`, `get`, `put`, `delete`, `clear`
-   *
-   * @param storeName target object store name
-   * @param action object store transaction type
-   * @param mode transaction mode
-   * @param args transaction arguments
-   */
-  private _basicTransactionHandler(
-    storeName: string,
-    action: BasicTransactionAction,
-    mode: IDBTransactionMode,
-    ...args: any[]
-  ): Promise<any> {
-    this._isPrepared();
-
-    return new Promise((resolve, reject) => {
-      const tx = this._idb.transaction(storeName, mode);
-      const objectStore = tx.objectStore(storeName);
-      const request = objectStore[action].call(objectStore, ...args) as IDBRequest;
-
-      // On complete
-      tx.oncomplete = () => resolve(request.result);
-
-      // On error
-      tx.onerror = () => reject(tx.error || request.error);
-    });
-  }
-
-  /**
-   * Fulfill multiple tasks on transaction
-   *
-   * @param tasks Transaction tasks
-   */
-  private _taskTransactionHandler(tasks: TransactionTask[]): Promise<void> {
-    this._isPrepared();
-
-    // Get store names from tasks
-    const storeNames = Object.keys(
-      tasks
-        .map((task) => task.storeName)
-        .reduce((set, curr) => {
-          set[curr] = undefined || set;
-          return set;
-        }, {}),
-    );
-
-    return new Promise((resolve, reject) => {
-      // Open transaction
-      const tx = this._idb.transaction(storeNames, 'readwrite');
-
-      // Do each tasks
-      tasks.forEach((task) => {
-        const { action, storeName, args } = task.valueOf();
-        const objectStore = tx.objectStore(storeName);
-        const request = objectStore[action].call(objectStore, ...args) as IDBRequest;
-
-        // Abort transaction if error occurs during task
-        request.onerror = () => tx.abort();
-      });
-
-      const errorHandler = (event: Event) => {
-        reject(tx.error || (event.target as IDBRequest).error);
-      };
-
-      // On complete
-      tx.oncomplete = () => resolve();
-
-      // On abord & error
-      tx.onabort = errorHandler;
-      tx.onerror = errorHandler;
-    });
-  }
-
-  /**
    * Regist data model for create object store
    *
    * @param targetVersion target idb version
@@ -461,8 +378,25 @@ class BoxDB {
       Model.add = (value, key) => this._mustAvailable(Model) && this._add(storeName, value, key);
       Model.get = (key) => this._mustAvailable(Model) && this._get(storeName, key);
       Model.put = (value, key) => this._mustAvailable(Model) && this._put(storeName, value, key);
+      Model.delete = (key) => this._mustAvailable(Model) && this._delete(storeName, key);
+      // Model.find = (filter) => {
+
+      // }
       Model.drop = (targetVersion) => this._drop(targetVersion, storeName);
-      Model.task = getTaskMapper(storeName);
+      Model.task = {
+        get: (key) =>
+          this._mustAvailable(Model) &&
+          new TransactionTask(TransactionType.GET, storeName, TransactionMode.READ, [key]),
+        add: (value, key) =>
+          this._mustAvailable(Model) &&
+          new TransactionTask(TransactionType.ADD, storeName, TransactionMode.WRITE, [value, key]),
+        put: (value, key) =>
+          this._mustAvailable(Model) &&
+          new TransactionTask(TransactionType.PUT, storeName, TransactionMode.WRITE, [value, key]),
+        delete: (key) =>
+          this._mustAvailable(Model) &&
+          new TransactionTask(TransactionType.DELETE, storeName, TransactionMode.WRITE, [key]),
+      };
 
       this._registModel(Model, options);
 
@@ -481,6 +415,7 @@ class BoxDB {
       openRequest.onsuccess = (event) => {
         this._ready = true;
         this._idb = openRequest.result;
+        this._query = new BoxQuery(this._idb);
 
         // Global event listener
         openRequest.result.onversionchange = (event) => {
@@ -504,18 +439,6 @@ class BoxDB {
       // Error occurs
       openRequest.onerror = (event) => reject(event);
     });
-  }
-
-  /**
-   * Tasks are performed as transactions
-   *
-   * @param tasks Transaction tasks
-   */
-  async transaction(tasks: TransactionTask[]): Promise<void> {
-    if (!tasks.every((task) => task instanceof TransactionTask)) {
-      throw new BoxDBError('transaction() tasks must be TransactionTask instance');
-    }
-    return this._taskTransactionHandler(tasks);
   }
 
   /**
@@ -564,21 +487,26 @@ class BoxDB {
   }
 
   /**
+   * Tasks are performed as transactions
+   *
+   * @param tasks Transaction tasks
+   */
+  async transaction(tasks: TransactionTask[]): Promise<void> {
+    if (!tasks.every((task) => task instanceof TransactionTask)) {
+      throw new BoxDBError('transaction() tasks must be TransactionTask instance');
+    }
+    return this._query.transaction(tasks);
+  }
+
+  /**
    * Add new record into target object store
    *
    * @param storeName object store name for open transaction
    * @param value object to store
    * @param key optional key
    */
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  private async _add(storeName: string, value: any, key?: IDBValidKey): Promise<any> {
-    return await this._basicTransactionHandler(
-      storeName,
-      BasicTransactionAction.ADD,
-      'readwrite',
-      value,
-      key,
-    );
+  private async _add(storeName: string, value: any, key?: IDBValidKey) {
+    return await this._query.add(storeName, value, key);
   }
 
   /**
@@ -589,14 +517,8 @@ class BoxDB {
    * @param storeName object store name for open transaction
    * @param key idb object store keyPath value
    */
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  private async _get(storeName: string, key: any): Promise<any> {
-    return await this._basicTransactionHandler(
-      storeName,
-      BasicTransactionAction.GET,
-      'readonly',
-      key,
-    ).then((data) => data || null);
+  private async _get(storeName: string, key: any) {
+    return await this._query.get(storeName, key).then((data) => data || null);
   }
 
   /**
@@ -606,15 +528,18 @@ class BoxDB {
    * @param value object to store
    * @param key optional key
    */
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  private async _put(storeName: string, value: any, key?: IDBValidKey): Promise<any> {
-    return await this._basicTransactionHandler(
-      storeName,
-      BasicTransactionAction.PUT,
-      'readwrite',
-      value,
-      key,
-    );
+  private async _put(storeName: string, value: any, key?: IDBValidKey) {
+    return await this._query.put(storeName, value, key);
+  }
+
+  /**
+   * Delete data from object store
+   *
+   * @param storeName object store name for open transaction
+   * @param key idb object store keyPath value
+   */
+  private async _delete(storeName: string, key: any) {
+    return await this._query.delete(storeName, key);
   }
 
   /**

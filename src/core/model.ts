@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { BoxDBError } from './errors';
 import { Operator } from './operations';
-import { TransactionTask } from './task';
+import { TransactionTask } from './query';
 
 // BoxData based on BoxScheme
 export type BoxData<S extends BoxScheme> = {
