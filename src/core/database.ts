@@ -1,7 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Types, BoxScheme, ConfiguredBoxScheme, BoxModel, generateModel } from './model';
-import { BoxDBError } from './errors';
+import {
+  Types,
+  BoxScheme,
+  ConfiguredBoxScheme,
+  BoxModel,
+  generateModel,
+  CursorQuery,
+  EvalFunction,
+} from './model';
 import BoxQuery, { TransactionMode, TransactionTask, TransactionType } from './query';
+import { OptionalBoxData } from './model';
+import { BoxDBError } from './errors';
 export interface BoxOption {
   autoIncrement?: boolean;
 }
@@ -379,10 +388,19 @@ class BoxDB {
       Model.get = (key) => this._mustAvailable(Model) && this._get(storeName, key);
       Model.put = (value, key) => this._mustAvailable(Model) && this._put(storeName, value, key);
       Model.delete = (key) => this._mustAvailable(Model) && this._delete(storeName, key);
-      // Model.find = (filter) => {
-
-      // }
       Model.drop = (targetVersion) => this._drop(targetVersion, storeName);
+
+      // Model.find() is get records by cursor
+      Model.find = (filter) => {
+        this._mustAvailable(Model);
+        return {
+          get: () => this._cursor<S>(TransactionType.GET, storeName, filter),
+          update: (value) => this._cursor<S>(TransactionType.PUT, storeName, filter, value),
+          delete: () => this._cursor<S>(TransactionType.DELETE, storeName, filter),
+        };
+      };
+
+      // Tasks for transaction
       Model.task = {
         get: (key) =>
           this._mustAvailable(Model) &&
@@ -483,6 +501,7 @@ class BoxDB {
    */
   private _mustAvailable<S extends BoxScheme>(targetModel: BoxModel<S>): true | never {
     if (!this.available(targetModel)) throw new BoxDBError('This model is not available');
+    this._isPrepared();
     return true;
   }
 
@@ -540,6 +559,21 @@ class BoxDB {
    */
   private async _delete(storeName: string, key: any) {
     return await this._query.delete(storeName, key);
+  }
+
+  private async _cursor<S extends BoxScheme>(
+    transactionType: TransactionType,
+    storeName: string,
+    filter: CursorQuery<S> | EvalFunction<S>[],
+    updateValue?: OptionalBoxData<S>,
+  ) {
+    if (!Array.isArray(filter)) {
+      if (Object.keys(filter).length !== 1) {
+        throw new BoxDBError('cursor query object must be has only one index');
+      }
+    }
+
+    return await this._query.cursor(transactionType, storeName, filter, updateValue);
   }
 
   /**

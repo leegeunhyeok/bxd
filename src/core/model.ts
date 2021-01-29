@@ -1,12 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { BoxDBError } from './errors';
-import { Operator } from './operations';
 import { TransactionTask } from './query';
 
 // BoxData based on BoxScheme
 export type BoxData<S extends BoxScheme> = {
   [key in keyof S]: AsType<PickType<S[key]>> | null;
+};
+
+export type OptionalBoxData<S extends BoxScheme> = {
+  [key in keyof S]?: AsType<PickType<S[key]>> | null;
 };
 
 // BoxModel
@@ -20,11 +22,17 @@ export interface BoxModel<S extends BoxScheme> {
   delete(
     key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
   ): Promise<void>;
-  find: (filter?: BoxModelFilter<S>) => BoxData<S>;
+  find: (filter?: BoxModelFilter<S>) => BoxCursorModel<S>;
   drop: (targetVersion: number) => void;
   task: BoxTask<S>;
   name: string;
   prototype: BoxModelPrototype;
+}
+
+export interface BoxCursorModel<S extends BoxScheme> {
+  get: () => Promise<S[]>;
+  update: (value: any) => Promise<void>;
+  delete: () => Promise<void>;
 }
 
 export interface BoxTask<S extends BoxScheme> {
@@ -47,10 +55,23 @@ export interface BoxModelPrototype {
   readonly __validate: (target: UncheckedData) => boolean;
 }
 
-// Filter type
-export type BoxModelFilter<S extends BoxScheme> = {
-  [key in keyof S]?: Operator;
+export type BoxModelFilter<S extends BoxScheme> = EvalFunction<S>[] | CursorQuery<S>;
+
+export type CursorKey =
+  | string
+  | number
+  | Date
+  | ArrayBufferView
+  | ArrayBuffer
+  | IDBArrayKey
+  | IDBKeyRange;
+
+export type CursorQuery<S extends BoxScheme> = {
+  [key in keyof S]?: CursorKey;
 };
+
+// Filter type
+export type EvalFunction<S extends BoxScheme> = (value: OptionalBoxData<S>) => boolean;
 
 export type ConfiguredType = {
   type: Types;

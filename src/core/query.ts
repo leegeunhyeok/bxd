@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { BoxScheme, CursorKey, CursorQuery, EvalFunction, OptionalBoxData } from './model';
+
 type ObjectStoreKey = any;
 
 type TaskArguments = any[];
@@ -23,8 +25,6 @@ export interface TransactionTaskObject {
   mode: TransactionMode;
   args: TaskArguments;
 }
-
-export type FilterFunction = (data: any) => boolean;
 
 /**
  * VO for transaction task
@@ -146,19 +146,42 @@ export default class BoxQuery {
     return this._taskTransactionHandler(tasks);
   }
 
-  cursor(
+  cursor<S extends BoxScheme>(
     transactionType: TransactionType,
     storeName: string,
-    filter: FilterFunction[],
+    filter: CursorQuery<S> | EvalFunction<S>[],
+    updateValue: OptionalBoxData<S>,
   ): Promise<any> {
+    // Filter function
+    const pass = (value: any) => {
+      if (Array.isArray(filter)) {
+        return filter.every((f) => f(value));
+      } else {
+        return true;
+      }
+    };
+
+    const query: { index: string; value: CursorKey } = {
+      index: null,
+      value: null,
+    };
+
+    if (!Array.isArray(filter)) {
+      query.index = Object.keys(filter)[0];
+      query.value = filter[query.index];
+    }
+
     return new Promise((resolve, reject) => {
       const tx = this._idb.transaction(storeName, 'readonly'); // TODO: From args
       const objectStore = tx.objectStore(storeName);
-
-      const request = objectStore.openCursor();
-
-      const pass = (value) => (filter.length ? filter.every((f) => f(value)) : true);
       const res = [];
+
+      let request: IDBRequest<IDBCursorWithValue> = null;
+      if (query.index) {
+        request = objectStore.index(query.index).openCursor(query.value);
+      } else {
+        request = objectStore.openCursor();
+      }
 
       request.onsuccess = () => {
         const cursor = request.result;
@@ -175,7 +198,7 @@ export default class BoxQuery {
               pass(value) &&
                 cursor.update({
                   ...value,
-                  // TODO: spread update value
+                  ...(updateValue ? updateValue : null),
                 });
               break;
 
