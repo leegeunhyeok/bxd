@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { TransactionTask } from './transaction';
+import { TransactionTask } from './task';
 
 // Available types
 export enum BoxDataTypes {
