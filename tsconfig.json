@@ -7,5 +7,6 @@
     "allowJs": false,
     "sourceMap": false,
     "resolveJsonModule": true
-  }
+  },
+  "exclude": ["node_modules", "test"]
 }
