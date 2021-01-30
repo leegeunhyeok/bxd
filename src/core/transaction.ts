@@ -35,7 +35,10 @@ export default class BoxTransaction {
 
     // Check transaction mode
     const isReadonlyMode = tasks.every(
-      (task) => task.action === TransactionType.GET || task.action === TransactionType.COUNT,
+      (task) =>
+        task.action === TransactionType.GET ||
+        task.action === TransactionType.COUNT ||
+        task.action === TransactionType.CURSOR_GET,
     );
 
     return new Promise((resolve, reject) => {
@@ -61,6 +64,7 @@ export default class BoxTransaction {
             .catch(() => tx.abort());
         } else {
           const request = objectStore[action].call(objectStore, ...args) as IDBRequest;
+          request.onsuccess = () => (res = request.result);
           request.onerror = () => tx.abort();
         }
       });
