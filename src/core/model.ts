@@ -1,124 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { BoxDBError } from './errors';
-import { TransactionTask } from './query';
-
-// BoxData based on BoxScheme
-export type BoxData<S extends BoxScheme> = {
-  [key in keyof S]: AsType<PickType<S[key]>> | null;
-};
-
-export type OptionalBoxData<S extends BoxScheme> = {
-  [key in keyof S]?: AsType<PickType<S[key]>> | null;
-};
-
-// BoxModel
-export interface BoxModel<S extends BoxScheme> {
-  new (initalData?: BoxData<S>): BoxData<S>;
-  add: (value: BoxData<S>, key?: IDBValidKey) => Promise<void>;
-  get: (
-    key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
-  ) => Promise<BoxData<S>>;
-  put: (value: BoxData<S>, key?: IDBValidKey) => Promise<void>;
-  delete(
-    key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
-  ): Promise<void>;
-  find: (filter?: BoxModelFilter<S>) => BoxCursorModel<S>;
-  drop: (targetVersion: number) => void;
-  task: BoxTask<S>;
-  name: string;
-  prototype: BoxModelPrototype;
-}
-
-export interface BoxCursorModel<S extends BoxScheme> {
-  get: () => Promise<S[]>;
-  update: (value: any) => Promise<void>;
-  delete: () => Promise<void>;
-}
-
-export interface BoxTask<S extends BoxScheme> {
-  add: (value: BoxData<S>, key?: IDBValidKey) => TransactionTask;
-  get: (
-    key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
-  ) => TransactionTask;
-  put: (value: BoxData<S>, key?: IDBValidKey) => TransactionTask;
-  delete: (
-    key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
-  ) => TransactionTask;
-}
-
-// BoxModel Prototype
-
-export interface BoxModelPrototype {
-  readonly __targetVersion__: number;
-  readonly __storeName__: string;
-  readonly __scheme__: BoxScheme;
-  readonly __validate: (target: UncheckedData) => boolean;
-}
-
-export type BoxModelFilter<S extends BoxScheme> = EvalFunction<S>[] | CursorQuery<S>;
-
-export type CursorKey =
-  | string
-  | number
-  | Date
-  | ArrayBufferView
-  | ArrayBuffer
-  | IDBArrayKey
-  | IDBKeyRange;
-
-export type CursorQuery<S extends BoxScheme> = {
-  [key in keyof S]?: CursorKey;
-};
-
-// Filter type
-export type EvalFunction<S extends BoxScheme> = (value: OptionalBoxData<S>) => boolean;
-
-export type ConfiguredType = {
-  type: Types;
-  key?: boolean;
-  index?: boolean;
-  unique?: boolean;
-};
-
-export interface BoxScheme {
-  [key: string]: ConfiguredType | Types;
-}
-
-export interface ConfiguredBoxScheme {
-  [key: string]: ConfiguredType;
-}
-
-// Check available types
-export enum Types {
-  BOOLEAN = 'boolean',
-  NUMBER = 'number',
-  STRING = 'string',
-  ARRAY = 'array',
-  OBJECT = 'object',
-  ANY = 'any',
-}
-
-type AsType<T extends Types> = T extends Types.BOOLEAN
-  ? boolean
-  : T extends Types.NUMBER
-  ? number
-  : T extends Types.STRING
-  ? string
-  : T extends Types.ARRAY
-  ? any[]
-  : T extends Types.OBJECT
-  ? // eslint-disable-next-line @typescript-eslint/ban-types
-    object
-  : T extends Types.ANY
-  ? any
-  : never;
-
-type UncheckedData = {
-  [key: string]: any;
-};
-
-// Pick type from type configuration
-type PickType<P> = P extends ConfiguredType ? P['type'] : P extends Types ? P : never;
+import {
+  BoxData,
+  BoxModel,
+  BoxModelPrototype,
+  BoxScheme,
+  BoxDataTypes,
+  UncheckedData,
+} from './types';
 
 /**
  * Check about target value has same type with type identifier
@@ -126,21 +15,21 @@ type PickType<P> = P extends ConfiguredType ? P['type'] : P extends Types ? P : 
  * @param type Type identifier (from enum)
  * @param value Value for check
  */
-const typeValidator = (type: Types, value: any): boolean => {
+const typeValidator = (type: BoxDataTypes, value: any): boolean => {
   const targetPrototype = value.__proto__;
 
   switch (type) {
-    case Types.BOOLEAN:
+    case BoxDataTypes.BOOLEAN:
       return targetPrototype === Boolean.prototype;
-    case Types.NUMBER:
+    case BoxDataTypes.NUMBER:
       return targetPrototype === Number.prototype;
-    case Types.STRING:
+    case BoxDataTypes.STRING:
       return targetPrototype === String.prototype;
-    case Types.ARRAY:
+    case BoxDataTypes.ARRAY:
       return targetPrototype === Array.prototype;
-    case Types.OBJECT:
+    case BoxDataTypes.OBJECT:
       return targetPrototype === Object.prototype;
-    case Types.ANY:
+    case BoxDataTypes.ANY:
       return true; // any
     default:
       return false;

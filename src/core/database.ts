@@ -1,15 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import BoxQuery from './query';
+import { generateModel } from './model';
 import {
-  Types,
   BoxScheme,
-  ConfiguredBoxScheme,
   BoxModel,
-  generateModel,
+  ConfiguredBoxScheme,
+  BoxDataTypes,
   CursorQuery,
   EvalFunction,
-} from './model';
-import BoxQuery, { TransactionMode, TransactionTask, TransactionType } from './query';
-import { OptionalBoxData } from './model';
+  OptionalBoxData,
+} from './types';
+import { TransactionMode, TransactionTask, TransactionType } from './transaction';
 import { BoxDBError } from './errors';
 export interface BoxOption {
   autoIncrement?: boolean;
@@ -57,8 +58,9 @@ type ListenerMap = {
 type BoxDBEvent = 'versionchange' | 'error' | 'abort' | 'close';
 type BoxDBEventListener = (event: Event) => void;
 
+export type BoxDBType = typeof BoxDB;
 class BoxDB {
-  public static Types = Types;
+  public static Types = BoxDataTypes;
   private _ready = false;
   private _databaseName: string;
   private _version: number;
@@ -494,7 +496,7 @@ class BoxDB {
   }
 
   /**
-   * Target model must be available.
+   * Target model must be available. (latest version of model, not dropped)
    * If not available, throws exception
    *
    * @param targetModel Target model
@@ -510,11 +512,12 @@ class BoxDB {
    *
    * @param tasks Transaction tasks
    */
-  async transaction(tasks: TransactionTask[]): Promise<void> {
-    if (!tasks.every((task) => task instanceof TransactionTask)) {
-      throw new BoxDBError('transaction() tasks must be TransactionTask instance');
+  transaction(tasks: TransactionTask[]): Promise<void> {
+    if (tasks.every((task) => task instanceof TransactionTask)) {
+      return this._query.transaction(tasks);
+    } else {
+      throw new BoxDBError('tasks must be TransactionTask instance');
     }
-    return this._query.transaction(tasks);
   }
 
   /**

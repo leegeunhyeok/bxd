@@ -6,9 +6,9 @@ export {
   BoxModelPrototype,
   BoxData,
   BoxModelFilter,
+  BoxDataTypes,
   ConfiguredType,
-  Types,
-} from './core/model';
+} from './core/types';
 export { BoxOption, BoxModelRegister } from './core/database';
 
 export default BoxDB;
