@@ -396,17 +396,15 @@ class BoxDB {
       Model.find = (filter) => {
         this._mustAvailable(Model);
         return {
-          get: () => this._cursor<S>(TransactionType.GET, storeName, filter),
-          update: (value) => this._cursor<S>(TransactionType.PUT, storeName, filter, value),
-          delete: () => this._cursor<S>(TransactionType.DELETE, storeName, filter),
+          get: () => this._cursor<S>(TransactionType.CURSOR_GET, storeName, filter),
+          update: (value) =>
+            this._cursor<S>(TransactionType.CURSOR_UPDATE, storeName, filter, value),
+          delete: () => this._cursor<S>(TransactionType.CURSOR_DELETE, storeName, filter),
         };
       };
 
       // Tasks for transaction
       Model.task = {
-        get: (key) =>
-          this._mustAvailable(Model) &&
-          new TransactionTask(TransactionType.GET, storeName, TransactionMode.READ, [key]),
         add: (value, key) =>
           this._mustAvailable(Model) &&
           new TransactionTask(TransactionType.ADD, storeName, TransactionMode.WRITE, [value, key]),
@@ -416,6 +414,20 @@ class BoxDB {
         delete: (key) =>
           this._mustAvailable(Model) &&
           new TransactionTask(TransactionType.DELETE, storeName, TransactionMode.WRITE, [key]),
+        find: (filter) => {
+          this._mustAvailable(Model);
+          return {
+            update: (value) =>
+              new TransactionTask(TransactionType.CURSOR_UPDATE, storeName, TransactionMode.WRITE, [
+                filter,
+                value,
+              ]),
+            delete: () =>
+              new TransactionTask(TransactionType.CURSOR_DELETE, storeName, TransactionMode.WRITE, [
+                filter,
+              ]),
+          };
+        },
       };
 
       this._registModel(Model, options);

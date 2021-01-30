@@ -51,23 +51,27 @@ export interface BoxModel<S extends BoxScheme> {
   prototype: BoxModelPrototype;
 }
 
-// BoxModel.find = (args) => BoxCursorModel
+// BoxModel.task = BoxTask
+export interface BoxTask<S extends BoxScheme> {
+  add: (value: BoxData<S>, key?: IDBValidKey) => TransactionTask;
+  put: (value: BoxData<S>, key?: IDBValidKey) => TransactionTask;
+  delete: (
+    key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
+  ) => TransactionTask;
+  find: (filter?: BoxModelFilter<S>) => BoxTaskCursorModel;
+}
+
+// BoxModel.find = () => BoxCursorModel
 export interface BoxCursorModel<S extends BoxScheme> {
   get: () => Promise<S[]>;
   update: (value: any) => Promise<void>;
   delete: () => Promise<void>;
 }
 
-// BoxModel.task = BoxTask
-export interface BoxTask<S extends BoxScheme> {
-  add: (value: BoxData<S>, key?: IDBValidKey) => TransactionTask;
-  get: (
-    key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
-  ) => TransactionTask;
-  put: (value: BoxData<S>, key?: IDBValidKey) => TransactionTask;
-  delete: (
-    key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
-  ) => TransactionTask;
+// BoxModel.task.find = () => BoxTaskCursorModel
+export interface BoxTaskCursorModel {
+  update: (value: any) => TransactionTask;
+  delete: () => TransactionTask;
 }
 
 // BoxModel Prototype
@@ -97,6 +101,11 @@ export type CursorQuery<S extends BoxScheme> = {
 
 // Filter function
 export type EvalFunction<S extends BoxScheme> = (value: OptionalBoxData<S>) => boolean;
+
+export interface CursorOptions<S extends BoxScheme> {
+  filter?: CursorQuery<S> | EvalFunction<S>[];
+  updateValue?: OptionalBoxData<S>;
+}
 
 // type with other options (configured)
 export type ConfiguredType = {
