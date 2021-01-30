@@ -419,12 +419,14 @@ class BoxDB {
           return {
             update: (value) =>
               new TransactionTask(TransactionType.CURSOR_UPDATE, storeName, TransactionMode.WRITE, [
-                filter,
-                value,
+                {
+                  filter,
+                  updateValue: value,
+                },
               ]),
             delete: () =>
               new TransactionTask(TransactionType.CURSOR_DELETE, storeName, TransactionMode.WRITE, [
-                filter,
+                { filter },
               ]),
           };
         },

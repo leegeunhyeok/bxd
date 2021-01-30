@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-type TaskArguments = any[];
+export type TaskArguments = any[];
 
 export enum TransactionMode {
   READ = 'readonly',
@@ -14,6 +14,9 @@ export enum TransactionType {
   DELETE = 'delete',
   CLEAR = 'clear',
   COUNT = 'count',
+  CURSOR_GET = 'cursor_get',
+  CURSOR_UPDATE = 'cursor_update',
+  CURSOR_DELETE = 'cursor_delete',
 }
 
 export interface TransactionTaskObject {
