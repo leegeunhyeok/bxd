@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import BoxQuery from './query';
 import { generateModel } from './model';
+import BoxTransaction from './transaction';
+import { TransactionMode, TransactionTask, TransactionType } from './task';
+import { BoxDBError } from './errors';
 import {
   BoxScheme,
   BoxModel,
@@ -10,8 +12,7 @@ import {
   EvalFunction,
   OptionalBoxData,
 } from './types';
-import { TransactionMode, TransactionTask, TransactionType } from './transaction';
-import { BoxDBError } from './errors';
+
 export interface BoxOption {
   autoIncrement?: boolean;
 }
@@ -73,7 +74,7 @@ class BoxDB {
     close: [],
   };
   private _idb: IDBDatabase = null;
-  private _query: BoxQuery = null;
+  private _tx: BoxTransaction = null;
 
   /**
    * @constructor
@@ -449,7 +450,7 @@ class BoxDB {
       openRequest.onsuccess = (event) => {
         this._ready = true;
         this._idb = openRequest.result;
-        this._query = new BoxQuery(this._idb);
+        this._tx = new BoxTransaction(this._idb);
 
         // Global event listener
         openRequest.result.onversionchange = (event) => {
@@ -528,7 +529,7 @@ class BoxDB {
    */
   transaction(tasks: TransactionTask[]): Promise<void> {
     if (tasks.every((task) => task instanceof TransactionTask)) {
-      return this._query.transaction(tasks);
+      return this._tx.transaction(tasks);
     } else {
       throw new BoxDBError('tasks must be TransactionTask instance');
     }
@@ -541,8 +542,8 @@ class BoxDB {
    * @param value object to store
    * @param key optional key
    */
-  private async _add(storeName: string, value: any, key?: IDBValidKey) {
-    return await this._query.add(storeName, value, key);
+  private _add(storeName: string, value: any, key?: IDBValidKey) {
+    return this._tx.add(storeName, value, key);
   }
 
   /**
@@ -553,8 +554,8 @@ class BoxDB {
    * @param storeName object store name for open transaction
    * @param key idb object store keyPath value
    */
-  private async _get(storeName: string, key: any) {
-    return await this._query.get(storeName, key).then((data) => data || null);
+  private _get(storeName: string, key: any) {
+    return this._tx.get(storeName, key).then((data) => data || null);
   }
 
   /**
@@ -564,8 +565,8 @@ class BoxDB {
    * @param value object to store
    * @param key optional key
    */
-  private async _put(storeName: string, value: any, key?: IDBValidKey) {
-    return await this._query.put(storeName, value, key);
+  private _put(storeName: string, value: any, key?: IDBValidKey) {
+    return this._tx.put(storeName, value, key);
   }
 
   /**
@@ -574,11 +575,11 @@ class BoxDB {
    * @param storeName object store name for open transaction
    * @param key idb object store keyPath value
    */
-  private async _delete(storeName: string, key: any) {
-    return await this._query.delete(storeName, key);
+  private _delete(storeName: string, key: any) {
+    return this._tx.delete(storeName, key);
   }
 
-  private async _cursor<S extends BoxScheme>(
+  private _cursor<S extends BoxScheme>(
     transactionType: TransactionType,
     storeName: string,
     filter: CursorQuery<S> | EvalFunction<S>[],
@@ -590,7 +591,7 @@ class BoxDB {
       }
     }
 
-    return await this._query.cursor(transactionType, storeName, filter, updateValue);
+    return this._tx.cursor(transactionType, storeName, filter, updateValue);
   }
 
   /**

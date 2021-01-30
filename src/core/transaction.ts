@@ -1,48 +1,202 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { TransactionTask, TransactionType, TransactionMode } from './task';
+import {
+  BoxScheme,
+  OptionalBoxData,
+  CursorKey,
+  CursorQuery,
+  EvalFunction,
+  CursorOptions,
+} from './types';
 
-export type TaskArguments = any[];
+type ObjectStoreKey = any;
 
-export enum TransactionMode {
-  READ = 'readonly',
-  WRITE = 'readwrite',
-}
+export default class BoxTransaction {
+  constructor(private _idb: IDBDatabase) {}
 
-export enum TransactionType {
-  ADD = 'add',
-  GET = 'get',
-  PUT = 'put',
-  DELETE = 'delete',
-  CLEAR = 'clear',
-  COUNT = 'count',
-  CURSOR_GET = 'cursor_get',
-  CURSOR_UPDATE = 'cursor_update',
-  CURSOR_DELETE = 'cursor_delete',
-}
+  /**
+   * Fulfill multiple tasks on transaction
+   *
+   * @param tasks Transaction tasks
+   */
+  private _taskTransactionHandler(tasks: TransactionTask[]): Promise<any> {
+    const needResponse = tasks.length === 1 && tasks[0].action === TransactionType.GET;
+    let res = null;
 
-export interface TransactionTaskObject {
-  action: TransactionType;
-  storeName: string;
-  mode: TransactionMode;
-  args: TaskArguments;
-}
+    // Get store names from tasks
+    const storeNames = Object.keys(
+      tasks
+        .map((task) => task.storeName)
+        .reduce((set, curr) => {
+          set[curr] = undefined; // Add key into object
+          return set;
+        }, {}),
+    );
 
-/**
- * VO for transaction task
- */
-export class TransactionTask {
-  constructor(
-    public action: TransactionType,
-    public storeName: string,
-    public mode: TransactionMode,
-    public args: TaskArguments,
-  ) {}
+    // Check transaction mode
+    const isReadonlyMode = tasks.every(
+      (task) => task.action === TransactionType.GET || task.action === TransactionType.COUNT,
+    );
 
-  valueOf(): TransactionTaskObject {
-    return {
-      action: this.action,
-      storeName: this.storeName,
-      mode: this.mode,
-      args: this.args,
+    return new Promise((resolve, reject) => {
+      // Open transaction
+      const tx = this._idb.transaction(
+        storeNames,
+        isReadonlyMode ? TransactionMode.READ : TransactionMode.WRITE,
+      );
+
+      // Do each tasks
+      tasks.forEach((task) => {
+        const { action, storeName, args } = task.valueOf();
+        const objectStore = tx.objectStore(storeName);
+
+        // abort transaction if error occurs during task
+        if (
+          action === TransactionType.CURSOR_GET ||
+          action === TransactionType.CURSOR_UPDATE ||
+          action === TransactionType.CURSOR_DELETE
+        ) {
+          this._cursorTaskHelper(objectStore, task)
+            .then((records) => (res = records))
+            .catch(() => tx.abort());
+        } else {
+          const request = objectStore[action].call(objectStore, ...args) as IDBRequest;
+          request.onerror = () => tx.abort();
+        }
+      });
+
+      const errorHandler = (event: Event) => {
+        reject(tx.error || (event.target as IDBRequest).error);
+      };
+
+      // On complete
+      tx.oncomplete = () => resolve(needResponse ? res : undefined);
+
+      // On abord & error
+      tx.onabort = errorHandler;
+      tx.onerror = errorHandler;
+    });
+  }
+
+  /**
+   * Handling cursor task with helpers
+   *
+   * @param objectStore Target object store object
+   * @param task Current task
+   */
+  private _cursorTaskHelper(objectStore: IDBObjectStore, task: TransactionTask): Promise<any[]> {
+    const options = (task.args as unknown) as CursorOptions<any>;
+    const filter = options.filter || null;
+    const updateValue = options.updateValue;
+    const res = [];
+
+    // Filter function
+    const pass = (value: any) => {
+      if (Array.isArray(filter)) {
+        return filter.every((f) => f(value));
+      } else {
+        return true;
+      }
     };
+
+    const query: { index: string; value: CursorKey } = {
+      index: null,
+      value: null,
+    };
+
+    if (!Array.isArray(filter)) {
+      query.index = Object.keys(filter)[0];
+      query.value = filter[query.index];
+    }
+
+    let request: IDBRequest<IDBCursorWithValue> = null;
+    if (query.index) {
+      request = objectStore.index(query.index).openCursor(query.value);
+    } else {
+      request = objectStore.openCursor();
+    }
+
+    return new Promise((resolve, reject) => {
+      const cursorTaskRequestHandler = (request: IDBRequest) => {
+        request.onerror = () => reject();
+      };
+
+      request.onsuccess = () => {
+        const cursor = request.result;
+
+        if (cursor) {
+          const value = cursor.value;
+
+          switch (task.action) {
+            case TransactionType.CURSOR_GET:
+              pass(value) && res.push(value);
+              break;
+
+            case TransactionType.CURSOR_UPDATE:
+              pass(value) &&
+                cursorTaskRequestHandler(
+                  cursor.update({
+                    ...value,
+                    ...(updateValue ? updateValue : null),
+                  }),
+                );
+              break;
+
+            case TransactionType.CURSOR_DELETE:
+              pass(value) && cursorTaskRequestHandler(cursor.delete());
+              break;
+          }
+
+          cursor.continue();
+        } else {
+          resolve(res);
+        }
+      };
+    });
+  }
+
+  get(storeName: string, key: ObjectStoreKey): Promise<any> {
+    return this._taskTransactionHandler([
+      new TransactionTask(TransactionType.GET, storeName, TransactionMode.READ, [key]),
+    ]);
+  }
+
+  add(storeName: string, value: ObjectStoreKey, key?: IDBValidKey): Promise<void> {
+    return this._taskTransactionHandler([
+      new TransactionTask(TransactionType.ADD, storeName, TransactionMode.WRITE, [value, key]),
+    ]);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+  put(storeName: string, value: any, key?: IDBValidKey): Promise<void> {
+    return this._taskTransactionHandler([
+      new TransactionTask(TransactionType.PUT, storeName, TransactionMode.WRITE, [value, key]),
+    ]);
+  }
+
+  delete(storeName: string, key: ObjectStoreKey): Promise<void> {
+    return this._taskTransactionHandler([
+      new TransactionTask(TransactionType.DELETE, storeName, TransactionMode.WRITE, [key]),
+    ]);
+  }
+
+  transaction(tasks: TransactionTask[]): Promise<void> {
+    return this._taskTransactionHandler(tasks);
+  }
+
+  cursor<S extends BoxScheme>(
+    transactionType: TransactionType,
+    storeName: string,
+    filter: CursorQuery<S> | EvalFunction<S>[],
+    updateValue: OptionalBoxData<S>,
+  ): Promise<any> {
+    return this.transaction([
+      new TransactionTask(
+        transactionType,
+        storeName,
+        transactionType === TransactionType.GET ? TransactionMode.READ : TransactionMode.WRITE,
+        [{ filter, updateValue }],
+      ),
+    ]);
   }
 }
