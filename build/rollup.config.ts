@@ -33,12 +33,12 @@ export default [
       {
         name: 'BoxDB',
         file: 'dist/bxd.js',
-        format: 'umd',
+        format: 'iife',
       },
       {
         name: 'BoxDB',
         file: 'dist/bxd.min.js',
-        format: 'umd',
+        format: 'iife',
         plugins: [terser()],
       },
     ],
@@ -50,19 +50,15 @@ export default [
           [
             '@babel/preset-env',
             {
-              targets: '> 0.5%, ie >= 11',
+              targets: '> 0.5%, ie >= 10',
               modules: false,
-              spec: true,
               useBuiltIns: 'usage',
-              forceAllTransforms: true,
-              corejs: {
-                version: 3,
-                proposals: false,
-              },
+              corejs: 3,
             },
           ],
           '@babel/preset-typescript',
         ],
+        exclude: [/\/core-js\//],
       }),
     ],
   },
