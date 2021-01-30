@@ -81,4 +81,20 @@ describe('Basic of object store transactions via model', () => {
     expect(record1.code).toEqual(-99);
     expect(record2).toBeNull();
   });
+
+  test('in transaction', async () => {
+    try {
+      await box.transaction([
+        User.task.put({ id: 6, name: 'critial', code: -999 }), // before code: -99
+        User.task.add({ id: 7, name: 'empty', code: 0 }),
+        User.task.add({ id: 7, name: 'empty 2', code: 1 }), // id 7 already exist
+      ]);
+    } catch (e) {
+      // Empty
+    }
+
+    // Transaction failed. (will be rollback to before transaction)
+    const record = await User.get(6);
+    expect(record.code).toBe(-99);
+  });
 });

@@ -1,6 +1,6 @@
 import 'fake-indexeddb/auto';
 import BoxDB from '../src/index.es';
-import { BoxModel } from '../src/core/model';
+import { BoxModel } from '../src/core/types';
 
 describe('Basic of BoxDB', () => {
   // global variable for test
@@ -16,7 +16,8 @@ describe('Basic of BoxDB', () => {
     age: BoxDB.Types.NUMBER,
   };
   let box: BoxDB = null;
-  let User: BoxModel<typeof testScheme> = null;
+  let OldUser: BoxModel<typeof testScheme> = null;
+  let User = null;
 
   test('create instance', () => {
     const name = 'test-db';
@@ -32,15 +33,15 @@ describe('Basic of BoxDB', () => {
     // Register new model
     const targetVersion = 1;
     const storeName = 'user';
-    User = box.model(targetVersion)(storeName, testScheme);
+    OldUser = box.model(targetVersion)(storeName, testScheme);
 
     // Check basic
-    expect(User.prototype.__storeName__).toBe(storeName);
-    expect(User.prototype.__targetVersion__).toBe(targetVersion);
+    expect(OldUser.prototype.__storeName__).toBe(storeName);
+    expect(OldUser.prototype.__targetVersion__).toBe(targetVersion);
 
     // Check scheme
     expect(() => {
-      const modelScheme = Object.keys(User.prototype.__scheme__);
+      const modelScheme = Object.keys(OldUser.prototype.__scheme__);
       return Object.keys(testScheme).every((field) => !!~modelScheme.indexOf(field));
     }).toBeTruthy();
   });
@@ -48,7 +49,7 @@ describe('Basic of BoxDB', () => {
   test('model data validator', () => {
     // Correct scheme
     expect(
-      User.prototype.__validate({
+      OldUser.prototype.__validate({
         id: 1,
         name: 'Tom',
         age: 10,
@@ -57,7 +58,7 @@ describe('Basic of BoxDB', () => {
 
     // Wrong scheme
     expect(
-      User.prototype.__validate({
+      OldUser.prototype.__validate({
         id: 'string',
         name: 100,
         age: 'string',
@@ -75,13 +76,13 @@ describe('Basic of BoxDB', () => {
       };
 
       // Test data 1 (basic)
-      const user1 = new User();
+      const user1 = new OldUser();
       user1.id = test.id;
       user1.name = test.name;
       user1.age = test.age;
 
       // Test data 2 (with inital value)
-      const user2 = new User({
+      const user2 = new OldUser({
         id: test.id,
         name: test.name,
         age: test.age,
