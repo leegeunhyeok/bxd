@@ -453,16 +453,16 @@ class BoxDB {
         this._tx = new BoxTransaction(this._idb);
 
         // Global event listener
-        openRequest.result.onversionchange = (event) => {
+        this._idb.onversionchange = (event) => {
           this._eventListener['versionchange'].forEach((f) => f(event));
         };
-        openRequest.result.onabort = (event) => {
+        this._idb.onabort = (event) => {
           this._eventListener['abort'].forEach((f) => f(event));
         };
-        openRequest.result.onerror = (event) => {
+        this._idb.onerror = (event) => {
           this._eventListener['error'].forEach((f) => f(event));
         };
-        openRequest.result.onclose = (event) => {
+        this._idb.onclose = (event) => {
           this._eventListener['close'].forEach((f) => f(event));
         };
 
