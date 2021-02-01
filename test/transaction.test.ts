@@ -100,7 +100,7 @@ describe('Basic of object store transactions via model', () => {
   });
 
   test('do multiple tasks with transaction', async () => {
-    await box.transaction([
+    const emptyRes = await box.transaction([
       User.task.add({ id: 5, name: 'unknown', code: -1 }),
       User.task.add({ id: 6, name: 'critial', code: -99 }),
       User.task.delete(5),
@@ -109,11 +109,12 @@ describe('Basic of object store transactions via model', () => {
     const record1 = await User.get(6);
     const record2 = await User.get(5);
 
+    expect(emptyRes).toBeUndefined();
     expect(record1.code).toEqual(-99);
     expect(record2).toBeNull();
   });
 
-  test('in transaction', async () => {
+  test('handling errors in transaction', async () => {
     try {
       await box.transaction([
         User.task.put({ id: 6, name: 'critial', code: -999 }), // before code: -99
@@ -125,6 +126,22 @@ describe('Basic of object store transactions via model', () => {
     }
 
     // Transaction failed. (will be rollback to before transaction)
+    const record = await User.get(6);
+    expect(record.code).toBe(-99);
+  });
+
+  test('handling transaction aborts', async () => {
+    try {
+      await box.transaction([
+        User.task.put({ id: 6, name: 'critial', code: -999 }), // before code: -99
+        BoxDB.interrupt(),
+        User.task.add({ id: 7, name: 'empty', code: 0 }),
+      ]);
+    } catch (e) {
+      // Empty
+    }
+
+    // Transaction aborted. (will be rollback to before transaction)
     const record = await User.get(6);
     expect(record.code).toBe(-99);
   });
