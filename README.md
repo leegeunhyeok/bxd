@@ -62,19 +62,27 @@ BoxDB.Types;
 BoxDB.Types.BOOLEAN;
 BoxDB.Types.NUMBER;
 BoxDB.Types.STRING;
+BoxDB.Types.DATE;
 BoxDB.Types.ARRAY;
 BoxDB.Types.OBJECT;
+BoxDB.Types.REGEXP;
+BoxDB.Types.FILE;
+BoxDB.Types.BLOB;
 BoxDB.Types.ANY;
 ```
 
 Properties
 
-- **Types.BOOLEAN**: for [Boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean) value
-- **Types.NUMBER**: for [Number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number) value
-- **Types.STRING**: for [String](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String) value
-- **Types.ARRAY**: for [Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array) value
-- **Types.OBJECT**: for [Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object) value
-- **Types.ANY**: for _any_ value (No type checking)
+- **BOOLEAN**: for [Boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean) value
+- **NUMBER**: for [Number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number) value
+- **STRING**: for [String](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String) value
+- **DATE**: for [Date](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date) value
+- **ARRAY**: for [Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array) value
+- **OBJECT**: for [Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object) value
+- **REGEXP**: for [RegExp](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp) value
+- **FILE**: for [File](https://developer.mozilla.org/en-US/docs/Web/API/File) value
+- **BLOB**: for [Blob](https://developer.mozilla.org/en-US/docs/Web/API/Blob) value
+- **ANY**: for _any_ value (No type checking)
 
 ### BoxDB.model()
 
@@ -141,17 +149,21 @@ interface BoxScheme {
 }
 
 // BoxDB.Types
-enum Types {
+export enum BoxDataTypes {
   BOOLEAN = 'boolean',
   NUMBER = 'number',
   STRING = 'string',
+  DATE = 'date',
   ARRAY = 'array',
   OBJECT = 'object',
+  REGEXP = 'regexp',
+  FILE = 'file',
+  BLOB = 'blob',
   ANY = 'any',
 }
 
 type ConfiguredType = {
-  type: Types;
+  type: BoxDataTypes;
   key?: boolean;
   index?: boolean;
   unique?: boolean;
@@ -170,6 +182,19 @@ const scheme = {
 };
 ```
 
+Options
+
+- **type**: `BoxDataTypes`
+  - Type of this property (used by type checking)
+- **key**: `boolean`
+  - Set this property as [out-of-line key](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API/Basic_Concepts_Behind_IndexedDB#gloss_outofline_key)
+- **index**: `boolean`
+  - Create index for this property
+  - If you want search this property values by index, must set true
+- **unique**: `boolean`
+  - `index` option required
+  - Add [unique constraint](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/createIndex#parameters) to this property's index
+
 ### BoxOption
 
 > Object store options object
@@ -179,6 +204,9 @@ interface BoxOption {
   autoIncrement?: boolean;
 }
 ```
+
+- **autoIncrement**: `boolean`
+  - Use [in-line key](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API/Basic_Concepts_Behind_IndexedDB#gloss_inline_key) for this object store
 
 ### BoxModel
 
@@ -201,41 +229,63 @@ const User = box.model(1)('user', {
 // Model as constructor
 new User();
 
-// Model methods for data transactions
-User.get();
-User.find();
-User.put();
+// Model methods for single transactions
+User.get(key);
+User.put(value, key);
 User.delete();
+User.clear();
 User.drop();
+User.find(filters).get();
+User.find(filters).update(value);
+User.find(filters).delete();
+
+// Returns TransactionTask for BoxDB.transaction()
+User.task.get(key);
+User.task.put(key, value);
+User.task.delete();
+User.task.find(filters).update(value);
+User.task.find(filters).delete();
 ```
 
-Properties
+Parameters
 
 - **storeName**: `string`
   - Name of the object store
-- **scheme**: `BoxScheme`
+- **scheme**: [BoxScheme](#BoxScheme)
   - Data scheme of the data to store
 - **options**: `BoxOptions`
   - Object store options
 
+Properties
+
+- **Model.task**: `BoxTask`
+  - A set of methods that return `TransactionTask`
+
+Static methods
+
+- Model.get(key): Get record from object store
+- Model.put(value[, key]): Put record to object store
+- Model.delete(key): Delete record from object store
+- Model.clear(key): Clear all records from object store
+- Model.drop(key): Drop the object store
+- Model.find([, filters]): Returns `BoxCursorModel`, Transaction by [cursor](https://developer.mozilla.org/en-US/docs/Web/API/IDBCursor)
+  - find().get(): Get all of records
+  - find().update(value): Update records
+  - find().delete(): Delete records
+
 ## Usage
 
 - Create `BoxDB` instance.
-- Model and scheme management.
-  - Create
-  - Update
-    - Index (add, remove)
-    - Fields (add, remove)
-  - Drop
-- Open idb via `BoxDB.open()`
-  - **WARNING**: Can not create/update/drop model after opened
-- Do transaction task via Models!
+- Define object store and data scheme as model
+- `BoxDB.open()` to open IDB
+  - **WARNING**: Can not create/update/drop model after `BoxDB.open()`
+- Do transactions task via Models!
 
 ### Prepare a database
 
 ```javascript
 // 1. Create new BoxDB instance
-const box = new BoxDB('board', 1);
+const box = new BoxDB('bank', 1);
 ```
 
 ### Create models
@@ -251,21 +301,24 @@ const User = box.model(1)('user', {
     type: BoxDB.Types.STRING,
     index: true,
   },
-  email: BoxDB.Types.STRING,
+  amount: BoxDB.Types.NUMBER,
 });
 
-const Post = box.model(1)('post', {
-  _id: {
-    type: BoxDB.Types.NUMBER,
-    key: true,
+const History = box.model(1)(
+  'history',
+  {
+    fromUser: {
+      type: BoxDB.Types.STRING,
+      index: true,
+    },
+    toUser: {
+      type: BoxDB.Types.STRING,
+      index: true,
+    },
+    datetime: BoxDB.Types.DATE,
   },
-  title: {
-    type: BoxDB.Types.STRING,
-    index: true,
-  },
-  content: BoxDB.Types.STRING,
-  like: BoxDB.Types.NUMBER,
-});
+  { autoIncrement: true },
+);
 ```
 
 ### Apply all registred models into IDB
@@ -283,18 +336,25 @@ await box.open(); // will create registered `user`, `post` object store
 const user1 = new User();
 user1._id = 1;
 user1.name = 'Emma';
-user1.email = 'emma1234@host.com';
+user1.amount = 150;
 
 // Method 2. Create data with initial value
 const user2 = new User({
   _id: 2,
   name: 'Tom',
-  email: 'tom1234@host.com',
+  amount: 50,
+});
+
+const user3 = new User({
+  _id: 3,
+  name: 'Unknown',
+  amount: 0,
 });
 
 // Save data into `user` object store
 await User.add(user1);
 await User.add(user2);
+await User.add(user3);
 ```
 
 - Read
@@ -303,7 +363,7 @@ await User.add(user2);
 // Find data with a keyPath value of 1
 const result = await User.get(1);
 
-result; // { _id: 1, name: 'Emma', email: 'emma1234@host.com' }
+result; // { _id: 1, name: 'Emma', amount: 150 }
 ```
 
 - Update
@@ -321,8 +381,51 @@ await User.put({
 - Delete
 
 ```javascript
-// Delete data with a keyPath value of 2 (`name: Tom` will be deleted)
-await User.delete(2);
+// Delete data with a keyPath value of 3 (unknown user will be deleted)
+await User.delete(3);
+```
+
+- Transaction
+
+```javascript
+// Situation: Jessica sends $30 to Tom
+const fromUser = await User.get(1); // Jessica
+const toUser = await User.get(2); // Tom
+const transactionAmount = 30;
+
+// Resolve when all of tasks is done
+// If any of the tasks fail, the transaction is aborted.
+await box.transaction([
+  User.task.put({
+    ...fromUser,
+    amount: fromUser.amount - transactionAmount,
+  }),
+  User.task.put({
+    ...toUser,
+    amount: toUser.amount + transactionAmount,
+  }),
+  History.task.add({
+    fromUser: fromUser._id,
+    toUser: toUser._id,
+    datetime: new Date(),
+  }),
+]);
+
+// Jessica: $120, Tom: $80
+```
+
+- Abort transaction
+
+```javascript
+await box.transaction([
+  AnyTask_1,
+  AnyTask_2,
+  BoxDB.interrupt(), // This transaction will be aborted
+  AnyTask_3,
+]);
+
+// AnyTask_1, AnyTask_2, AnyTask_3 task not applied
+// Rollback to before transaction
 ```
 
 ## Development
