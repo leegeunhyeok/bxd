@@ -131,7 +131,6 @@ export default class BoxTransaction {
 
         if (cursor) {
           const value = cursor.value;
-          console.log(value, filter[0], pass(value));
 
           switch (task.action) {
             case TransactionType.CURSOR_GET:
