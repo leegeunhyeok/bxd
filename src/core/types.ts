@@ -6,8 +6,12 @@ export enum BoxDataTypes {
   BOOLEAN = 'boolean',
   NUMBER = 'number',
   STRING = 'string',
+  DATE = 'date',
   ARRAY = 'array',
   OBJECT = 'object',
+  REGEXP = 'regexp',
+  FILE = 'file',
+  BLOB = 'blob',
   ANY = 'any',
 }
 
@@ -126,11 +130,19 @@ type AsType<T extends BoxDataTypes> = T extends BoxDataTypes.BOOLEAN
   ? number
   : T extends BoxDataTypes.STRING
   ? string
+  : T extends BoxDataTypes.DATE
+  ? Date
   : T extends BoxDataTypes.ARRAY
   ? any[]
   : T extends BoxDataTypes.OBJECT
   ? // eslint-disable-next-line @typescript-eslint/ban-types
     object
+  : T extends BoxDataTypes.REGEXP
+  ? RegExp
+  : T extends BoxDataTypes.FILE
+  ? File
+  : T extends BoxDataTypes.BLOB
+  ? Blob
   : T extends BoxDataTypes.ANY
   ? any
   : never;
