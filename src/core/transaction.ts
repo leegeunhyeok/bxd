@@ -71,6 +71,7 @@ export default class BoxTransaction {
           objectStore = tx.objectStore(storeName);
           this._cursorTaskHelper(objectStore, task).then((records) => (res = records));
         } else {
+          // get, add, put, delete, clear
           objectStore = tx.objectStore(storeName);
           const request = objectStore[action].call(objectStore, ...args) as IDBRequest;
           request.onsuccess = () => (res = request.result);
@@ -191,6 +192,12 @@ export default class BoxTransaction {
   delete(storeName: string, key: ObjectStoreKey): Promise<void> {
     return this._taskTransactionHandler([
       new TransactionTask(TransactionType.DELETE, storeName, TransactionMode.WRITE, [key]),
+    ]);
+  }
+
+  clear(storeName: string): Promise<void> {
+    return this._taskTransactionHandler([
+      new TransactionTask(TransactionType.CLEAR, storeName, TransactionMode.WRITE, []),
     ]);
   }
 

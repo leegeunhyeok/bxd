@@ -402,6 +402,7 @@ class BoxDB {
       Model.get = (key) => this._mustAvailable(Model) && this._get(storeName, key);
       Model.put = (value, key) => this._mustAvailable(Model) && this._put(storeName, value, key);
       Model.delete = (key) => this._mustAvailable(Model) && this._delete(storeName, key);
+      Model.clear = () => this._mustAvailable(Model) && this._clear(storeName);
       Model.drop = (targetVersion) => this._drop(targetVersion, storeName);
 
       // Model.find() is get records by cursor
@@ -588,6 +589,10 @@ class BoxDB {
    */
   private _delete(storeName: string, key: any) {
     return this._tx.delete(storeName, key);
+  }
+
+  private _clear(storeName: string) {
+    return this._tx.clear(storeName);
   }
 
   private _cursor<S extends BoxScheme>(

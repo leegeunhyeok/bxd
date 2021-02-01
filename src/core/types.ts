@@ -45,6 +45,7 @@ export interface BoxModel<S extends BoxScheme> {
     key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
   ): Promise<void>;
   find: (filter?: BoxModelFilter<S>) => BoxCursorModel<S>;
+  clear: () => Promise<void>;
   drop: (targetVersion: number) => void;
   task: BoxTask<S>;
   name: string;
@@ -63,7 +64,7 @@ export interface BoxTask<S extends BoxScheme> {
 
 // BoxModel.find = () => BoxCursorModel
 export interface BoxCursorModel<S extends BoxScheme> {
-  get: () => Promise<S[]>;
+  get: () => Promise<BoxData<S>[]>;
   update: (value: OptionalBoxData<S>) => Promise<void>;
   delete: () => Promise<void>;
 }

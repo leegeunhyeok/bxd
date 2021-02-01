@@ -145,4 +145,10 @@ describe('Basic of object store transactions via model', () => {
     const record = await User.get(6);
     expect(record.code).toBe(-99);
   });
+
+  test('clear all records from object store', async () => {
+    await User.clear();
+    const records = await User.find().get();
+    expect(records.length).toBe(0);
+  });
 });
