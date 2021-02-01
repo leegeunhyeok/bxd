@@ -56,7 +56,6 @@ export default class BoxTransaction {
       tasks.forEach((task) => {
         const { action, storeName, args } = task.valueOf();
         let objectStore: IDBObjectStore = null;
-        let error: Error = null;
 
         if (action === TransactionType.NONE) {
           // do nothing
@@ -88,9 +87,8 @@ export default class BoxTransaction {
       // On complete
       tx.oncomplete = () => resolve(needResponse ? res : undefined);
 
-      // On error or abort
+      // On error / abort event will bubbled to idb
       tx.onerror = errorHandler;
-      tx.onabort = errorHandler;
     });
   }
 
