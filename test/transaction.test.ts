@@ -68,6 +68,11 @@ describe('Basic of object store transactions via model', () => {
     expect(record2).toBeNull();
   });
 
+  test('get records by cursor', async () => {
+    const users = await User.find([(value) => value.code > 300]).get();
+    console.log(users);
+  });
+
   test('do multiple tasks with transaction', async () => {
     await box.transaction([
       User.task.add({ id: 5, name: 'unknown', code: -1 }),
@@ -87,7 +92,7 @@ describe('Basic of object store transactions via model', () => {
       await box.transaction([
         User.task.put({ id: 6, name: 'critial', code: -999 }), // before code: -99
         User.task.add({ id: 7, name: 'empty', code: 0 }),
-        User.task.add({ id: 7, name: 'empty 2', code: 1 }), // id 7 already exist
+        User.task.add({ id: 7, name: 'empty 2', code: 1 }), // ConstraintError: id 7 already exist
       ]);
     } catch (e) {
       // Empty

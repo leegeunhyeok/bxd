@@ -66,7 +66,10 @@ export default class BoxTransaction {
         } else {
           const request = objectStore[action].call(objectStore, ...args) as IDBRequest;
           request.onsuccess = () => (res = request.result);
-          request.onerror = () => tx.abort();
+          request.onerror = (event) => {
+            event.preventDefault();
+            tx.abort();
+          };
         }
       });
 
@@ -77,8 +80,7 @@ export default class BoxTransaction {
       // On complete
       tx.oncomplete = () => resolve(needResponse ? res : undefined);
 
-      // On abord & error
-      tx.onabort = errorHandler;
+      // On error
       tx.onerror = errorHandler;
     });
   }
@@ -123,7 +125,10 @@ export default class BoxTransaction {
 
     return new Promise((resolve, reject) => {
       const cursorTaskRequestHandler = (request: IDBRequest) => {
-        request.onerror = () => reject();
+        request.onerror = (event) => {
+          event.preventDefault();
+          reject();
+        };
       };
 
       request.onsuccess = () => {
