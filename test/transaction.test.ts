@@ -31,6 +31,11 @@ describe('Basic of object store transactions via model', () => {
       name: 'Third',
       code: 404,
     },
+    {
+      id: 4,
+      name: '???',
+      code: -1,
+    },
   ];
 
   const box = new BoxDB('transaction-db', 2);
@@ -69,8 +74,29 @@ describe('Basic of object store transactions via model', () => {
   });
 
   test('get records by cursor', async () => {
-    const users = await User.find([(value) => value.code > 300]).get();
-    console.log(users);
+    const users = await User.find([
+      (value) => value.code > 300,
+      (value) => !~value.name.indexOf('ird'),
+    ]).get();
+
+    expect(users.length).toEqual(1);
+  });
+
+  test('update records by cursor', async () => {
+    const newName = 'success';
+    await User.find([(value) => value.id === 1]).update({
+      name: newName,
+    });
+
+    const user = await User.get(1);
+    expect(user.name).toEqual(newName);
+  });
+
+  test('delete records by cursor', async () => {
+    await User.find([(value) => value.code < 0]).delete();
+
+    const user = await User.get(4);
+    expect(user).toBeNull();
   });
 
   test('do multiple tasks with transaction', async () => {

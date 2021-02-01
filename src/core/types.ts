@@ -64,7 +64,7 @@ export interface BoxTask<S extends BoxScheme> {
 // BoxModel.find = () => BoxCursorModel
 export interface BoxCursorModel<S extends BoxScheme> {
   get: () => Promise<S[]>;
-  update: (value: any) => Promise<void>;
+  update: (value: OptionalBoxData<S>) => Promise<void>;
   delete: () => Promise<void>;
 }
 
