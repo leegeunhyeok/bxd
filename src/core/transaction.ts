@@ -28,6 +28,7 @@ export default class BoxTransaction {
     const storeNames = Object.keys(
       tasks
         .map((task) => task.storeName)
+        .filter((name) => name)
         .reduce((set, curr) => {
           set[curr] = undefined; // Add key into object
           return set;
@@ -48,40 +49,48 @@ export default class BoxTransaction {
         storeNames,
         isReadonlyMode ? TransactionMode.READ : TransactionMode.WRITE,
       );
+      let rejected = false;
 
       // Do each tasks
+      // abort transaction if error occurs during task
       tasks.forEach((task) => {
         const { action, storeName, args } = task.valueOf();
-        const objectStore = tx.objectStore(storeName);
+        let objectStore: IDBObjectStore = null;
+        let error: Error = null;
 
-        // abort transaction if error occurs during task
-        if (
+        if (action === TransactionType.NONE) {
+          // do nothing
+          return;
+        } else if (action === TransactionType.INTERRUPT) {
+          // interrupt manually
+          tx.abort();
+        } else if (
           action === TransactionType.CURSOR_GET ||
           action === TransactionType.CURSOR_UPDATE ||
           action === TransactionType.CURSOR_DELETE
         ) {
-          this._cursorTaskHelper(objectStore, task)
-            .then((records) => (res = records))
-            .catch(() => tx.abort());
+          objectStore = tx.objectStore(storeName);
+          this._cursorTaskHelper(objectStore, task).then((records) => (res = records));
         } else {
+          objectStore = tx.objectStore(storeName);
           const request = objectStore[action].call(objectStore, ...args) as IDBRequest;
           request.onsuccess = () => (res = request.result);
-          request.onerror = (event) => {
-            event.preventDefault();
-            tx.abort();
-          };
         }
       });
 
       const errorHandler = (event: Event) => {
-        reject(tx.error || (event.target as IDBRequest).error);
+        if (!rejected) {
+          rejected = true;
+          reject(tx.error || (event.target as IDBRequest).error);
+        }
       };
 
       // On complete
       tx.oncomplete = () => resolve(needResponse ? res : undefined);
 
-      // On error
+      // On error or abort
       tx.onerror = errorHandler;
+      tx.onabort = errorHandler;
     });
   }
 
@@ -125,10 +134,7 @@ export default class BoxTransaction {
 
     return new Promise((resolve, reject) => {
       const cursorTaskRequestHandler = (request: IDBRequest) => {
-        request.onerror = (event) => {
-          event.preventDefault();
-          reject();
-        };
+        request.onerror = (event) => reject(event);
       };
 
       request.onsuccess = () => {

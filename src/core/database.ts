@@ -364,6 +364,17 @@ class BoxDB {
   }
 
   /**
+   * Returns interrupt transaction task
+   *
+   * @param doInterrupt Do interrupt flag (default: true)
+   */
+  static interrupt(doInterrupt = true): TransactionTask {
+    const transactionType =
+      doInterrupt || doInterrupt === undefined ? TransactionType.INTERRUPT : TransactionType.NONE;
+    return new TransactionTask(transactionType, '', TransactionMode.READ, []);
+  }
+
+  /**
    * Regist data model for create object store
    *
    * @param targetVersion target idb version

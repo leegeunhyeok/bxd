@@ -17,6 +17,8 @@ export enum TransactionType {
   CURSOR_GET = 'cursor_get',
   CURSOR_UPDATE = 'cursor_update',
   CURSOR_DELETE = 'cursor_delete',
+  INTERRUPT = 'interrupt',
+  NONE = 'none',
 }
 
 export interface TransactionTaskObject {
