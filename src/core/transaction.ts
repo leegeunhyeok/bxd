@@ -20,7 +20,8 @@ export default class BoxTransaction {
    * @param tasks Transaction tasks
    */
   private _taskTransactionHandler(tasks: TransactionTask[]): Promise<any> {
-    const needResponse = tasks.length === 1 && tasks[0].action === TransactionType.GET;
+    const needResponse =
+      (tasks.length === 1 && tasks[0].action === TransactionType.GET) || TransactionType.CURSOR_GET;
     let res = null;
 
     // Get store names from tasks
@@ -89,7 +90,7 @@ export default class BoxTransaction {
    * @param task Current task
    */
   private _cursorTaskHelper(objectStore: IDBObjectStore, task: TransactionTask): Promise<any[]> {
-    const options = (task.args as unknown) as CursorOptions<any>;
+    const options = (task.args[0] || ({} as unknown)) as CursorOptions<any>;
     const filter = options.filter || null;
     const updateValue = options.updateValue;
     const res = [];
@@ -108,7 +109,7 @@ export default class BoxTransaction {
       value: null,
     };
 
-    if (!Array.isArray(filter)) {
+    if (filter && !Array.isArray(filter)) {
       query.index = Object.keys(filter)[0];
       query.value = filter[query.index];
     }
@@ -130,6 +131,7 @@ export default class BoxTransaction {
 
         if (cursor) {
           const value = cursor.value;
+          console.log(value, filter[0], pass(value));
 
           switch (task.action) {
             case TransactionType.CURSOR_GET:

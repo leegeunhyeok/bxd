@@ -529,7 +529,7 @@ class BoxDB {
    */
   transaction(tasks: TransactionTask[]): Promise<void> {
     if (tasks.every((task) => task instanceof TransactionTask)) {
-      return this._tx.transaction(tasks);
+      return this._tx.transaction(tasks).then(() => void 0);
     } else {
       throw new BoxDBError('tasks must be TransactionTask instance');
     }
@@ -582,10 +582,10 @@ class BoxDB {
   private _cursor<S extends BoxScheme>(
     transactionType: TransactionType,
     storeName: string,
-    filter: CursorQuery<S> | EvalFunction<S>[],
+    filter?: CursorQuery<S> | EvalFunction<S>[],
     updateValue?: OptionalBoxData<S>,
   ) {
-    if (!Array.isArray(filter)) {
+    if (filter && !Array.isArray(filter)) {
       if (Object.keys(filter).length !== 1) {
         throw new BoxDBError('cursor query object must be has only one index');
       }
