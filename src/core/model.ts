@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { BoxDBError } from './errors';
 import {
   BoxData,
@@ -15,7 +14,7 @@ import {
  * @param type Type identifier (from enum)
  * @param value Value for check
  */
-const typeValidator = (type: BoxDataTypes, value: any): boolean => {
+const typeValidator = (type: BoxDataTypes, value: UncheckedData): boolean => {
   const targetPrototype = value.__proto__;
 
   switch (type) {
@@ -59,11 +58,21 @@ const schemeValidator = function (this: BoxModelPrototype, target: UncheckedData
   );
 };
 
+/**
+ * Merge object to base object
+ *
+ * @param baseObject
+ * @param targetObject
+ */
 const mergeObject = <T>(baseObject: T, targetObject?: T): T => {
   Object.keys(baseObject).forEach((k) => {
     baseObject[k] = (targetObject && targetObject[k]) || null;
   });
   return baseObject;
+};
+
+const setPrototype = <T>(prototype: T, key: keyof T, value: T[keyof T], readonly: boolean) => {
+  Object.defineProperty(prototype, key, { value, writable: !readonly });
 };
 
 /**
@@ -88,15 +97,20 @@ export const generateModel = <S extends BoxScheme>(
   } as unknown) as BoxModel<S>;
 
   // Model prototype
-  Object.assign(Model.prototype, {
-    __targetVersion__: targetVersion,
-    __storeName__: storeName,
-    __scheme__: scheme,
-    __validate: schemeValidator.bind(Model.prototype),
-  });
+  setPrototype<BoxModelPrototype>(Model.prototype, '__targetVersion__', targetVersion, true);
+  setPrototype<BoxModelPrototype>(Model.prototype, '__storeName__', storeName, true);
+  setPrototype<BoxModelPrototype>(Model.prototype, '__available__', false, false);
+  setPrototype<BoxModelPrototype>(Model.prototype, '__scheme__', scheme, true);
+  setPrototype<BoxModelPrototype>(
+    Model.prototype,
+    '__validate',
+    schemeValidator.bind(Model.prototype),
+    true,
+  );
 
   // Model static fields
   Object.defineProperty(Model, 'name', { value: storeName });
+  Object.defineProperty(Model, 'version', { value: targetVersion });
 
   return Model;
 };

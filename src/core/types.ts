@@ -39,6 +39,8 @@ export type UncheckedData = {
 
 // BoxModel
 export interface BoxModel<S extends BoxScheme> {
+  readonly name: string;
+  readonly version: number;
   new (initalData?: BoxData<S>): BoxData<S>;
   add: (value: BoxData<S>, key?: IDBValidKey) => Promise<void>;
   get: (
@@ -52,7 +54,6 @@ export interface BoxModel<S extends BoxScheme> {
   clear: () => Promise<void>;
   drop: (targetVersion: number) => void;
   task: BoxTask<S>;
-  name: string;
   prototype: BoxModelPrototype;
 }
 

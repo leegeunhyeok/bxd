@@ -524,14 +524,13 @@ class BoxDB {
   }
 
   /**
-   * Target model must be available. (latest version of model, not dropped)
+   * Target model must be available.
    * If not available, throws exception
    *
    * @param targetModel Target model
    */
   private _mustAvailable<S extends BoxScheme>(targetModel: BoxModel<S>): true | never {
-    if (!this._available(targetModel)) throw new BoxDBError('This model is not available');
-    this._isPrepared();
+    if (!targetModel.prototype.__available__) throw new BoxDBError('This model is not available');
     return true;
   }
 
@@ -642,6 +641,7 @@ class BoxDB {
         this._preparedModel.forEach((model) => {
           Object.defineProperty(model.prototype, '__available__', {
             value: this._available(model),
+            writable: false,
           });
         });
         this._preparedModel = [];
