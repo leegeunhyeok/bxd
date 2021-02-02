@@ -14,14 +14,14 @@ const modelArgs = {
   },
 };
 
-describe('checking about model basic methods', () => {
+describe('checking about model basic features', () => {
   test('create model and prototype check', () => {
     const TestModel = generateModel(modelArgs.targetVersion, modelArgs.storeName, modelArgs.scheme);
-    expect(TestModel.prototype.__targetVersion__).toBe(modelArgs.targetVersion);
-    expect(TestModel.prototype.__storeName__).toBe(modelArgs.storeName);
+    expect(TestModel.version).toBe(modelArgs.targetVersion);
+    expect(TestModel.name).toBe(modelArgs.storeName);
   });
 
-  test('model data validation test', () => {
+  test('model data validation', () => {
     const TestModel = generateModel(modelArgs.targetVersion, modelArgs.storeName, modelArgs.scheme);
 
     expect(() => {
