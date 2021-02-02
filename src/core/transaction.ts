@@ -2,6 +2,7 @@
 import { TransactionTask, TransactionType, TransactionMode } from './task';
 import {
   BoxScheme,
+  BoxData,
   OptionalBoxData,
   CursorKey,
   CursorQuery,
@@ -170,20 +171,24 @@ export default class BoxTransaction {
     });
   }
 
-  get(storeName: string, key: ObjectStoreKey): Promise<any> {
+  get<S extends BoxScheme>(storeName: string, key: ObjectStoreKey): Promise<BoxData<S>> {
     return this._taskTransactionHandler([
       new TransactionTask(TransactionType.GET, storeName, TransactionMode.READ, [key]),
     ]);
   }
 
-  add(storeName: string, value: ObjectStoreKey, key?: IDBValidKey): Promise<void> {
+  add<S extends BoxScheme>(storeName: string, value: BoxData<S>, key?: IDBValidKey): Promise<void> {
     return this._taskTransactionHandler([
       new TransactionTask(TransactionType.ADD, storeName, TransactionMode.WRITE, [value, key]),
     ]);
   }
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  put(storeName: string, value: any, key?: IDBValidKey): Promise<void> {
+  put<S extends BoxScheme>(
+    storeName: string,
+    value: OptionalBoxData<S>,
+    key?: IDBValidKey,
+  ): Promise<void> {
     return this._taskTransactionHandler([
       new TransactionTask(TransactionType.PUT, storeName, TransactionMode.WRITE, [value, key]),
     ]);
@@ -201,16 +206,16 @@ export default class BoxTransaction {
     ]);
   }
 
-  transaction(tasks: TransactionTask[]): Promise<void> {
+  transaction(tasks: TransactionTask[]): Promise<any> {
     return this._taskTransactionHandler(tasks);
   }
 
-  cursor<S extends BoxScheme>(
+  cursor<T extends TransactionType, S extends BoxScheme>(
     transactionType: TransactionType,
     storeName: string,
     filter: CursorQuery<S> | EvalFunction<S>[],
     updateValue: OptionalBoxData<S>,
-  ): Promise<any> {
+  ): Promise<T extends TransactionType.CURSOR_GET ? BoxData<S>[] : void> {
     return this.transaction([
       new TransactionTask(
         transactionType,

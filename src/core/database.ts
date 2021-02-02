@@ -454,10 +454,27 @@ class BoxDB {
     // Model.find() is get records by cursor
     Model.find = (filter) => {
       this._mustAvailable(Model);
+
       return {
-        get: () => this._cursor<S>(TransactionType.CURSOR_GET, storeName, filter),
-        update: (value) => this._cursor<S>(TransactionType.CURSOR_UPDATE, storeName, filter, value),
-        delete: () => this._cursor<S>(TransactionType.CURSOR_DELETE, storeName, filter),
+        get: () =>
+          this._cursor<typeof TransactionType.CURSOR_GET, S>(
+            TransactionType.CURSOR_GET,
+            storeName,
+            filter,
+          ),
+        update: (value) =>
+          this._cursor<typeof TransactionType.CURSOR_UPDATE, S>(
+            TransactionType.CURSOR_UPDATE,
+            storeName,
+            filter,
+            value,
+          ),
+        delete: () =>
+          this._cursor<typeof TransactionType.CURSOR_DELETE, S>(
+            TransactionType.CURSOR_DELETE,
+            storeName,
+            filter,
+          ),
       };
     };
 
@@ -537,8 +554,8 @@ class BoxDB {
    * @param storeName object store name for open transaction
    * @param key idb object store keyPath value
    */
-  private _get(storeName: string, key: any) {
-    return this._tx.get(storeName, key).then((data) => data || null);
+  private _get<S extends BoxScheme>(storeName: string, key: any) {
+    return this._tx.get<S>(storeName, key).then((data) => data || null);
   }
 
   /**
@@ -566,7 +583,7 @@ class BoxDB {
     return this._tx.clear(storeName);
   }
 
-  private _cursor<S extends BoxScheme>(
+  private _cursor<T extends TransactionType, S extends BoxScheme>(
     transactionType: TransactionType,
     storeName: string,
     filter?: CursorQuery<S> | EvalFunction<S>[],
@@ -578,7 +595,7 @@ class BoxDB {
       }
     }
 
-    return this._tx.cursor(transactionType, storeName, filter, updateValue);
+    return this._tx.cursor<T, S>(transactionType, storeName, filter, updateValue);
   }
 
   /**
