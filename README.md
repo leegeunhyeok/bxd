@@ -4,17 +4,67 @@
 
 <img src="logo.png" width="250">
 
-Object relation mapping for IndexedDB
+Object relation mapping for [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API)
 
 </div>
 
-## Features
+## Table of Contents
 
-- [x] Define model for structured data
-- [x] Control object store via Model
-- [x] Database and model version management
-- [x] Data scheme and type validation
-- [x] Fully TypeScript support
+- [Features](#features)
+- [Browser Support](#browser-support)
+- [Installation](#installation)
+- [Documentation](#documentation)
+  - [BoxDB](#boxdb)
+    - [BoxDB.Types](#boxdb.types) (Static)
+    - [BoxDB.interrupt](#boxdb.interrupt) (Static)
+    - [BoxDB.addEventListener(type, listener)](#boxdb.addeventlistener)
+    - [BoxDB.removeEventListener(type, listener)](#boxdb.removeeventlistener)
+    - [BoxDB.model(targetVersion)](#boxdb.model)
+    - [BoxDB.open()](#boxdb.open)
+    - [BoxDB.transaction](#box.transaction)
+  - [BoxModelRegister()](#boxmodelregister)
+  - [BoxScheme](#boxscheme)
+  - [BoxOption](#boxoption)
+  - [BoxModel](#boxmodel)
+    - [BoxModel.add(value[, key])](#boxmodel.add)
+    - [BoxModel.get(key)](#boxmodel.get)
+    - [BoxModel.put(value[, key])](#boxmodel.put)
+    - [BoxModel.delete(key)](#boxmodel.delete)
+    - [BoxModel.find([filter])](#boxmodel.find)
+    - [BoxModel.clear()](#boxmodel.clear)
+    - [BoxModel.drop()](#boxmodel.drop)
+  - [BoxData](#boxdata)
+  - [BoxTask](#boxtask)
+    - [BoxTask.add(value[, key])](#boxtask.add)
+    - [BoxTask.put(value[, key])](#boxtask.put)
+    - [BoxTask.delete(key)](#boxtask.delete)
+    - [BoxTask.find(value[, key])](#boxtask.find)
+  - [BoxCursorModel](#boxcursormodel)
+    - [BoxCursorModel.get()](#boxcursormodel.get)
+    - [BoxCursorModel.update(value)](#boxcursormodel.update)
+    - [BoxCursorModel.delete()](#boxcursormodel.delete)
+  - [BoxTaskCursorModel](#boxtaskcursormodel)
+    - [BoxTaskCursorModel.update()](#boxtaskcursormodel.update)
+    - [BoxTaskCursorModel.delete()](#boxtaskcursormodel.delete)
+- [Example](#example)
+  - [Basic](#basic)
+  - [Version management](#version-management)
+  - [Transaction](#transaction)
+- [Development](#development)
+- [Resources](#resources)
+- [License](#license)
+
+### Features
+
+- [x] Easy to use
+- [x] Database and object store version management
+- [x] Data transactions and data validation with model
+- [x] ACID(Atomicity, Consistency, Isolation, Durability) guaranteed with transaction
+- [x] Supports TypeScript
+
+### Browser Support
+
+> WIP..
 
 ### Installation
 
@@ -28,11 +78,11 @@ In browser:
 <script src="/path/to/bxd.js"></script>
 ```
 
-## Documentation
+### Documentation
 
-### BoxDB
+#### BoxDB
 
-> BoxDB class
+> The BoxDB class for IndexedDB and object stores management
 
 ```javascript
 const box = new BoxDB(databaseName, version);
@@ -45,13 +95,26 @@ Parameters
 - **version**: `number`
   - Version to open the database with
 
-Return value
+Properties
 
-- `void`
+- [BoxDB.Types](#boxdb.types) (Static)
+- **databaseName**: `string`
+  - Database name
+- **version**: `number`
+  - Database version
+- **ready**: `boolean`
+  - Database ready status
 
-More: [MDN](https://developer.mozilla.org/en-US/docs/Web/API/IDBFactory/open#parameters)
+Methods
 
-### BoxDB.Types
+- [BoxDB.interrupt](#boxdb.interrupt) (Static)
+- [addEventListener()](#boxdb.addeventlistener)
+- [removeEventListener()](#boxdb.removeeventlistener)
+- [model()](#boxdb.model)
+- [open()](#boxdb.open)
+- [transaction()](#boxdb.transaction)
+
+##### BoxDB.Types
 
 > The BoxDB.Types is constant value to specify model data type
 
@@ -73,18 +136,30 @@ BoxDB.Types.ANY;
 
 Properties
 
-- **BOOLEAN**: for [Boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean) value
-- **NUMBER**: for [Number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number) value
-- **STRING**: for [String](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String) value
-- **DATE**: for [Date](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date) value
-- **ARRAY**: for [Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array) value
-- **OBJECT**: for [Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object) value
-- **REGEXP**: for [RegExp](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp) value
-- **FILE**: for [File](https://developer.mozilla.org/en-US/docs/Web/API/File) value
-- **BLOB**: for [Blob](https://developer.mozilla.org/en-US/docs/Web/API/Blob) value
-- **ANY**: for _any_ value (No type checking)
+- **BoxDB.Types.BOOLEAN**: for [Boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean) value
+- **BoxDB.Types.NUMBER**: for [Number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number) value
+- **BoxDB.Types.STRING**: for [String](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String) value
+- **BoxDB.Types.DATE**: for [Date](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date) value
+- **BoxDB.Types.ARRAY**: for [Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array) value
+- **BoxDB.Types.OBJECT**: for [Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object) value
+- **BoxDB.Types.REGEXP**: for [RegExp](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp) value
+- **BoxDB.Types.FILE**: for [File](https://developer.mozilla.org/en-US/docs/Web/API/File) value
+- **BoxDB.Types.BLOB**: for [Blob](https://developer.mozilla.org/en-US/docs/Web/API/Blob) value
+- **BoxDB.Types.ANY**: for _any_ value (No type checking)
 
-### BoxDB.model()
+##### BoxDB.interrupt()
+
+> WIP...
+
+##### BoxDB.addEventListener()
+
+> WIP...
+
+##### BoxDB.removeEventListener()
+
+> WIP...
+
+##### BoxDB.model()
 
 > The model() method of the BoxDB interface first step of define new model
 
@@ -99,11 +174,11 @@ Parameters
 
 Return value
 
-- [BoxModelRegister](#boxmodelregister)
+- **[BoxModelRegister](#boxmodelregister)**
 
-### BoxDB.open()
+##### BoxDB.open()
 
-> The open() method of the BoxDB interface open idb and create/update/delete object store based on registered models
+> The `open()` method of the BoxDB interface open idb and create/update/delete object store based on registered models
 
 ```javascript
 box.open();
@@ -111,18 +186,22 @@ box.open();
 
 Return value
 
-- `Promise<Event>`
+- **Promise<[Event](https://developer.mozilla.org/en-us/docs/Web/API/Event)>**
 
-### BoxModelRegister()
+##### BoxDB.transaction()
 
-> Define and create new model
+> WIP...
+
+#### BoxModelRegister()
+
+> The `BoxModelRegister` returns new model based on target version and scheme and options
 
 ```javascript
-const v1ModelRegister = box.model(1); // targetVersion
-const User = v1ModelRegister(storeName, scheme[, options]);
+const modelRegister = box.model(1);
+const Model = modelRegister(storeName, scheme[, option]);
 
 // also can use like this (function chaining)
-const User = box.model(1)(storeName, scheme[, options]);
+const Model = box.model(1)(storeName, scheme[, options]);
 ```
 
 Parameters
@@ -131,21 +210,20 @@ Parameters
   - Name of the object store
 - **scheme**: [BoxScheme](#BoxScheme)
   - Data scheme of the data to store
-- **options**: [BoxOption](#BoxOption)
+- **options**: [BoxOption](#BoxOption) (Optional)
   - Object store options
 
 Return value
 
-- [BoxModel](#BoxModel)
-  - Model object
+- **[BoxModel](#boxmodel)**
 
-### BoxScheme
+#### BoxScheme
 
-> Object for model scheme definition
+> The `BoxScheme` is definition object for field name and data type and key/index options mapping
 
 ```typescript
 interface BoxScheme {
-  [key: string]: ConfiguredType | Types;
+  [field: string]: ConfiguredType | BoxDataTypes;
 }
 
 // BoxDB.Types
@@ -173,31 +251,35 @@ type ConfiguredType = {
 ```javascript
 // Example
 const scheme = {
+  // Method 1. Define in detail
   name: {
     type: BoxDB.Types.STRING,
     index: true,
     unique: true,
   },
+  // Method 2. Only type (No key, No index)
   age: BoxDB.Types.NUMBER,
 };
 ```
 
 Options
 
-- **type**: `BoxDataTypes`
+- **type**: [BoxDB.Types](#boxdb.types)
   - Type of this property (used by type checking)
-- **key**: `boolean`
+- **key**: `boolean` (Optional)
   - Set this property as [out-of-line key](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API/Basic_Concepts_Behind_IndexedDB#gloss_outofline_key)
-- **index**: `boolean`
-  - Create index for this property
-  - If you want search this property values by index, must set true
-- **unique**: `boolean`
-  - `index` option required
+  - Can not change out-of-line key after versions of this model
+    - **_If you want change, create new model after drop_**
+- **index**: `boolean` (Optional)
+  - [Create](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/createIndex) or [delete](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/deleteIndex) index for this property
+  - If you want search this property values by index, must enable
+- **unique**: `boolean` (Optional)
   - Add [unique constraint](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/createIndex#parameters) to this property's index
+    - **_`index` option required_**
 
-### BoxOption
+#### BoxOption
 
-> Object store options object
+> Object store options
 
 ```typescript
 interface BoxOption {
@@ -207,10 +289,11 @@ interface BoxOption {
 
 - **autoIncrement**: `boolean`
   - Use [in-line key](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API/Basic_Concepts_Behind_IndexedDB#gloss_inline_key) for this object store
+  - For [autoIncrement](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/autoIncrement) flag
 
-### BoxModel
+#### BoxModel
 
-> The Box Model object can be control specified object store or use as value
+> The BoxModel object can be control specified object store or use as value
 
 ```javascript
 const User = box.model(1)('user', {
@@ -251,18 +334,18 @@ Parameters
 
 - **storeName**: `string`
   - Name of the object store
-- **scheme**: [BoxScheme](#BoxScheme)
+- **scheme**: [BoxScheme](#boxscheme)
   - Data scheme of the data to store
-- **options**: `BoxOptions`
+- **options**: [BoxOption](#boxoption) (Optional)
   - Object store options
 
 Properties
 
-- **Model.task**: `BoxTask`
-  - A set of methods that return `TransactionTask`
+- **task**: [BoxTask](#boxtask)
 
-Static methods
+Methods
 
+- Model.add(value, key): Add record to object store
 - Model.get(key): Get record from object store
 - Model.put(value[, key]): Put record to object store
 - Model.delete(key): Delete record from object store
@@ -273,7 +356,160 @@ Static methods
   - find().update(value): Update records
   - find().delete(): Delete records
 
-## Usage
+##### BoxModel.add()
+
+> WIP...
+
+##### BoxModel.get()
+
+> The `get()` method of the BoxModel inteface returns an specific record data from object store
+
+##### BoxModel.put()
+
+> WIP...
+
+##### BoxModel.delete()
+
+> WIP...
+
+##### BoxModel.find()
+
+> WIP...
+
+##### BoxModel.clear()
+
+> WIP...
+
+##### BoxModel.drop()
+
+> WIP...
+
+#### BoxData
+
+> Type of object based on model's [BoxScheme](#boxscheme)
+
+```typescript
+// Sample model
+const User = box.model(1)('user', {
+  _id: {
+    type: BoxDB.Types.NUMBER,
+    key: true,
+  }
+  name: {
+    type: BoxDB.Types.STRING,
+    index: true,
+  }
+  age: BoxDB.Types.NUMBER,
+  email: BoxDB.Types.STRING
+});
+
+// User model based BoxData will be inferenced like this
+type BoxData = {
+  _id: number
+  name: string,
+  age: number,
+  email: string
+}
+
+// Sample data
+const data = {
+  _id: 1,
+  name: 'Tom',
+  age: 12,
+  email: 'tom@host.com'
+};
+```
+
+#### BoxTask
+
+> Set of methods that return [TransactionTask](#transactiontask) for use in `BoxDB.transaction()`
+
+```typescript
+interface BoxTask<S extends BoxScheme> {
+  add: (value: BoxData<S>, key?: IDBValidKey) => TransactionTask;
+  put: (value: BoxData<S>, key?: IDBValidKey) => TransactionTask;
+  delete: (
+    key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
+  ) => TransactionTask;
+  find: (filter?: BoxModelFilter<S>) => BoxTaskCursorModel;
+}
+
+// Returns TransactionTask
+Model.task.add(value[, key]);
+Model.task.put(value[, key]);
+Model.task.delete(key);
+
+// Returns BoxTaskCursorModel
+Model.task.find([filter]);
+```
+
+Methods
+
+- [BoxTask.add()](#boxtask.add)
+- [BoxTask.put()](#boxtask.put)
+- [BoxTask.delete()](#boxtask.delete)
+- [BoxTask.find()](#boxtask.find)
+
+##### BoxTask.add()
+
+> WIP
+
+##### BoxTask.put()
+
+> WIP
+
+##### BoxTask.delete()
+
+> WIP
+
+##### BoxTask.find()
+
+> WIP
+
+#### BoxCursorModel
+
+> Data transaction with [cursor](https://developer.mozilla.org/en-US/docs/Web/API/IDBCursor)
+
+```typescript
+interface BoxCursorModel<S extends BoxScheme> {
+  get: () => Promise<BoxData<S>[]>;
+  update: (value: OptionalBoxData<S>) => Promise<void>;
+  delete: () => Promise<void>;
+}
+
+// Using cursor
+Model.find().get();
+Model.find().update(value);
+Model.find().delete();
+```
+
+Methods
+
+- [BoxCursorModel.get()](#boxcursormodel.get)
+- [BoxCursorModel.update()](#boxcursormodel.update)
+- [BoxCursorModel.delete()](#boxcursormodel.delete)
+
+#### BoxTaskCursorModel
+
+> Data transaction with [cursor](https://developer.mozilla.org/en-US/docs/Web/API/IDBCursor)
+
+```typescript
+interface BoxTaskCursorModel<S extends BoxScheme> {
+  update: (value: OptionalBoxData<S>) => TransactionTask;
+  delete: () => TransactionTask;
+}
+
+// Using cursor
+Model.task.find().update(value);
+Model.task.find().delete();
+```
+
+Methods
+
+- [BoxTaskCursorModel.update()](#boxtaskcursormodel.update)
+- [BoxTaskCursorModel.delete()](#boxtaskcursormodel.delete)
+
+### Example
 
 - Create `BoxDB` instance.
 - Define object store and data scheme as model
@@ -281,14 +517,26 @@ Static methods
   - **WARNING**: Can not create/update/drop model after `BoxDB.open()`
 - Do transactions task via Models!
 
-### Prepare a database
+#### Basic
+
+> WIP
+
+#### Version management
+
+> WIP
+
+#### Transaction
+
+> WIP
+
+#### Prepare a database
 
 ```javascript
 // 1. Create new BoxDB instance
 const box = new BoxDB('bank', 1);
 ```
 
-### Create models
+#### Create models
 
 ```javascript
 // user object store in idb version 1
@@ -321,13 +569,13 @@ const History = box.model(1)(
 );
 ```
 
-### Apply all registred models into IDB
+#### Apply all registred models into IDB
 
 ```javascript
 await box.open(); // will create registered `user`, `post` object store
 ```
 
-### Data CRUD
+#### Data CRUD
 
 - Create
 
@@ -428,7 +676,7 @@ await box.transaction([
 // Rollback to before transaction
 ```
 
-## Development
+### Development
 
 ```bash
 # Install dependencies
@@ -441,10 +689,10 @@ npm run test
 npm run build
 ```
 
-## Resource
+### Resources
 
 - Logo based on [Icon Fonts](http://www.onlinewebfonts.com/icon) (by CC BY 3.0)
 
-## License
+### License
 
 [MIT](./LICENSE)
