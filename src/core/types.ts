@@ -26,11 +26,11 @@ export interface ConfiguredBoxScheme {
 
 // BoxData based on BoxScheme
 export type BoxData<S extends BoxScheme> = {
-  [key in keyof S]: AsType<PickType<S[key]>> | null;
+  [key in keyof S]: AsType<PickType<S[key]>>;
 };
 
 export type OptionalBoxData<S extends BoxScheme> = {
-  [key in keyof S]?: AsType<PickType<S[key]>> | null;
+  [key in keyof S]?: AsType<PickType<S[key]>>;
 };
 
 export type UncheckedData = {
@@ -64,7 +64,7 @@ export interface BoxTask<S extends BoxScheme> {
   delete: (
     key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
   ) => TransactionTask;
-  find: (filter?: BoxModelFilter<S>) => BoxTaskCursorModel;
+  find: (filter?: BoxModelFilter<S>) => BoxTaskCursorModel<S>;
 }
 
 // BoxModel.find = () => BoxCursorModel
@@ -75,8 +75,8 @@ export interface BoxCursorModel<S extends BoxScheme> {
 }
 
 // BoxModel.task.find = () => BoxTaskCursorModel
-export interface BoxTaskCursorModel {
-  update: (value: any) => TransactionTask;
+export interface BoxTaskCursorModel<S extends BoxScheme> {
+  update: (value: OptionalBoxData<S>) => TransactionTask;
   delete: () => TransactionTask;
 }
 
