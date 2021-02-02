@@ -105,7 +105,8 @@ class BoxDB {
   }
 
   /**
-   * Get previous model metadata
+   * Get metadata of previous model (latest metadata)
+   * and also check about dropped history
    *
    * @param baseVersion base idb version
    * @param storeName object store name
@@ -116,19 +117,19 @@ class BoxDB {
       // Filter versions (< currentVersion)
       const filtedIndex = modelVersionIndex.filter((version) => version < baseVersion);
 
-      // Get last version's model metadata
+      // Get model metadata of last version
       // or if not exist, returns null
       if (filtedIndex.length) {
         const indexedVersion = filtedIndex[filtedIndex.length - 1];
         const previousModel = this._modelVersionMap[indexedVersion][storeName];
 
-        // If model was dropped, returns null (need a create new one)
+        // If previous model was dropped, returns null (need a create new one)
         return previousModel.action === BoxModelActionType.DROP ? null : previousModel;
       } else {
         return null;
       }
     } else {
-      // If not has index, returns null
+      // If not exist model metadata in index, returns null
       return null;
     }
   }
@@ -150,9 +151,43 @@ class BoxDB {
     this._modelVersionIndex[name].sort((a, b) => a - b);
   }
 
+  /**
+   * Check about object store name in target version
+   *
+   * @param targetVersion
+   * @param storeName
+   */
   private _isRegistered(targetVersion: number, storeName: string): boolean {
     const versionMap = this._modelVersionMap[targetVersion];
     return !!(versionMap && storeName in versionMap);
+  }
+
+  /**
+   * Check about out-of-line key changes (autoIncrement)
+   *
+   * @param previousModel
+   * @param options
+   */
+  private _outOfLineKeyChanged(previousModel: BoxModelMeta, options: BoxOption) {
+    return previousModel && previousModel.autoIncrement !== !!options?.autoIncrement;
+  }
+
+  /**
+   * Check about unique index
+   *
+   * @param scheme Model scheme
+   */
+  private _checkUniqueIndex<S extends BoxScheme>(scheme: S): void {
+    // unique option must be with index option
+    for (const config of Object.values(scheme)) {
+      // Is ConfiguredType
+      if (typeof config !== 'string') {
+        // unique option must be with index option
+        if (config.unique && !config.index) {
+          throw new BoxDBError('unique option must with index option');
+        }
+      }
+    }
   }
 
   /**
@@ -172,51 +207,48 @@ class BoxDB {
       this._modelVersionMap[targetVersion] = {};
     }
 
-    let primaryKeyPath: string = null;
+    // Get previous model and checking
     const previousModel = this._getPreviousModel(targetVersion, storeName);
     const indexList: BoxIndexConfig[] = [];
+    let primaryKeyPath: string = null;
 
-    // Change autoIncrement option not available
-    if (previousModel && previousModel.autoIncrement !== !!options?.autoIncrement) {
-      throw new BoxDBError(`Can not change ${storeName} model's autoIncrement option`);
+    // autoIncrement option changes not available
+    if (this._outOfLineKeyChanged(previousModel, options)) {
+      throw new BoxDBError(`Can not change out-of-line key of ${storeName}`);
     }
 
-    // unique option must be with index option
-    for (const config of Object.values(scheme)) {
-      // Is ConfiguredType
-      if (typeof config !== 'string') {
-        // unique option must be with index option
-        if (config.unique && !config.index) {
-          throw new BoxDBError('unique option must with index option');
-        }
-      }
-    }
+    // Check about unique index configs
+    this._checkUniqueIndex(scheme);
 
-    const boxScheme = Object.entries(scheme).reduce((prev, [k, v]) => {
-      if (typeof v === 'string') {
-        prev[k] = { type: v };
+    // Convert user scheme to ConfiguredBoxScheme
+    const boxScheme = Object.entries(scheme).reduce((prev, [field, type]) => {
+      // Is BoxDataTypes
+      if (typeof type === 'string') {
+        prev[field] = { type };
       } else {
+        // Is ConfiguredType
         // If this field use to object store keyPath(primary key)
-        if (v.key) {
-          // Multiple keyPath not available
+        if (type.key) {
+          // Multiple in-line-key(object store keyPath) not available
           if (primaryKeyPath) {
             throw new BoxDBError(
-              `Can not define multiple keyPath in ${storeName} model. (exist: ${previousModel.keyPath})`,
+              `Can not define multiple in-line-key in ${storeName} model. (exist: ${previousModel.keyPath})`,
             );
           }
 
-          primaryKeyPath = k;
+          // Set this field name to in-line-key path
+          primaryKeyPath = field;
         }
 
         // If this field is index
-        if (v.index) {
+        if (type.index) {
           indexList.push({
-            keyPath: k,
-            unique: !!v.unique,
+            keyPath: field,
+            unique: !!type.unique,
           });
         }
 
-        prev[k] = v;
+        prev[field] = type;
       }
 
       return prev;
@@ -225,10 +257,11 @@ class BoxDB {
     // Change keyPath not available
     if (previousModel && previousModel.keyPath !== primaryKeyPath) {
       throw new BoxDBError(
-        `Can not change ${storeName} model's keyPath. (exist: ${previousModel.keyPath})`,
+        `Can not change in-line-key of ${storeName} (exist: ${previousModel.keyPath})`,
       );
     }
 
+    // Add model metadata to BoxDB instance
     this._addModel({
       name: storeName,
       scheme: boxScheme,
@@ -236,6 +269,7 @@ class BoxDB {
       autoIncrement: !!options?.autoIncrement,
       index: indexList,
       targetVersion,
+      // Do update object store if previous model exist
       action: previousModel ? BoxModelActionType.UPDATE : BoxModelActionType.CREATE,
     });
   }
@@ -396,7 +430,7 @@ class BoxDB {
     options?: BoxOption,
   ): BoxModel<S> {
     if (this._ready) {
-      throw new BoxDBError('database already opened');
+      throw new BoxDBError('Database already opened');
     }
 
     if (this._isRegistered(targetVersion, storeName)) {
@@ -571,7 +605,7 @@ class BoxDB {
     if (tasks.every((task) => task instanceof TransactionTask)) {
       return this._tx.transaction(tasks).then(() => void 0);
     } else {
-      throw new BoxDBError('tasks must be TransactionTask instance');
+      throw new BoxDBError('Argument elements must be TransactionTask instance');
     }
   }
 
@@ -631,7 +665,7 @@ class BoxDB {
   ) {
     if (filter && !Array.isArray(filter)) {
       if (Object.keys(filter).length !== 1) {
-        throw new BoxDBError('cursor query object must be has only one index');
+        throw new BoxDBError('Cursor query object must be has only one index');
       }
     }
 
