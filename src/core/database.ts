@@ -163,10 +163,6 @@ class BoxDB {
    * @param scheme scheme object
    */
   private _registModel<S extends BoxScheme>(model: BoxModel<S>, options?: BoxOption): void {
-    if (this._ready) {
-      throw new BoxDBError('database already opened');
-    }
-
     const targetVersion = model.prototype.__targetVersion__;
     const storeName = model.prototype.__storeName__;
     const scheme = model.prototype.__scheme__;
@@ -183,6 +179,17 @@ class BoxDB {
     // Change autoIncrement option not available
     if (previousModel && previousModel.autoIncrement !== !!options?.autoIncrement) {
       throw new BoxDBError(`Can not change ${storeName} model's autoIncrement option`);
+    }
+
+    // unique option must be with index option
+    for (const config of Object.values(scheme)) {
+      // Is ConfiguredType
+      if (typeof config !== 'string') {
+        // unique option must be with index option
+        if (config.unique && !config.index) {
+          throw new BoxDBError('unique option must with index option');
+        }
+      }
     }
 
     const boxScheme = Object.entries(scheme).reduce((prev, [k, v]) => {
@@ -375,6 +382,84 @@ class BoxDB {
   }
 
   /**
+   * Generate new model and register to model history
+   *
+   * @param targetVersion
+   * @param storeName
+   * @param scheme
+   * @param options
+   */
+  private _modelRegister<S extends BoxScheme>(
+    targetVersion: number,
+    storeName: string,
+    scheme: S,
+    options?: BoxOption,
+  ): BoxModel<S> {
+    if (this._ready) {
+      throw new BoxDBError('database already opened');
+    }
+
+    if (this._isRegistered(targetVersion, storeName)) {
+      throw new BoxDBError(`${storeName} model already registered in version: ${targetVersion}`);
+    }
+
+    const Model = generateModel(targetVersion, storeName, scheme);
+
+    /**
+     * @static Model's static methods
+     */
+    Model.add = (value, key) => this._mustAvailable(Model) && this._add(storeName, value, key);
+    Model.get = (key) => this._mustAvailable(Model) && this._get(storeName, key);
+    Model.put = (value, key) => this._mustAvailable(Model) && this._put(storeName, value, key);
+    Model.delete = (key) => this._mustAvailable(Model) && this._delete(storeName, key);
+    Model.clear = () => this._mustAvailable(Model) && this._clear(storeName);
+    Model.drop = (targetVersion) => this._drop(targetVersion, storeName);
+
+    // Model.find() is get records by cursor
+    Model.find = (filter) => {
+      this._mustAvailable(Model);
+      return {
+        get: () => this._cursor<S>(TransactionType.CURSOR_GET, storeName, filter),
+        update: (value) => this._cursor<S>(TransactionType.CURSOR_UPDATE, storeName, filter, value),
+        delete: () => this._cursor<S>(TransactionType.CURSOR_DELETE, storeName, filter),
+      };
+    };
+
+    // Tasks for transaction
+    Model.task = {
+      add: (value, key) =>
+        this._mustAvailable(Model) &&
+        new TransactionTask(TransactionType.ADD, storeName, TransactionMode.WRITE, [value, key]),
+      put: (value, key) =>
+        this._mustAvailable(Model) &&
+        new TransactionTask(TransactionType.PUT, storeName, TransactionMode.WRITE, [value, key]),
+      delete: (key) =>
+        this._mustAvailable(Model) &&
+        new TransactionTask(TransactionType.DELETE, storeName, TransactionMode.WRITE, [key]),
+      find: (filter) => {
+        this._mustAvailable(Model);
+        return {
+          update: (value) =>
+            new TransactionTask(TransactionType.CURSOR_UPDATE, storeName, TransactionMode.WRITE, [
+              {
+                filter,
+                updateValue: value,
+              },
+            ]),
+          delete: () =>
+            new TransactionTask(TransactionType.CURSOR_DELETE, storeName, TransactionMode.WRITE, [
+              { filter },
+            ]),
+        };
+      },
+    };
+
+    this._registModel(Model, options);
+
+    return Model;
+  }
+
+  /**
    * Regist data model for create object store
    *
    * @param targetVersion target idb version
@@ -390,64 +475,7 @@ class BoxDB {
       scheme: S,
       options?: BoxOption,
     ): BoxModel<S> => {
-      if (this._isRegistered(targetVersion, storeName)) {
-        throw new BoxDBError(`${storeName} model already registered in version: ${targetVersion}`);
-      }
-      const Model = generateModel(targetVersion, storeName, scheme);
-
-      /**
-       * @static Model's static methods
-       */
-      Model.add = (value, key) => this._mustAvailable(Model) && this._add(storeName, value, key);
-      Model.get = (key) => this._mustAvailable(Model) && this._get(storeName, key);
-      Model.put = (value, key) => this._mustAvailable(Model) && this._put(storeName, value, key);
-      Model.delete = (key) => this._mustAvailable(Model) && this._delete(storeName, key);
-      Model.clear = () => this._mustAvailable(Model) && this._clear(storeName);
-      Model.drop = (targetVersion) => this._drop(targetVersion, storeName);
-
-      // Model.find() is get records by cursor
-      Model.find = (filter) => {
-        this._mustAvailable(Model);
-        return {
-          get: () => this._cursor<S>(TransactionType.CURSOR_GET, storeName, filter),
-          update: (value) =>
-            this._cursor<S>(TransactionType.CURSOR_UPDATE, storeName, filter, value),
-          delete: () => this._cursor<S>(TransactionType.CURSOR_DELETE, storeName, filter),
-        };
-      };
-
-      // Tasks for transaction
-      Model.task = {
-        add: (value, key) =>
-          this._mustAvailable(Model) &&
-          new TransactionTask(TransactionType.ADD, storeName, TransactionMode.WRITE, [value, key]),
-        put: (value, key) =>
-          this._mustAvailable(Model) &&
-          new TransactionTask(TransactionType.PUT, storeName, TransactionMode.WRITE, [value, key]),
-        delete: (key) =>
-          this._mustAvailable(Model) &&
-          new TransactionTask(TransactionType.DELETE, storeName, TransactionMode.WRITE, [key]),
-        find: (filter) => {
-          this._mustAvailable(Model);
-          return {
-            update: (value) =>
-              new TransactionTask(TransactionType.CURSOR_UPDATE, storeName, TransactionMode.WRITE, [
-                {
-                  filter,
-                  updateValue: value,
-                },
-              ]),
-            delete: () =>
-              new TransactionTask(TransactionType.CURSOR_DELETE, storeName, TransactionMode.WRITE, [
-                { filter },
-              ]),
-          };
-        },
-      };
-
-      this._registModel(Model, options);
-
-      return Model;
+      return this._modelRegister(targetVersion, storeName, scheme, options);
     };
   }
 
