@@ -67,6 +67,7 @@ class BoxDB {
   private _version: number;
   private _modelVersionMap: ModelMap = {};
   private _modelVersionIndex: ModelIndex = {};
+  private _preparedModel: BoxModel<BoxScheme>[] = [];
   private _eventListener: ListenerMap = {
     versionchange: [],
     error: [],
@@ -272,6 +273,7 @@ class BoxDB {
       // Do update object store if previous model exist
       action: previousModel ? BoxModelActionType.UPDATE : BoxModelActionType.CREATE,
     });
+    this._preparedModel.push(model);
   }
 
   /**
@@ -492,92 +494,12 @@ class BoxDB {
 
     return Model;
   }
-
-  /**
-   * Regist data model for create object store
-   *
-   * @param targetVersion target idb version
-   */
-  model(targetVersion: number): BoxModelRegister {
-    /**
-     * Regist data model for create object store
-     * @param storeName object store name
-     * @param scheme object store data structure
-     */
-    return <S extends BoxScheme>(
-      storeName: string,
-      scheme: S,
-      options?: BoxOption,
-    ): BoxModel<S> => {
-      return this._modelRegister(targetVersion, storeName, scheme, options);
-    };
-  }
-
-  /**
-   * Create/update object stores and open idb
-   */
-  async open(): Promise<Event> {
-    return new Promise((resolve, reject) => {
-      const openRequest = self.indexedDB.open(this._databaseName, this._version);
-
-      // IDB Open successfully
-      openRequest.onsuccess = (event) => {
-        this._ready = true;
-        this._idb = openRequest.result;
-        this._tx = new BoxTransaction(this._idb);
-
-        // Global event listener
-        this._idb.onversionchange = (event) => {
-          this._eventListener['versionchange'].forEach((f) => f(event));
-        };
-        this._idb.onabort = (event) => {
-          this._eventListener['abort'].forEach((f) => f(event));
-        };
-        this._idb.onerror = (event) => {
-          this._eventListener['error'].forEach((f) => f(event));
-        };
-        this._idb.onclose = (event) => {
-          this._eventListener['close'].forEach((f) => f(event));
-        };
-
-        resolve(event);
-      };
-
-      openRequest.onupgradeneeded = (event) => this._update(openRequest, event);
-
-      // Error occurs
-      openRequest.onerror = (event) => reject(event);
-    });
-  }
-
-  /**
-   * Add idb global event listener
-   *
-   * @param type BoxDBEvent
-   * @param listener
-   */
-  addEventListener(type: BoxDBEvent, listener: BoxDBEventListener): void {
-    this._eventListener[type].push(listener);
-  }
-
-  /**
-   * Remove registed event listener
-   *
-   * @param type BoxDBEvent
-   * @param listener
-   */
-  removeEventListener(type: BoxDBEvent, listener: BoxDBEventListener): void {
-    const listenerIdx = this._eventListener[type].indexOf(listener);
-    if (~listenerIdx) return;
-    this._eventListener[type].splice(listenerIdx, 1);
-  }
-
   /**
    * Check about model is available (droped/updated)
    *
    * @param targetModel Target model
    */
-  available<S extends BoxScheme>(targetModel: BoxModel<S>): boolean {
+  private _available<S extends BoxScheme>(targetModel: BoxModel<S>): boolean {
     const currentStoreIndex = this._modelVersionIndex[targetModel.prototype.__storeName__];
     return (
       currentStoreIndex[currentStoreIndex.length - 1] === targetModel.prototype.__targetVersion__
@@ -591,22 +513,9 @@ class BoxDB {
    * @param targetModel Target model
    */
   private _mustAvailable<S extends BoxScheme>(targetModel: BoxModel<S>): true | never {
-    if (!this.available(targetModel)) throw new BoxDBError('This model is not available');
+    if (!this._available(targetModel)) throw new BoxDBError('This model is not available');
     this._isPrepared();
     return true;
-  }
-
-  /**
-   * Tasks are performed as transactions
-   *
-   * @param tasks Transaction tasks
-   */
-  transaction(tasks: TransactionTask[]): Promise<void> {
-    if (tasks.every((task) => task instanceof TransactionTask)) {
-      return this._tx.transaction(tasks).then(() => void 0);
-    } else {
-      throw new BoxDBError('Argument elements must be TransactionTask instance');
-    }
   }
 
   /**
@@ -683,6 +592,105 @@ class BoxDB {
       throw new BoxDBError('Can not drop model after open()');
     } else {
       this._unregistModel(targetVersion, storeName);
+    }
+  }
+
+  /**
+   * Create/update object stores and open idb
+   */
+  open(): Promise<Event> {
+    return new Promise((resolve, reject) => {
+      const openRequest = self.indexedDB.open(this._databaseName, this._version);
+
+      // IDB Open successfully
+      openRequest.onsuccess = (event) => {
+        this._ready = true;
+        this._idb = openRequest.result;
+        this._tx = new BoxTransaction(this._idb);
+
+        // Global event listener
+        this._idb.onversionchange = (event) => {
+          this._eventListener['versionchange'].forEach((f) => f(event));
+        };
+        this._idb.onabort = (event) => {
+          this._eventListener['abort'].forEach((f) => f(event));
+        };
+        this._idb.onerror = (event) => {
+          this._eventListener['error'].forEach((f) => f(event));
+        };
+        this._idb.onclose = (event) => {
+          this._eventListener['close'].forEach((f) => f(event));
+        };
+
+        this._preparedModel.forEach((model) => {
+          Object.defineProperty(model.prototype, '__available__', {
+            value: this._available(model),
+          });
+        });
+        this._preparedModel = [];
+
+        resolve(event);
+      };
+
+      openRequest.onupgradeneeded = (event) => this._update(openRequest, event);
+
+      // Error occurs
+      openRequest.onerror = (event) => reject(event);
+    });
+  }
+
+  /**
+   * Regist data model for create object store
+   *
+   * @param targetVersion target idb version
+   */
+  model(targetVersion: number): BoxModelRegister {
+    /**
+     * Regist data model for create object store
+     * @param storeName object store name
+     * @param scheme object store data structure
+     */
+    return <S extends BoxScheme>(
+      storeName: string,
+      scheme: S,
+      options?: BoxOption,
+    ): BoxModel<S> => {
+      return this._modelRegister(targetVersion, storeName, scheme, options);
+    };
+  }
+
+  /**
+   * Add idb global event listener
+   *
+   * @param type BoxDBEvent
+   * @param listener
+   */
+  addEventListener(type: BoxDBEvent, listener: BoxDBEventListener): void {
+    this._eventListener[type].push(listener);
+  }
+
+  /**
+   * Remove registed event listener
+   *
+   * @param type BoxDBEvent
+   * @param listener
+   */
+  removeEventListener(type: BoxDBEvent, listener: BoxDBEventListener): void {
+    const listenerIdx = this._eventListener[type].indexOf(listener);
+    if (~listenerIdx) return;
+    this._eventListener[type].splice(listenerIdx, 1);
+  }
+
+  /**
+   * Tasks are performed as transactions
+   *
+   * @param tasks Transaction tasks
+   */
+  transaction(tasks: TransactionTask[]): Promise<void> {
+    if (tasks.every((task) => task instanceof TransactionTask)) {
+      return this._tx.transaction(tasks).then(() => void 0);
+    } else {
+      throw new BoxDBError('Argument elements must be TransactionTask instance');
     }
   }
 }

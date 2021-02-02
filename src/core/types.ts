@@ -83,6 +83,7 @@ export interface BoxTaskCursorModel {
 export interface BoxModelPrototype {
   readonly __targetVersion__: number;
   readonly __storeName__: string;
+  readonly __available__: boolean;
   readonly __scheme__: BoxScheme;
   readonly __validate: (target: UncheckedData) => boolean;
 }

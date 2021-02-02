@@ -35,7 +35,7 @@ export default class BoxTransaction {
         }, {}),
     );
 
-    // Check transaction mode
+    // Check all tasks transaction mode
     const isReadonlyMode = tasks.every(
       (task) =>
         task.action === TransactionType.GET ||
@@ -215,7 +215,9 @@ export default class BoxTransaction {
       new TransactionTask(
         transactionType,
         storeName,
-        transactionType === TransactionType.GET ? TransactionMode.READ : TransactionMode.WRITE,
+        transactionType === TransactionType.GET || TransactionType.CURSOR_GET
+          ? TransactionMode.READ
+          : TransactionMode.WRITE,
         [{ filter, updateValue }],
       ),
     ]);
