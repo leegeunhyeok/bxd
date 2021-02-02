@@ -71,8 +71,20 @@ const mergeObject = <T>(baseObject: T, targetObject?: T): T => {
   return baseObject;
 };
 
+/**
+ * Set value to prototype
+ *
+ * @param prototype Target prototype object
+ * @param key
+ * @param value
+ * @param readonly
+ */
 const setPrototype = <T>(prototype: T, key: keyof T, value: T[keyof T], readonly: boolean) => {
   Object.defineProperty(prototype, key, { value, writable: !readonly });
+};
+
+const toString = function (this: BoxModelPrototype) {
+  return `BoxModel(${this.__storeName__}):${this.__targetVersion__}`;
 };
 
 /**
@@ -111,6 +123,7 @@ export const generateModel = <S extends BoxScheme>(
   // Model static fields
   Object.defineProperty(Model, 'name', { value: storeName });
   Object.defineProperty(Model, 'version', { value: targetVersion });
+  Model.toString = toString.bind(Model.prototype);
 
   return Model;
 };

@@ -17,6 +17,9 @@ const modelArgs = {
 describe('checking about model basic features', () => {
   test('create model and prototype check', () => {
     const TestModel = generateModel(modelArgs.targetVersion, modelArgs.storeName, modelArgs.scheme);
+    expect(TestModel.toString()).toBe(
+      `BoxModel(${modelArgs.storeName}):${modelArgs.targetVersion}`,
+    );
     expect(TestModel.version).toBe(modelArgs.targetVersion);
     expect(TestModel.name).toBe(modelArgs.storeName);
   });

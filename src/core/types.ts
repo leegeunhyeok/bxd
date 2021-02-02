@@ -87,6 +87,7 @@ export interface BoxModelPrototype {
   readonly __available__: boolean;
   readonly __scheme__: BoxScheme;
   readonly __validate: (target: UncheckedData) => boolean;
+  toString: () => string;
 }
 
 // Filters for BoxModel.find()
