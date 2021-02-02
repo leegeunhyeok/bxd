@@ -115,20 +115,12 @@ export default class BoxTransaction {
       }
     };
 
-    const query: { index: string; value: CursorKey } = {
-      index: null,
-      value: null,
-    };
-
-    if (filter && !Array.isArray(filter)) {
-      query.index = Object.keys(filter)[0];
-      query.value = filter[query.index];
-    }
-
     let request: IDBRequest<IDBCursorWithValue> = null;
-    if (query.index) {
-      request = objectStore.index(query.index).openCursor(query.value);
+    if (filter && !Array.isArray(filter)) {
+      // Use IDB CursorKey
+      request = objectStore.index(filter.field).openCursor(filter.key, filter.direction);
     } else {
+      // Use filter functions
       request = objectStore.openCursor();
     }
 

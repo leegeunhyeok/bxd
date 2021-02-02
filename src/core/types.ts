@@ -17,24 +17,24 @@ export enum BoxDataTypes {
 
 // BoxModel scheme
 export interface BoxScheme {
-  [key: string]: ConfiguredType | BoxDataTypes;
+  [field: string]: ConfiguredType | BoxDataTypes;
 }
 
 export interface ConfiguredBoxScheme {
-  [key: string]: ConfiguredType;
+  [field: string]: ConfiguredType;
 }
 
 // BoxData based on BoxScheme
 export type BoxData<S extends BoxScheme> = {
-  [key in keyof S]: AsType<PickType<S[key]>>;
+  [field in keyof S]: AsType<PickType<S[field]>>;
 };
 
 export type OptionalBoxData<S extends BoxScheme> = {
-  [key in keyof S]?: AsType<PickType<S[key]>>;
+  [field in keyof S]?: AsType<PickType<S[field]>>;
 };
 
 export type UncheckedData = {
-  [key: string]: any;
+  [field: string]: any;
 };
 
 // BoxModel
@@ -103,9 +103,10 @@ export type CursorKey =
   | IDBArrayKey
   | IDBKeyRange;
 
-export type CursorQuery<S extends BoxScheme> = {
-  [key in keyof S]?: CursorKey;
-};
+export interface CursorQuery<S extends BoxScheme> {
+  field: Extract<keyof S, string>;
+  key: CursorKey;
+}
 
 // Filter function
 export type EvalFunction<S extends BoxScheme> = (value: OptionalBoxData<S>) => boolean;
