@@ -106,6 +106,7 @@ export type CursorKey =
 export interface CursorQuery<S extends BoxScheme> {
   field: Extract<keyof S, string>;
   key: CursorKey;
+  direction?: IDBCursorDirection;
 }
 
 // Filter function
