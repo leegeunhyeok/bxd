@@ -101,10 +101,6 @@ class BoxDB {
     return this._ready;
   }
 
-  private _isPrepared() {
-    if (!this._ready) throw new BoxDBError('BoxDB not ready');
-  }
-
   /**
    * Get metadata of previous model (latest metadata)
    * and also check about dropped history
@@ -682,7 +678,7 @@ class BoxDB {
    * @param type BoxDBEvent
    * @param listener
    */
-  addEventListener(type: BoxDBEvent, listener: BoxDBEventListener): void {
+  on(type: BoxDBEvent, listener: BoxDBEventListener): void {
     this._eventListener[type].push(listener);
   }
 
@@ -692,7 +688,7 @@ class BoxDB {
    * @param type BoxDBEvent
    * @param listener
    */
-  removeEventListener(type: BoxDBEvent, listener: BoxDBEventListener): void {
+  off(type: BoxDBEvent, listener: BoxDBEventListener): void {
     const listenerIdx = this._eventListener[type].indexOf(listener);
     if (~listenerIdx) return;
     this._eventListener[type].splice(listenerIdx, 1);
