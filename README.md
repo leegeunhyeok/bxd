@@ -15,37 +15,37 @@ Object relation mapping for [IndexedDB](https://developer.mozilla.org/en-US/docs
 - [Installation](#installation)
 - [Documentation](#documentation)
   - [BoxDB](#boxdb)
-    - [BoxDB.Types](#boxdb.types) (Static)
-    - [BoxDB.interrupt](#boxdb.interrupt) (Static)
-    - [BoxDB.addEventListener(type, listener)](#boxdb.addeventlistener)
-    - [BoxDB.removeEventListener(type, listener)](#boxdb.removeeventlistener)
-    - [BoxDB.model(targetVersion)](#boxdb.model)
-    - [BoxDB.open()](#boxdb.open)
-    - [BoxDB.transaction](#box.transaction)
+    - [BoxDB.Types](#boxdbtypes) `static`
+    - [BoxDB.interrupt](#boxdbinterrupt) `static`
+    - [BoxDB.on(type, listener)](#boxdbon)
+    - [BoxDB.off(type, listener)](#boxdboff)
+    - [BoxDB.model(targetVersion)](#boxdbmodel)
+    - [BoxDB.open()](#boxdbopen)
+    - [BoxDB.transaction](#boxtransaction)
   - [BoxModelRegister()](#boxmodelregister)
   - [BoxScheme](#boxscheme)
   - [BoxOption](#boxoption)
   - [BoxModel](#boxmodel)
-    - [BoxModel.add(value[, key])](#boxmodel.add)
-    - [BoxModel.get(key)](#boxmodel.get)
-    - [BoxModel.put(value[, key])](#boxmodel.put)
-    - [BoxModel.delete(key)](#boxmodel.delete)
-    - [BoxModel.find([filter])](#boxmodel.find)
-    - [BoxModel.clear()](#boxmodel.clear)
-    - [BoxModel.drop()](#boxmodel.drop)
+    - [BoxModel.add(value[, key])](#boxmodeladd)
+    - [BoxModel.get(key)](#boxmodelget)
+    - [BoxModel.put(value[, key])](#boxmodelput)
+    - [BoxModel.delete(key)](#boxmodeldelete)
+    - [BoxModel.find([filter])](#boxmodelfind)
+    - [BoxModel.clear()](#boxmodelclear)
+    - [BoxModel.drop()](#boxmodeldrop)
   - [BoxData](#boxdata)
   - [BoxTask](#boxtask)
-    - [BoxTask.add(value[, key])](#boxtask.add)
-    - [BoxTask.put(value[, key])](#boxtask.put)
-    - [BoxTask.delete(key)](#boxtask.delete)
-    - [BoxTask.find(value[, key])](#boxtask.find)
+    - [BoxTask.add(value[, key])](#boxtaskadd)
+    - [BoxTask.put(value[, key])](#boxtaskput)
+    - [BoxTask.delete(key)](#boxtaskdelete)
+    - [BoxTask.find(value[, key])](#boxtaskfind)
   - [BoxCursorModel](#boxcursormodel)
-    - [BoxCursorModel.get()](#boxcursormodel.get)
-    - [BoxCursorModel.update(value)](#boxcursormodel.update)
-    - [BoxCursorModel.delete()](#boxcursormodel.delete)
+    - [BoxCursorModel.get()](#boxcursormodelget)
+    - [BoxCursorModel.update(value)](#boxcursormodelupdate)
+    - [BoxCursorModel.delete()](#boxcursormodeldelete)
   - [BoxTaskCursorModel](#boxtaskcursormodel)
-    - [BoxTaskCursorModel.update()](#boxtaskcursormodel.update)
-    - [BoxTaskCursorModel.delete()](#boxtaskcursormodel.delete)
+    - [BoxTaskCursorModel.update()](#boxtaskcursormodelupdate)
+    - [BoxTaskCursorModel.delete()](#boxtaskcursormodeldelete)
 - [Example](#example)
   - [Basic](#basic)
   - [Version management](#version-management)
@@ -97,7 +97,7 @@ Parameters
 
 Properties
 
-- [BoxDB.Types](#boxdb.types) (Static)
+- [BoxDB.Types](#boxdbtypes) `static`
 - **databaseName**: `string`
   - Database name
 - **version**: `number`
@@ -107,12 +107,12 @@ Properties
 
 Methods
 
-- [BoxDB.interrupt](#boxdb.interrupt) (Static)
-- [addEventListener()](#boxdb.addeventlistener)
-- [removeEventListener()](#boxdb.removeeventlistener)
-- [model()](#boxdb.model)
-- [open()](#boxdb.open)
-- [transaction()](#boxdb.transaction)
+- [BoxDB.interrupt](#boxdbinterrupt) `static`
+- [addEventListener()](#boxdbaddeventlistener)
+- [removeEventListener()](#boxdbremoveeventlistener)
+- [model()](#boxdbmodel)
+- [open()](#boxdbopen)
+- [transaction()](#boxdbtransaction)
 
 ##### BoxDB.Types
 
@@ -145,17 +145,17 @@ Properties
 - **BoxDB.Types.REGEXP**: for [RegExp](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp) value
 - **BoxDB.Types.FILE**: for [File](https://developer.mozilla.org/en-US/docs/Web/API/File) value
 - **BoxDB.Types.BLOB**: for [Blob](https://developer.mozilla.org/en-US/docs/Web/API/Blob) value
-- **BoxDB.Types.ANY**: for _any_ value (No type checking)
+- **BoxDB.Types.ANY**: for _any_ value (Skip type checking)
 
 ##### BoxDB.interrupt()
 
 > WIP...
 
-##### BoxDB.addEventListener()
+##### BoxDB.on()
 
 > WIP...
 
-##### BoxDB.removeEventListener()
+##### BoxDB.off()
 
 > WIP...
 
@@ -208,9 +208,9 @@ Parameters
 
 - **storeName**: `string`
   - Name of the object store
-- **scheme**: [BoxScheme](#BoxScheme)
+- **scheme**: [BoxScheme](#boxscheme)
   - Data scheme of the data to store
-- **options**: [BoxOption](#BoxOption) (Optional)
+- **options**: [BoxOption](#boxoption) (`optional`)
   - Object store options
 
 Return value
@@ -264,16 +264,16 @@ const scheme = {
 
 Options
 
-- **type**: [BoxDB.Types](#boxdb.types)
+- **type**: [BoxDB.Types](#boxdbtypes)
   - Type of this property (used by type checking)
-- **key**: `boolean` (Optional)
+- **key**: `boolean` (`optional`)
   - Set this property as [out-of-line key](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API/Basic_Concepts_Behind_IndexedDB#gloss_outofline_key)
   - Can not change out-of-line key after versions of this model
     - **_If you want change, create new model after drop_**
-- **index**: `boolean` (Optional)
+- **index**: `boolean` (`optional`)
   - [Create](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/createIndex) or [delete](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/deleteIndex) index for this property
   - If you want search this property values by index, must enable
-- **unique**: `boolean` (Optional)
+- **unique**: `boolean` (`optional`)
   - Add [unique constraint](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/createIndex#parameters) to this property's index
     - **_`index` option required_**
 
@@ -336,7 +336,7 @@ Parameters
   - Name of the object store
 - **scheme**: [BoxScheme](#boxscheme)
   - Data scheme of the data to store
-- **options**: [BoxOption](#boxoption) (Optional)
+- **options**: [BoxOption](#boxoption) (`optional`)
   - Object store options
 
 Properties
@@ -445,10 +445,10 @@ Model.task.find([filter]);
 
 Methods
 
-- [BoxTask.add()](#boxtask.add)
-- [BoxTask.put()](#boxtask.put)
-- [BoxTask.delete()](#boxtask.delete)
-- [BoxTask.find()](#boxtask.find)
+- [BoxTask.add()](#boxtaskadd)
+- [BoxTask.put()](#boxtaskput)
+- [BoxTask.delete()](#boxtaskdelete)
+- [BoxTask.find()](#boxtaskfind)
 
 ##### BoxTask.add()
 
@@ -485,9 +485,9 @@ Model.find().delete();
 
 Methods
 
-- [BoxCursorModel.get()](#boxcursormodel.get)
-- [BoxCursorModel.update()](#boxcursormodel.update)
-- [BoxCursorModel.delete()](#boxcursormodel.delete)
+- [BoxCursorModel.get()](#boxcursormodelget)
+- [BoxCursorModel.update()](#boxcursormodelupdate)
+- [BoxCursorModel.delete()](#boxcursormodeldelete)
 
 #### BoxTaskCursorModel
 
@@ -506,8 +506,8 @@ Model.task.find().delete();
 
 Methods
 
-- [BoxTaskCursorModel.update()](#boxtaskcursormodel.update)
-- [BoxTaskCursorModel.delete()](#boxtaskcursormodel.delete)
+- [BoxTaskCursorModel.update()](#boxtaskcursormodelupdate)
+- [BoxTaskCursorModel.delete()](#boxtaskcursormodeldelete)
 
 ### Example
 
