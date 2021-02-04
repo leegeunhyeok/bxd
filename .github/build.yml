@@ -1,0 +1,22 @@
+name: bxd-build
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Node.js environment
+        uses: actions/setup-node@v2
+        with:
+          node-version: 12
+      - name: Install dependencies
+        run: |
+          npm install
+      - name: Run unit tests
+        run: |
+          npm test
