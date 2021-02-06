@@ -20,3 +20,8 @@ jobs:
       - name: Run unit tests
         run: |
           npm test
+      - name: Build
+        run: |
+          npm run build
+      - name: Get build files size
+        run: ls -alshS dist/ | awk '{print $10 " => " $6}'
