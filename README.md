@@ -6,6 +6,10 @@
 
 Object relation mapping for [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API)
 
+  <a href="https://github.com/leegeunhyeok/bxd/actions?query=workflow:build" alt="Github actions">
+    <img src="https://github.com/leegeunhyeok/bxd/workflows/build/badge.svg">
+  </a>
+
 </div>
 
 ## Table of Contents

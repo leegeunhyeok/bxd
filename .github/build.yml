@@ -1,4 +1,4 @@
-name: bxd-build
+name: build
 
 on:
   push:
