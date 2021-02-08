@@ -4,6 +4,14 @@ on:
   push:
     branches:
       - dev
+    paths:
+      - 'src/**'
+      - 'test/**'
+      - 'build/**'
+      - 'package.json'
+      - 'jest.config.js'
+      - 'tsconfig.json'
+      - '.eslintrc'
 
 jobs:
   build:
