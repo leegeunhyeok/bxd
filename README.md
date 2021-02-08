@@ -12,6 +12,71 @@ Object relation mapping for [IndexedDB](https://developer.mozilla.org/en-US/docs
 
 </div>
 
+```typescript
+import BoxDB from 'bxd';
+
+// DB Instance
+const box = new BoxDB('board', 1);
+
+// User model
+const User = box.model(1)('user', {
+  _id: {
+    type: BoxDB.Types.NUMBER,
+    key: true,
+  },
+  name: {
+    type: BoxDB.Types.STRING,
+    index: true,
+  },
+  age: BoxDB.Types.NUMBER,
+});
+
+async function crud() {
+  const users = [
+    { _id: 1, name: 'Tom', age: 10 },
+    { _id: 2, name: 'Jessica', age: 12 },
+    { _id: 3, name: 'Ellis', age: 15 },
+    { _id: 4, name: 'John', age: 11 },
+    { _id: 5, name: 'Unknown', age: -1 },
+  ];
+  const tom = users[0]; // first user
+
+  // Add all data
+  for (const user of users) {
+    await User.add(user);
+  }
+  await User.put({ ...tom, age: 15 }); // Update tom's age to 15
+  await User.get(1); // { _id: 1, name: 'Tom', age: 15 }
+  await User.delete(3); // Delete record that `_id` is 3
+
+  // Get records that `age` is not -1 and over 10 and "i" character included in `name` value
+  await User.find([
+    (user) => user.age !== -1,
+    (user) => user.age > 10,
+    (user) => user.name.indexOf('i') !== -1,
+  ]).get();
+
+  // Delete records that `age` is negative number
+  await User.find([(user) => user.age < 0]).delete();
+
+  // Update records that `_id` is even number
+  await User.find([(user) => user._id % 2 === 0]).put({ age: 12 }); // `age` to 12
+
+  // Run multiple tasks via transaction
+  // 1. Update tom's age
+  // 2. Add new record
+  // 3. Delete records that `age` < 20
+  // : If error occurs during transaction, rollback to before transaction
+  await box.transaction([
+    User.task.put({ ...tom, age: 20 }),
+    User.task.add({ _id: 6, name: 'Hans', age: 22 }),
+    User.task.find([(user) => user.age < 20]).delete(),
+  ]);
+}
+
+crud();
+```
+
 ## Table of Contents
 
 - [Features](#features)
@@ -60,9 +125,10 @@ Object relation mapping for [IndexedDB](https://developer.mozilla.org/en-US/docs
 
 ### Features
 
-- [x] Easy to use
+- [x] Promise based and easy to use
+- [x] Zero dependencies
 - [x] Database and object store version management
-- [x] Data transactions and data validation with model
+- [x] Transaction control and data validation via model
 - [x] ACID(Atomicity, Consistency, Isolation, Durability) guaranteed with transaction
 - [x] Supports TypeScript
 
