@@ -150,6 +150,8 @@ In browser:
 
 ### Documentation
 
+> All of features follows IndexedDB mechanism
+
 #### BoxDB
 
 > The BoxDB class for IndexedDB and object stores management
