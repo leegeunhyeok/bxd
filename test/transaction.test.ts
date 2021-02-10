@@ -1,10 +1,13 @@
 import 'fake-indexeddb/auto';
 import BoxDB from '../src/index.es';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const Dataset = require('./mock/users.json');
+
 describe('Basic of object store transactions via model', () => {
   // global variable for test
   const testScheme = {
-    id: {
+    _id: {
       type: BoxDB.Types.NUMBER,
       key: true,
     },
@@ -14,35 +17,11 @@ describe('Basic of object store transactions via model', () => {
     },
   };
 
-  // Initial records
-  const testRecords = [
-    {
-      id: 1,
-      name: 'First',
-      code: 200,
-    },
-    {
-      id: 2,
-      name: 'Second',
-      code: 302,
-    },
-    {
-      id: 3,
-      name: 'Third',
-      code: 404,
-    },
-    {
-      id: 4,
-      name: '???',
-      code: -1,
-    },
-  ];
-
   const box = new BoxDB('transaction-db', 2);
   const OldUser = box.model(1)('user', testScheme);
   const User = box.model(2)('user', {
     ...testScheme,
-    code: BoxDB.Types.NUMBER,
+    age: BoxDB.Types.NUMBER,
   });
 
   test('prepare boxdb', async () => {
@@ -59,32 +38,32 @@ describe('Basic of object store transactions via model', () => {
   });
 
   test('add records', async () => {
-    for (const record of testRecords) {
+    for (const record of Dataset) {
       await User.add(record);
     }
   });
 
   test('get record by key', async () => {
     const key = 1;
-    const target = testRecords.find((record) => record.id === key);
+    const target = Dataset.find((record) => record._id === key);
     const record1 = await User.get(key);
-    const record2 = await User.get(100);
+    const record2 = await User.get(-1);
     expect(record1).toEqual(target);
     expect(record2).toBeNull();
   });
 
   test('get records by cursor', async () => {
     const users = await User.find([
-      (value) => value.code > 300,
-      (value) => !~value.name.indexOf('ird'),
+      (value) => value.age > 70,
+      (value) => !~value.name.indexOf('er'),
     ]).get();
 
-    expect(users.length).toEqual(1);
+    expect(users.every((user) => user.age > 70)).toBeTruthy();
   });
 
   test('update records by cursor', async () => {
-    const newName = 'success';
-    await User.find([(value) => value.id === 1]).update({
+    const newName = 'User';
+    await User.find([(value) => value._id === 1]).update({
       name: newName,
     });
 
@@ -93,57 +72,64 @@ describe('Basic of object store transactions via model', () => {
   });
 
   test('delete records by cursor', async () => {
-    await User.find([(value) => value.code < 0]).delete();
+    const filter = (value) => value.age < 10;
+    const beforeCount = (await User.find([filter]).get()).length;
+    await User.find([filter]).delete();
+    const afterCount = (await User.find([filter]).get()).length;
 
-    const user = await User.get(4);
-    expect(user).toBeNull();
+    expect(beforeCount > afterCount).toBeTruthy();
   });
 
   test('do multiple tasks with transaction', async () => {
     const emptyRes = await box.transaction([
-      User.task.add({ id: 5, name: 'unknown', code: -1 }),
-      User.task.add({ id: 6, name: 'critial', code: -99 }),
+      User.task.add({ _id: 101, name: 'New User 1', age: -99 }),
+      User.task.add({ _id: 102, name: 'New User 2', age: -1 }),
       User.task.delete(5),
     ]);
 
-    const record1 = await User.get(6);
+    const record1 = await User.get(101);
     const record2 = await User.get(5);
 
     expect(emptyRes).toBeUndefined();
-    expect(record1.code).toEqual(-99);
+    expect(record1.age).toEqual(-99);
     expect(record2).toBeNull();
   });
 
   test('handling errors in transaction', async () => {
     try {
       await box.transaction([
-        User.task.put({ id: 6, name: 'critial', code: -999 }), // before code: -99
-        User.task.add({ id: 7, name: 'empty', code: 0 }),
-        User.task.add({ id: 7, name: 'empty 2', code: 1 }), // ConstraintError: id 7 already exist
+        User.task.put({ _id: 101, name: 'New User 1 updated', age: -999 }), // before age: -99
+        User.task.put({ _id: 102, name: 'New User 2 updated', age: -111 }), // before age: -1
+        User.task.add({ _id: 103, name: 'Duplicated', age: 0 }),
+        User.task.add({ _id: 103, name: 'Duplicated', age: 1 }), // ConstraintError: id 103 already exist
       ]);
     } catch (e) {
       // Empty
     }
 
     // Transaction failed. (will be rollback to before transaction)
-    const record = await User.get(6);
-    expect(record.code).toBe(-99);
+    const record1 = await User.get(101);
+    const record2 = await User.get(102);
+    expect(record1.age).not.toBe(-999);
+    expect(record2.age).not.toBe(-111);
   });
 
   test('handling transaction aborts', async () => {
     try {
       await box.transaction([
-        User.task.put({ id: 6, name: 'critial', code: -999 }), // before code: -99
+        User.task.put({ _id: 101, name: 'User 1', age: 0 }), // before age: -99
         BoxDB.interrupt(),
-        User.task.add({ id: 7, name: 'empty', code: 0 }),
+        User.task.add({ _id: 102, name: 'User 2', age: 0 }), // before age: -1
       ]);
     } catch (e) {
       // Empty
     }
 
     // Transaction aborted. (will be rollback to before transaction)
-    const record = await User.get(6);
-    expect(record.code).toBe(-99);
+    const record1 = await User.get(101);
+    const record2 = await User.get(102);
+    expect(record1.age).toBe(-99);
+    expect(record2.age).toBe(-1);
   });
 
   test('clear all records from object store', async () => {
