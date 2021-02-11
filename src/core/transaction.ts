@@ -4,7 +4,6 @@ import {
   BoxScheme,
   BoxData,
   OptionalBoxData,
-  CursorKey,
   CursorQuery,
   EvalFunction,
   CursorOptions,
@@ -118,7 +117,7 @@ export default class BoxTransaction {
     let request: IDBRequest<IDBCursorWithValue> = null;
     if (filter && !Array.isArray(filter)) {
       // Use IDB CursorKey
-      request = objectStore.index(filter.field).openCursor(filter.key, filter.direction);
+      request = objectStore.index(filter.field).openCursor(filter.key, filter.direction || 'next');
     } else {
       // Use filter functions
       request = objectStore.openCursor();

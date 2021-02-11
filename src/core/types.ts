@@ -15,6 +15,13 @@ export enum BoxDataTypes {
   ANY = 'any',
 }
 
+export enum BoxCursorDirections {
+  ASC = 'next',
+  ASC_UNIQUE = 'nextunique',
+  DESC = 'prev',
+  DESC_UNIQUE = 'prevunique',
+}
+
 // BoxModel scheme
 export interface BoxScheme {
   [field: string]: ConfiguredType | BoxDataTypes;
@@ -50,7 +57,7 @@ export interface BoxModel<S extends BoxScheme> {
   delete(
     key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
   ): Promise<void>;
-  find: (filter?: BoxModelFilter<S>) => BoxCursorModel<S>;
+  find: (filter?: BoxModelFilter<S>, order?: BoxCursorDirections) => BoxCursorModel<S>;
   clear: () => Promise<void>;
   drop: (targetVersion: number) => void;
   task: BoxTask<S>;
@@ -64,7 +71,7 @@ export interface BoxTask<S extends BoxScheme> {
   delete: (
     key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
   ) => TransactionTask;
-  find: (filter?: BoxModelFilter<S>) => BoxTaskCursorModel<S>;
+  find: (filter?: BoxModelFilter<S>, order?: BoxCursorDirections) => BoxTaskCursorModel<S>;
 }
 
 // BoxModel.find = () => BoxCursorModel
@@ -106,7 +113,7 @@ export type CursorKey =
 export interface CursorQuery<S extends BoxScheme> {
   field: Extract<keyof S, string>;
   key: CursorKey;
-  direction?: IDBCursorDirection;
+  direction?: BoxCursorDirections;
 }
 
 // Filter function

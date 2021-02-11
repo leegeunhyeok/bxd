@@ -1,4 +1,5 @@
 import { BoxDBError } from './errors';
+import BoxDB from './database';
 import {
   BoxData,
   BoxModel,

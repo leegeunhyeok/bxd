@@ -11,6 +11,7 @@ import {
   CursorQuery,
   EvalFunction,
   OptionalBoxData,
+  BoxCursorDirections,
 } from './types';
 
 export interface BoxOption {
@@ -62,6 +63,7 @@ type BoxDBEventListener = (event: Event) => void;
 export type BoxDBType = typeof BoxDB;
 class BoxDB {
   public static Types = BoxDataTypes;
+  public static Order = BoxCursorDirections;
   private _ready = false;
   private _databaseName: string;
   private _version: number;
@@ -84,7 +86,7 @@ class BoxDB {
    */
   constructor(databaseName: string, version: number) {
     if (typeof databaseName !== 'string') throw new BoxDBError('databaseName must be string');
-    if (typeof version !== 'number') throw new BoxDBError('version must be version');
+    if (typeof version !== 'number') throw new BoxDBError('version must be number');
     this._databaseName = databaseName;
     this._version = version;
   }
@@ -317,10 +319,8 @@ class BoxDB {
    * @param boxMeta
    */
   private _createObjectStore(openRequest: IDBOpenDBRequest, boxMeta: BoxModelMeta) {
-    const idb = openRequest.result;
-
     // Create object store
-    const objectStore = idb.createObjectStore(boxMeta.name, {
+    const objectStore = openRequest.result.createObjectStore(boxMeta.name, {
       autoIncrement: boxMeta.autoIncrement,
       ...(boxMeta.keyPath ? { keyPath: boxMeta.keyPath } : null),
     });
@@ -363,8 +363,7 @@ class BoxDB {
    * @param boxMeta
    */
   private _deleteObjectStore(openRequest: IDBOpenDBRequest, boxMeta: BoxModelMeta) {
-    const idb = openRequest.result;
-    idb.deleteObjectStore(boxMeta.name);
+    openRequest.result.deleteObjectStore(boxMeta.name);
   }
 
   /**
@@ -447,7 +446,7 @@ class BoxDB {
     Model.clear = () => this._mustAvailable(Model) && this._clear(storeName);
     Model.drop = (targetVersion) => this._drop(targetVersion, storeName);
 
-    // Model.find() is get records by cursor
+    // Model.find(): transaction tasks by cursor
     Model.find = (filter) => {
       this._mustAvailable(Model);
 
