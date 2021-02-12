@@ -1,5 +1,5 @@
+import BoxTransaction from './transaction';
 import { BoxDBError } from './errors';
-import BoxDB from './database';
 import {
   BoxData,
   BoxModel,
@@ -60,6 +60,17 @@ const schemeValidator = function (this: BoxModelPrototype, target: UncheckedData
 };
 
 /**
+ * Box model initializer
+ *
+ * @param this Model
+ * @param tx Transaction manager
+ */
+const init = function (this: BoxModelPrototype, tx: BoxTransaction) {
+  Object.defineProperty(this, '__available__', { value: true, enumerable: true });
+  Object.defineProperty(this, '__tx__', { value: tx });
+};
+
+/**
  * Merge object to base object
  *
  * @param baseObject
@@ -73,17 +84,10 @@ const mergeObject = <T>(baseObject: T, targetObject?: T): T => {
 };
 
 /**
- * Set value to prototype
+ * Model.toString handler
  *
- * @param prototype Target prototype object
- * @param key
- * @param value
- * @param readonly
+ * @param this Model
  */
-const setPrototype = <T>(prototype: T, key: keyof T, value: T[keyof T], readonly: boolean) => {
-  Object.defineProperty(prototype, key, { value, writable: !readonly });
-};
-
 const toString = function (this: BoxModelPrototype) {
   return `BoxModel(${this.__storeName__}):${this.__targetVersion__}`;
 };
@@ -110,16 +114,21 @@ export const generateModel = <S extends BoxScheme>(
   } as unknown) as BoxModel<S>;
 
   // Model prototype
-  setPrototype<BoxModelPrototype>(Model.prototype, '__targetVersion__', targetVersion, true);
-  setPrototype<BoxModelPrototype>(Model.prototype, '__storeName__', storeName, true);
-  setPrototype<BoxModelPrototype>(Model.prototype, '__available__', false, false);
-  setPrototype<BoxModelPrototype>(Model.prototype, '__scheme__', scheme, true);
-  setPrototype<BoxModelPrototype>(
-    Model.prototype,
-    '__validate',
-    schemeValidator.bind(Model.prototype),
-    true,
-  );
+  Object.defineProperty(Model.prototype, '__available__', {
+    value: false,
+    enumerable: true,
+    writable: true,
+  });
+  Object.defineProperty(Model.prototype, '__targetVersion__', {
+    value: targetVersion,
+    enumerable: true,
+  });
+  Object.defineProperty(Model.prototype, '__storeName__', { value: storeName, enumerable: true });
+  Object.defineProperty(Model.prototype, '__scheme__', { value: scheme, enumerable: true });
+  Object.defineProperty(Model.prototype, '__init', { value: init.bind(Model.prototype) });
+  Object.defineProperty(Model.prototype, '__validate', {
+    value: schemeValidator.bind(Model.prototype),
+  });
 
   // Model static fields
   Object.defineProperty(Model, 'name', { value: storeName });

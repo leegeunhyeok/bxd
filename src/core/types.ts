@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { TransactionTask } from './task';
+import BoxTransaction from './transaction';
 
 // Available types
 export enum BoxDataTypes {
@@ -89,6 +90,7 @@ export interface BoxTaskCursorModel<S extends BoxScheme> {
 
 // BoxModel Prototype
 export interface BoxModelPrototype {
+  readonly __tx__: BoxTransaction;
   readonly __targetVersion__: number;
   readonly __storeName__: string;
   readonly __available__: boolean;
