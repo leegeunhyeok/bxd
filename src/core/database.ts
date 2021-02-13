@@ -633,12 +633,7 @@ class BoxDB {
           this._eventListener['close'].forEach((f) => f(event));
         };
 
-        this._preparedModel.forEach((model) => {
-          Object.defineProperty(model.prototype, '__available__', {
-            value: this._available(model),
-            writable: false,
-          });
-        });
+        this._preparedModel.forEach((model) => this._available(model) && model.__init(this._tx));
         this._preparedModel = [];
 
         resolve(event);

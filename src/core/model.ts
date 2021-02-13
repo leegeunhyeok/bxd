@@ -125,12 +125,12 @@ export const generateModel = <S extends BoxScheme>(
   });
   Object.defineProperty(Model.prototype, '__storeName__', { value: storeName, enumerable: true });
   Object.defineProperty(Model.prototype, '__scheme__', { value: scheme, enumerable: true });
-  Object.defineProperty(Model.prototype, '__init', { value: init.bind(Model.prototype) });
   Object.defineProperty(Model.prototype, '__validate', {
     value: schemeValidator.bind(Model.prototype),
   });
 
   // Model static fields
+  Object.defineProperty(Model, '__init', { value: init.bind(Model.prototype), enumerable: false });
   Object.defineProperty(Model, 'name', { value: storeName });
   Object.defineProperty(Model, 'version', { value: targetVersion });
   Model.toString = toString.bind(Model.prototype);

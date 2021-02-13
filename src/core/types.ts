@@ -49,6 +49,7 @@ export type UncheckedData = {
 export interface BoxModel<S extends BoxScheme> {
   readonly name: string;
   readonly version: number;
+  readonly __init: (tx: BoxTransaction) => void;
   new (initalData?: BoxData<S>): BoxData<S>;
   add: (value: BoxData<S>, key?: IDBValidKey) => Promise<void>;
   get: (
@@ -96,7 +97,6 @@ export interface BoxModelPrototype {
   readonly __available__: boolean;
   readonly __scheme__: BoxScheme;
   readonly __validate: (target: UncheckedData) => boolean;
-  readonly __init: (tx: BoxTransaction) => void;
   toString: () => string;
 }
 
