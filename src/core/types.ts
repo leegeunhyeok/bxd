@@ -96,6 +96,7 @@ export interface BoxModelPrototype {
   readonly __available__: boolean;
   readonly __scheme__: BoxScheme;
   readonly __validate: (target: UncheckedData) => boolean;
+  readonly __init: (tx: BoxTransaction) => void;
   toString: () => string;
 }
 
