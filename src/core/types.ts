@@ -46,45 +46,52 @@ export type UncheckedData = {
 };
 
 // BoxModel
-export interface BoxModel<S extends BoxScheme> {
+export interface BoxModel<S extends BoxScheme> extends BoxHandler<S> {
   readonly name: string;
   readonly version: number;
   readonly __init: (tx: BoxTransaction) => void;
   new (initalData?: BoxData<S>): BoxData<S>;
-  add: (value: BoxData<S>, key?: IDBValidKey) => Promise<void>;
-  get: (
-    key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
-  ) => Promise<BoxData<S>>;
-  put: (value: BoxData<S>, key?: IDBValidKey) => Promise<void>;
-  delete(
-    key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
-  ): Promise<void>;
-  find: (filter?: BoxModelFilter<S>) => BoxCursorModel<S>;
-  clear: () => Promise<void>;
   drop: (targetVersion: number) => void;
   task: BoxTask<S>;
   prototype: BoxModelPrototype;
 }
 
+export interface BoxHandler<S extends BoxScheme> {
+  add: (this: BoxModel<S>, value: BoxData<S>, key?: IDBValidKey) => Promise<void>;
+  get: (
+    this: BoxModel<S>,
+    key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
+  ) => Promise<BoxData<S>>;
+  put: (this: BoxModel<S>, value: BoxData<S>, key?: IDBValidKey) => Promise<void>;
+  delete(
+    this: BoxModel<S>,
+    key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
+  ): Promise<void>;
+  find: (this: BoxModel<S>, filter?: BoxModelFilter<S>) => BoxCursorHandler<S>;
+  clear: (this: BoxModel<S>) => Promise<void>;
+}
+
 // BoxModel.task = BoxTask
 export interface BoxTask<S extends BoxScheme> {
-  add: (value: BoxData<S>, key?: IDBValidKey) => TransactionTask;
-  put: (value: BoxData<S>, key?: IDBValidKey) => TransactionTask;
+  __ctx__: BoxModelPrototype;
+  add: (this: BoxTask<S>, value: BoxData<S>, key?: IDBValidKey) => TransactionTask;
+  put: (this: BoxTask<S>, value: BoxData<S>, key?: IDBValidKey) => TransactionTask;
   delete: (
+    this: BoxTask<S>,
     key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
   ) => TransactionTask;
-  find: (filter?: BoxModelFilter<S>) => BoxTaskCursorModel<S>;
+  find: (this: BoxTask<S>, filter?: BoxModelFilter<S>) => BoxCursorTask<S>;
 }
 
 // BoxModel.find = () => BoxCursorModel
-export interface BoxCursorModel<S extends BoxScheme> {
+export interface BoxCursorHandler<S extends BoxScheme> {
   get: () => Promise<BoxData<S>[]>;
   update: (value: OptionalBoxData<S>) => Promise<void>;
   delete: () => Promise<void>;
 }
 
 // BoxModel.task.find = () => BoxTaskCursorModel
-export interface BoxTaskCursorModel<S extends BoxScheme> {
+export interface BoxCursorTask<S extends BoxScheme> {
   update: (value: OptionalBoxData<S>) => TransactionTask;
   delete: () => TransactionTask;
 }
@@ -97,6 +104,7 @@ export interface BoxModelPrototype {
   readonly __available__: boolean;
   readonly __scheme__: BoxScheme;
   readonly __validate: (target: UncheckedData) => boolean;
+  readonly __mustAvailable: () => true | never;
   toString: () => string;
 }
 
