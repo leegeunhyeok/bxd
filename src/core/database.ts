@@ -439,68 +439,7 @@ class BoxDB {
     /**
      * @static Model's static methods
      */
-    Model.add = (value, key) => this._mustAvailable(Model) && this._add(storeName, value, key);
-    Model.get = (key) => this._mustAvailable(Model) && this._get(storeName, key);
-    Model.put = (value, key) => this._mustAvailable(Model) && this._put(storeName, value, key);
-    Model.delete = (key) => this._mustAvailable(Model) && this._delete(storeName, key);
-    Model.clear = () => this._mustAvailable(Model) && this._clear(storeName);
     Model.drop = (targetVersion) => this._drop(targetVersion, storeName);
-
-    // Model.find(): transaction tasks by cursor
-    Model.find = (filter) => {
-      this._mustAvailable(Model);
-
-      return {
-        get: () =>
-          this._cursor<typeof TransactionType.CURSOR_GET, S>(
-            TransactionType.CURSOR_GET,
-            storeName,
-            filter,
-          ),
-        update: (value) =>
-          this._cursor<typeof TransactionType.CURSOR_UPDATE, S>(
-            TransactionType.CURSOR_UPDATE,
-            storeName,
-            filter,
-            value,
-          ),
-        delete: () =>
-          this._cursor<typeof TransactionType.CURSOR_DELETE, S>(
-            TransactionType.CURSOR_DELETE,
-            storeName,
-            filter,
-          ),
-      };
-    };
-
-    // Tasks for transaction
-    Model.task = {
-      add: (value, key) =>
-        this._mustAvailable(Model) &&
-        new TransactionTask(TransactionType.ADD, storeName, TransactionMode.WRITE, [value, key]),
-      put: (value, key) =>
-        this._mustAvailable(Model) &&
-        new TransactionTask(TransactionType.PUT, storeName, TransactionMode.WRITE, [value, key]),
-      delete: (key) =>
-        this._mustAvailable(Model) &&
-        new TransactionTask(TransactionType.DELETE, storeName, TransactionMode.WRITE, [key]),
-      find: (filter) => {
-        this._mustAvailable(Model);
-        return {
-          update: (value) =>
-            new TransactionTask(TransactionType.CURSOR_UPDATE, storeName, TransactionMode.WRITE, [
-              {
-                filter,
-                updateValue: value,
-              },
-            ]),
-          delete: () =>
-            new TransactionTask(TransactionType.CURSOR_DELETE, storeName, TransactionMode.WRITE, [
-              { filter },
-            ]),
-        };
-      },
-    };
 
     this._registModel(Model, options);
 
@@ -516,80 +455,6 @@ class BoxDB {
     return (
       currentStoreIndex[currentStoreIndex.length - 1] === targetModel.prototype.__targetVersion__
     );
-  }
-
-  /**
-   * Target model must be available.
-   * If not available, throws exception
-   *
-   * @param targetModel Target model
-   */
-  private _mustAvailable<S extends BoxScheme>(targetModel: BoxModel<S>): true | never {
-    if (!targetModel.prototype.__available__) throw new BoxDBError('This model is not available');
-    return true;
-  }
-
-  /**
-   * Add new record into target object store
-   *
-   * @param storeName object store name for open transaction
-   * @param value object to store
-   * @param key optional key
-   */
-  private _add(storeName: string, value: any, key?: IDBValidKey) {
-    return this._tx.add(storeName, value, key);
-  }
-
-  /**
-   * Get data from object store
-   *
-   * If data is not exist, returns `null`
-   *
-   * @param storeName object store name for open transaction
-   * @param key idb object store keyPath value
-   */
-  private _get<S extends BoxScheme>(storeName: string, key: any) {
-    return this._tx.get<S>(storeName, key).then((data) => data || null);
-  }
-
-  /**
-   * Update record or create new one to target object store
-   *
-   * @param storeName object store name for open transaction
-   * @param value object to store
-   * @param key optional key
-   */
-  private _put(storeName: string, value: any, key?: IDBValidKey) {
-    return this._tx.put(storeName, value, key);
-  }
-
-  /**
-   * Delete data from object store
-   *
-   * @param storeName object store name for open transaction
-   * @param key idb object store keyPath value
-   */
-  private _delete(storeName: string, key: any) {
-    return this._tx.delete(storeName, key);
-  }
-
-  private _clear(storeName: string) {
-    return this._tx.clear(storeName);
-  }
-
-  private _cursor<T extends TransactionType, S extends BoxScheme>(
-    transactionType: TransactionType,
-    storeName: string,
-    filter?: CursorQuery<S> | EvalFunction<S>[],
-    updateValue?: OptionalBoxData<S>,
-  ) {
-    if (filter && !Array.isArray(filter)) {
-      if (Object.keys(filter).length !== 1) {
-        throw new BoxDBError('Cursor query object must be has only one index');
-      }
-    }
-
-    return this._tx.cursor<T, S>(transactionType, storeName, filter, updateValue);
   }
 
   /**
