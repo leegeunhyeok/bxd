@@ -92,6 +92,10 @@ const toString = function (this: BoxModelPrototype) {
   return `BoxModel(${this.__storeName__}):${this.__targetVersion__}`;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const define = <T>(o: T, key: string, value: any, editable = false) =>
+  Object.defineProperty(o, key, { value, configurable: editable });
+
 /**
  * Generate new model
  *
@@ -112,28 +116,23 @@ export const generateModel = <S extends BoxScheme>(
     // Create empty(null) object or initalData based on scheme
     Object.assign(this, mergeObject(scheme, initalData));
   } as unknown) as BoxModel<S>;
+  const prototype = Model.prototype;
 
   // Model prototype
-  Object.defineProperty(Model.prototype, '__available__', {
-    value: false,
-    enumerable: true,
-    writable: true,
-  });
-  Object.defineProperty(Model.prototype, '__targetVersion__', {
-    value: targetVersion,
-    enumerable: true,
-  });
-  Object.defineProperty(Model.prototype, '__storeName__', { value: storeName, enumerable: true });
-  Object.defineProperty(Model.prototype, '__scheme__', { value: scheme, enumerable: true });
-  Object.defineProperty(Model.prototype, '__validate', {
-    value: schemeValidator.bind(Model.prototype),
-  });
+  define(prototype, '__tx__', null, true);
+  define(prototype, '__available__', false, true);
+  define(prototype, '__targetVersion__', targetVersion);
+  define(prototype, '__storeName__', storeName);
+  define(prototype, '__scheme__', scheme);
+  define(prototype, '__validate', schemeValidator.bind(Model.prototype));
 
   // Model static fields
-  Object.defineProperty(Model, '__init', { value: init.bind(Model.prototype), enumerable: false });
-  Object.defineProperty(Model, 'name', { value: storeName });
-  Object.defineProperty(Model, 'version', { value: targetVersion });
-  Model.toString = toString.bind(Model.prototype);
+  define(Model, '__init', init.bind(Model.prototype));
+  define(Model, 'name', storeName);
+  define(Model, 'version', targetVersion);
+  define(Model, 'toString', toString.bind(Model.prototype));
+
+  // Model transaction handler (static)
 
   return Model;
 };
