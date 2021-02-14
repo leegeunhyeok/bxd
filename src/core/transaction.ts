@@ -162,18 +162,40 @@ export default class BoxTransaction {
     });
   }
 
+  /**
+   * Get data from object store
+   *
+   * If data is not exist, returns `null`
+   *
+   * @param storeName object store name for open transaction
+   * @param key idb object store keyPath value
+   */
   get<S extends BoxScheme>(storeName: string, key: ObjectStoreKey): Promise<BoxData<S>> {
     return this._taskTransactionHandler([
       new TransactionTask(TransactionType.GET, storeName, TransactionMode.READ, [key]),
-    ]);
+    ]).then((data) => data || null);
   }
 
+  /**
+   * Add new record into target object store
+   *
+   * @param storeName object store name for open transaction
+   * @param value object to store
+   * @param key optional key
+   */
   add<S extends BoxScheme>(storeName: string, value: BoxData<S>, key?: IDBValidKey): Promise<void> {
     return this._taskTransactionHandler([
       new TransactionTask(TransactionType.ADD, storeName, TransactionMode.WRITE, [value, key]),
     ]);
   }
 
+  /**
+   * Update record or create new one to target object store
+   *
+   * @param storeName object store name for open transaction
+   * @param value object to store
+   * @param key optional key
+   */
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   put<S extends BoxScheme>(
     storeName: string,
@@ -185,22 +207,45 @@ export default class BoxTransaction {
     ]);
   }
 
+  /**
+   * Delete data from object store
+   *
+   * @param storeName object store name for open transaction
+   * @param key idb object store keyPath value
+   */
   delete(storeName: string, key: ObjectStoreKey): Promise<void> {
     return this._taskTransactionHandler([
       new TransactionTask(TransactionType.DELETE, storeName, TransactionMode.WRITE, [key]),
     ]);
   }
 
+  /**
+   * Clear all records
+   *
+   * @param storeName object store name
+   */
   clear(storeName: string): Promise<void> {
     return this._taskTransactionHandler([
       new TransactionTask(TransactionType.CLEAR, storeName, TransactionMode.WRITE, []),
     ]);
   }
 
+  /**
+   * Tasks in single transaction
+   *
+   * @param tasks transacktion tasks
+   */
   transaction(tasks: TransactionTask[]): Promise<any> {
     return this._taskTransactionHandler(tasks);
   }
 
+  /**
+   *
+   * @param transactionType transction type
+   * @param storeName object store name
+   * @param filter cursor filter
+   * @param updateValue for update value (Only type = CURSOR_UPDATE)
+   */
   cursor<T extends TransactionType, S extends BoxScheme>(
     transactionType: TransactionType,
     storeName: string,
