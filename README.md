@@ -86,13 +86,13 @@ await box.transaction([
     - [BoxTask.put(value[, key])](#boxtaskput)
     - [BoxTask.delete(key)](#boxtaskdelete)
     - [BoxTask.find(value[, key])](#boxtaskfind)
-  - [BoxCursorModel](#boxcursormodel)
-    - [BoxCursorModel.get()](#boxcursormodelget)
-    - [BoxCursorModel.update(value)](#boxcursormodelupdate)
-    - [BoxCursorModel.delete()](#boxcursormodeldelete)
-  - [BoxTaskCursorModel](#boxtaskcursormodel)
-    - [BoxTaskCursorModel.update()](#boxtaskcursormodelupdate)
-    - [BoxTaskCursorModel.delete()](#boxtaskcursormodeldelete)
+  - [BoxCursorHandler](#boxcursorhandler)
+    - [BoxCursorHandler.get()](#boxcursorhandlerget)
+    - [BoxCursorHandler.update(value)](#boxcursorhandlerupdate)
+    - [BoxCursorHandler.delete()](#boxcursorhandlerdelete)
+  - [BoxCursorTask](#boxcursortask)
+    - [BoxCursorTask.update()](#boxcursortaskupdate)
+    - [Boxcursortask.delete()](#boxcursortaskdelete)
 - [Example](#example)
   - [Basic](#basic)
   - [Version management](#version-management)
@@ -401,7 +401,7 @@ Methods
 - Model.delete(key): Delete record from object store
 - Model.clear(key): Clear all records from object store
 - Model.drop(key): Drop the object store
-- Model.find([, filters]): Returns `BoxCursorModel`, Transaction by [cursor](https://developer.mozilla.org/en-US/docs/Web/API/IDBCursor)
+- Model.find([, filters]): Returns `BoxCursorHandler`, Transaction by [cursor](https://developer.mozilla.org/en-US/docs/Web/API/IDBCursor)
   - find().get(): Get all of records
   - find().update(value): Update records
   - find().delete(): Delete records
@@ -516,12 +516,12 @@ Methods
 
 > WIP
 
-#### BoxCursorModel
+#### BoxCursorHandler
 
 > Data transaction with [cursor](https://developer.mozilla.org/en-US/docs/Web/API/IDBCursor)
 
 ```typescript
-interface BoxCursorModel<S extends BoxScheme> {
+interface BoxCursorHandler<S extends BoxScheme> {
   get: () => Promise<BoxData<S>[]>;
   update: (value: OptionalBoxData<S>) => Promise<void>;
   delete: () => Promise<void>;
@@ -535,16 +535,16 @@ Model.find().delete();
 
 Methods
 
-- [BoxCursorModel.get()](#boxcursormodelget)
-- [BoxCursorModel.update()](#boxcursormodelupdate)
-- [BoxCursorModel.delete()](#boxcursormodeldelete)
+- [BoxCursorHandler.get()](#boxcursorhandlerget)
+- [BoxCursorHandler.update()](#boxcursorhandlerupdate)
+- [BoxCursorHandler.delete()](#boxcursorhandlerdelete)
 
-#### BoxTaskCursorModel
+#### BoxCursorTask
 
 > Data transaction with [cursor](https://developer.mozilla.org/en-US/docs/Web/API/IDBCursor)
 
 ```typescript
-interface BoxTaskCursorModel<S extends BoxScheme> {
+interface BoxCursorTask<S extends BoxScheme> {
   update: (value: OptionalBoxData<S>) => TransactionTask;
   delete: () => TransactionTask;
 }
@@ -556,8 +556,8 @@ Model.task.find().delete();
 
 Methods
 
-- [BoxTaskCursorModel.update()](#boxtaskcursormodelupdate)
-- [BoxTaskCursorModel.delete()](#boxtaskcursormodeldelete)
+- [BoxCursorTask.update()](#boxcursortaskupdate)
+- [BoxCursorTask.delete()](#boxcursortaskdelete)
 
 ### Example
 
