@@ -7,6 +7,7 @@ export {
   BoxData,
   BoxModelFilter,
   BoxDataTypes,
+  BoxCursorDirections,
   ConfiguredType,
 } from './core/types';
 export { BoxOption, BoxModelRegister } from './core/database';

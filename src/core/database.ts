@@ -1,16 +1,12 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { generateModel } from './model';
 import BoxTransaction from './transaction';
 import { TransactionMode, TransactionTask, TransactionType } from './task';
+import { generateModel } from './model';
 import { BoxDBError } from './errors';
 import {
   BoxScheme,
   BoxModel,
   ConfiguredBoxScheme,
   BoxDataTypes,
-  CursorQuery,
-  EvalFunction,
-  OptionalBoxData,
   BoxCursorDirections,
 } from './types';
 
