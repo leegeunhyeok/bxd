@@ -83,14 +83,14 @@ export interface BoxTask<S extends BoxScheme> {
   find: (this: BoxTask<S>, filter?: BoxModelFilter<S>) => BoxCursorTask<S>;
 }
 
-// BoxModel.find = () => BoxCursorModel
+// BoxModel.find = () => BoxCursorHandler
 export interface BoxCursorHandler<S extends BoxScheme> {
   get: () => Promise<BoxData<S>[]>;
   update: (value: OptionalBoxData<S>) => Promise<void>;
   delete: () => Promise<void>;
 }
 
-// BoxModel.task.find = () => BoxTaskCursorModel
+// BoxModel.task.find = () => BoxCursorTask
 export interface BoxCursorTask<S extends BoxScheme> {
   update: (value: OptionalBoxData<S>) => TransactionTask;
   delete: () => TransactionTask;
