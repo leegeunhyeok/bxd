@@ -16,7 +16,7 @@ import {
  * @param type Type identifier (from enum)
  * @param value Value for check
  */
-const typeValidator = (type: BoxDataTypes, value: UncheckedData): boolean => {
+export const typeValidator = (type: BoxDataTypes, value: UncheckedData): boolean => {
   const targetPrototype = value.__proto__;
 
   switch (type) {
@@ -30,11 +30,30 @@ const typeValidator = (type: BoxDataTypes, value: UncheckedData): boolean => {
       return targetPrototype === Array.prototype;
     case BoxDataTypes.OBJECT:
       return targetPrototype === Object.prototype;
+    case BoxDataTypes.REGEXP:
+      return targetPrototype === RegExp.prototype;
+    case BoxDataTypes.FILE:
+      return targetPrototype === File.prototype;
+    case BoxDataTypes.BLOB:
+      return targetPrototype === Blob.prototype;
     case BoxDataTypes.ANY:
       return true; // any
     default:
       return false;
   }
+};
+
+/**
+ * Merge object to base object
+ *
+ * @param baseObject
+ * @param targetObject
+ */
+export const mergeObject = <T>(baseObject: T, targetObject?: T): T => {
+  Object.keys(baseObject).forEach((k) => {
+    baseObject[k] = (targetObject && targetObject[k]) || null;
+  });
+  return baseObject;
 };
 
 /**
@@ -81,19 +100,6 @@ const mustAvailable = function (this: BoxModelPrototype): true | never {
 const init = function (this: BoxModelPrototype, tx: BoxTransaction) {
   Object.defineProperty(this, '__available__', { value: true, enumerable: true });
   Object.defineProperty(this, '__tx__', { value: tx });
-};
-
-/**
- * Merge object to base object
- *
- * @param baseObject
- * @param targetObject
- */
-const mergeObject = <T>(baseObject: T, targetObject?: T): T => {
-  Object.keys(baseObject).forEach((k) => {
-    baseObject[k] = (targetObject && targetObject[k]) || null;
-  });
-  return baseObject;
 };
 
 /**
