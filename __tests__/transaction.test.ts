@@ -2,7 +2,7 @@ import 'fake-indexeddb/auto';
 import BoxDB from '../src/index.es';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const Dataset = require('./mock/users.json');
+const Dataset = require('./__mocks__/users.json');
 
 describe('Basic of object store transactions via model', () => {
   // global variable for test
