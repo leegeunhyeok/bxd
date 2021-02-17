@@ -132,9 +132,36 @@ npm install --save bxd
 
 In browser:
 
+> Maybe polyfills required if load BoxDB via script tag
+
 ```html
 <script src="/path/to/bxd.js"></script>
 ```
+
+In browser (legacy):
+
+```html
+<!-- Polyfills required -->
+<script src="https://polyfill.io/v3/polyfill.min.js?features=Symbol%2CSymbol.asyncIterator%2CSymbol.prototype.description%2CSymbol.iterator%2CArray.prototype.indexOf%2CArray.prototype.%40%40iterator%2CObject.assign%2CObject.getOwnPropertyDescriptor%2CObject.setPrototypeOf%2CPromise%2CString.prototype.%40%40iterator"></script>
+<script src="/path/to/bxd.min.js">
+```
+
+|     Target     | Polyfill (Based on core-js 3)         |
+| :------------: | :------------------------------------ |
+| `IE10`, `IE11` | es.symbol                             |
+| `IE10`, `IE11` | es.symbol.description                 |
+| `IE10`, `IE11` | es.symbol.async-iterator              |
+| `IE10`, `IE11` | es.symbol.iterator                    |
+| `IE10`, `IE11` | es.array.concat                       |
+| `IE10`, `IE11` | es.array.index-of                     |
+| `IE10`, `IE11` | es.array.iterator                     |
+| `IE10`, `IE11` | es.object.assign                      |
+| `IE10`, `IE11` | es.object.get-own-property-descriptor |
+|     `IE10`     | es.object.set-prototype-of            |
+| `IE10`, `IE11` | es.object.to-string                   |
+| `IE10`, `IE11` | es.promise                            |
+| `IE10`, `IE11` | es.string.iterator                    |
+| `IE10`, `IE11` | web.dom-collections.iterator          |
 
 ### Documentation
 
