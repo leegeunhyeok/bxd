@@ -47,18 +47,7 @@ export default [
       ...plugins,
       babel({
         babelHelpers: 'bundled',
-        presets: [
-          [
-            '@babel/preset-env',
-            {
-              targets: '> 0.5%, ie >= 10',
-              modules: false,
-              useBuiltIns: 'usage',
-              corejs: 3,
-            },
-          ],
-          '@babel/preset-typescript',
-        ],
+        presets: ['@babel/preset-typescript'],
         exclude: [/\/core-js\//],
       }),
       visualizer(),
