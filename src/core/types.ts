@@ -37,9 +37,7 @@ export type BoxData<S extends BoxScheme> = {
   [field in keyof S]: AsType<PickType<S[field]>>;
 };
 
-export type OptionalBoxData<S extends BoxScheme> = {
-  [field in keyof S]?: AsType<PickType<S[field]>>;
-};
+export type OptionalBoxData<S extends BoxScheme> = Partial<BoxData<S>>;
 
 export type UncheckedData = {
   [field: string]: any;
