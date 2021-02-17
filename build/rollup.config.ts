@@ -40,7 +40,13 @@ export default [
         name: 'BoxDB',
         file: 'dist/bxd.min.js',
         format: 'iife',
-        plugins: [terser()],
+        plugins: [
+          terser({
+            output: {
+              comments: false,
+            },
+          }),
+        ],
       },
     ],
     plugins: [
