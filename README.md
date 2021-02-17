@@ -15,10 +15,8 @@ Object relation mapping for [IndexedDB](https://developer.mozilla.org/en-US/docs
   <a href="https://www.npmjs.com/package/bxd" alt="npm">
     <img src="https://img.shields.io/npm/v/bxd">
   </a>
-  <a href="package.json" alt="dependencies">
-    <img src="https://img.shields.io/badge/dependencies-none-blue">
-  </a>
   <img src="https://img.shields.io/github/license/leegeunhyeok/bxd">
+  <img src="https://badgen.net/badge/-/TypeScript/blue?icon=typescript&label" alt="typescript">
 
 </div>
 
