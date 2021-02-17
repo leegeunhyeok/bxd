@@ -5,6 +5,7 @@ on:
     branches:
       - dev
     paths:
+      - '.github/workflows/build.yml'
       - 'src/**'
       - 'test/**'
       - 'build/**'
