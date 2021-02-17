@@ -30,3 +30,7 @@ jobs:
         run: npm run build
       - name: Get build files size
         run: ls -alshS dist/ | awk '{print $10 " => " $6}'
+      - name: Code coverage
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+        run: ./node_modules/.bin/codecov --token="$INPUT_TOKEN"
