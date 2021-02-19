@@ -60,7 +60,7 @@ export default [
     ],
   },
   {
-    input: 'src/index.ts',
+    input: 'src/index.es.ts',
     output: [{ file: 'types/index.d.ts', format: 'es' }],
     plugins: [dts()],
   },
