@@ -47,7 +47,6 @@ export type UncheckedData = {
 export interface BoxModel<S extends BoxScheme> extends BoxHandler<S> {
   readonly name: string;
   readonly version: number;
-  readonly __init: (tx: BoxTransaction) => void;
   new (initalData?: BoxData<S>): BoxData<S>;
   drop: (targetVersion: number) => void;
   task: BoxTask<S>;
@@ -96,13 +95,13 @@ export interface BoxCursorTask<S extends BoxScheme> {
 
 // BoxModel Prototype
 export interface BoxModelPrototype {
-  readonly __tx__: BoxTransaction;
-  readonly __targetVersion__: number;
-  readonly __storeName__: string;
-  readonly __available__: boolean;
-  readonly __scheme__: BoxScheme;
-  readonly __validate: (target: UncheckedData) => boolean;
-  readonly __mustAvailable: () => true | never;
+  __tx__: BoxTransaction;
+  __targetVersion__: number;
+  __storeName__: string;
+  __available__: boolean;
+  __scheme__: BoxScheme;
+  __validate: (target: UncheckedData) => boolean;
+  __mustAvailable: () => true | never;
   toString: () => string;
 }
 
