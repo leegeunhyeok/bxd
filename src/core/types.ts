@@ -45,10 +45,7 @@ export type UncheckedData = {
 
 // BoxModel
 export interface BoxModel<S extends BoxScheme> extends BoxHandler<S> {
-  readonly name: string;
-  readonly version: number;
   new (initalData?: BoxData<S>): BoxData<S>;
-  drop: (targetVersion: number) => void;
   task: BoxTask<S>;
   prototype: BoxModelPrototype;
 }
@@ -66,6 +63,7 @@ export interface BoxHandler<S extends BoxScheme> {
   ): Promise<void>;
   find: (this: BoxModel<S>, filter?: BoxModelFilter<S>) => BoxCursorHandler<S>;
   clear: (this: BoxModel<S>) => Promise<void>;
+  drop: (targetVersion: number) => void;
 }
 
 // BoxModel.task = BoxTask
@@ -102,7 +100,6 @@ export interface BoxModelPrototype {
   __scheme__: BoxScheme;
   __validate: (target: UncheckedData) => boolean;
   __mustAvailable: () => true | never;
-  toString: () => string;
 }
 
 // Filters for BoxModel.find()
