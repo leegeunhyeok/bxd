@@ -48,27 +48,26 @@ export interface BoxModel<S extends BoxScheme> extends BoxHandler<S> {
   new (initalData?: BoxData<S>): BoxData<S>;
   task: BoxTask<S>;
   prototype: BoxModelPrototype;
+  getName: () => string;
+  getVersion: () => number;
 }
 
 export interface BoxHandler<S extends BoxScheme> {
-  add: (this: BoxModel<S>, value: BoxData<S>, key?: IDBValidKey) => Promise<void>;
+  add: (value: BoxData<S>, key?: IDBValidKey) => Promise<void>;
   get: (
-    this: BoxModel<S>,
     key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
   ) => Promise<BoxData<S>>;
-  put: (this: BoxModel<S>, value: BoxData<S>, key?: IDBValidKey) => Promise<void>;
+  put: (value: BoxData<S>, key?: IDBValidKey) => Promise<void>;
   delete(
-    this: BoxModel<S>,
     key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
   ): Promise<void>;
-  find: (this: BoxModel<S>, filter?: BoxModelFilter<S>) => BoxCursorHandler<S>;
-  clear: (this: BoxModel<S>) => Promise<void>;
+  find: (filter?: BoxModelFilter<S>) => BoxCursorHandler<S>;
+  clear: () => Promise<void>;
   drop: (targetVersion: number) => void;
 }
 
 // BoxModel.task = BoxTask
 export interface BoxTask<S extends BoxScheme> {
-  __ctx__: BoxModelPrototype;
   add: (this: BoxTask<S>, value: BoxData<S>, key?: IDBValidKey) => TransactionTask;
   put: (this: BoxTask<S>, value: BoxData<S>, key?: IDBValidKey) => TransactionTask;
   delete: (
@@ -99,7 +98,7 @@ export interface BoxModelPrototype {
   __available__: boolean;
   __scheme__: BoxScheme;
   __validate: (target: UncheckedData) => boolean;
-  __mustAvailable: () => true | never;
+  __ok: () => true | never;
 }
 
 // Filters for BoxModel.find()
