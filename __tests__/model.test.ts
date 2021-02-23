@@ -17,19 +17,18 @@ const modelArgs = {
 describe('checking about model basic features', () => {
   test('create model and prototype check', () => {
     const TestModel = generateModel(modelArgs.targetVersion, modelArgs.storeName, modelArgs.scheme);
-    expect(TestModel.toString()).toBe(
-      `BoxModel(${modelArgs.storeName}):${modelArgs.targetVersion}`,
-    );
-    expect(TestModel.version).toBe(modelArgs.targetVersion);
-    expect(TestModel.name).toBe(modelArgs.storeName);
+
+    expect(TestModel.getVersion()).toBe(modelArgs.targetVersion);
+    expect(TestModel.getName()).toBe(modelArgs.storeName);
   });
 
   test('model data validation', () => {
     const TestModel = generateModel(modelArgs.targetVersion, modelArgs.storeName, modelArgs.scheme);
+    TestModel.prototype.__available__ = true; // for testing
 
     expect(() => {
       new TestModel({
-        _id: '1', // must be number
+        _id: 'wrong_value', // must be number
         name: 'test',
       });
     }).toThrow();
