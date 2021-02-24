@@ -81,6 +81,8 @@ await box.transaction([
   - [BoxScheme](#boxscheme)
   - [BoxOption](#boxoption)
   - [BoxModel](#boxmodel)
+    - [BoxModel.getName()](#boxmodelgetname)
+    - [BoxModel.getVersion()](#boxmodelgetversion)
     - [BoxModel.add(value[, key])](#boxmodeladd)
     - [BoxModel.get(key)](#boxmodelget)
     - [BoxModel.put(value[, key])](#boxmodelput)
@@ -440,6 +442,14 @@ Methods
   - find().get(): Get all of records
   - find().update(value): Update records
   - find().delete(): Delete records
+
+##### BoxModel.getName()
+
+> WIP
+
+##### BoxModel.getVersion()
+
+> WIP
 
 ##### BoxModel.add()
 
