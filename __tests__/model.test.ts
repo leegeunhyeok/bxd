@@ -1,6 +1,6 @@
 import 'fake-indexeddb/auto';
 import BoxDB from '../src/index.es';
-import { generateModel } from '../src/core/model';
+import { createModel } from '../src/core/model';
 
 const modelArgs = {
   targetVersion: 1,
@@ -16,14 +16,14 @@ const modelArgs = {
 
 describe('checking about model basic features', () => {
   test('create model and prototype check', () => {
-    const TestModel = generateModel(modelArgs.targetVersion, modelArgs.storeName, modelArgs.scheme);
+    const TestModel = createModel(modelArgs.targetVersion, modelArgs.storeName, modelArgs.scheme);
 
     expect(TestModel.getVersion()).toBe(modelArgs.targetVersion);
     expect(TestModel.getName()).toBe(modelArgs.storeName);
   });
 
   test('model data validation', () => {
-    const TestModel = generateModel(modelArgs.targetVersion, modelArgs.storeName, modelArgs.scheme);
+    const TestModel = createModel(modelArgs.targetVersion, modelArgs.storeName, modelArgs.scheme);
     TestModel.prototype.__available__ = true; // for testing
 
     expect(() => {

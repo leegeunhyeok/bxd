@@ -1,6 +1,6 @@
 import BoxTransaction from './transaction';
 import { TransactionMode, TransactionTask, TransactionType } from './task';
-import { generateModel } from './model';
+import { createModel } from './model';
 import { BoxDBError } from './errors';
 import {
   BoxScheme,
@@ -430,7 +430,7 @@ class BoxDB {
       throw new BoxDBError(`${storeName} model already registered in version: ${targetVersion}`);
     }
 
-    const Model = generateModel(targetVersion, storeName, scheme);
+    const Model = createModel(targetVersion, storeName, scheme);
 
     /**
      * @static Model's static methods

@@ -91,12 +91,12 @@ const mustAvailable = function (this: BoxModelPrototype): true | never {
 };
 
 /**
- * Generate new model
+ * Create  new model
  *
  * @param storeName Object store name
  * @param scheme Data scheme
  */
-export const generateModel = <S extends BoxScheme>(
+export const createModel = <S extends BoxScheme>(
   targetVersion: number,
   storeName: string,
   scheme: S,
