@@ -4,7 +4,7 @@
 
 <img src="logo.png" width="250">
 
-Object relation mapping for [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API)
+Object relation mapping for [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API) - WIP..
 
   <a href="https://github.com/leegeunhyeok/bxd/actions?query=workflow:build" alt="Github actions">
     <img src="https://github.com/leegeunhyeok/bxd/workflows/build/badge.svg">
@@ -68,6 +68,7 @@ await box.transaction([
 - [Features](#features)
 - [Browser Support](#browser-support)
 - [Installation](#installation)
+- [Roadmap](#roadmap)
 - [Documentation](#documentation)
   - [BoxDB](#boxdb)
     - [BoxDB.Types](#boxdbtypes) `static`
@@ -107,6 +108,7 @@ await box.transaction([
   - [Basic](#basic)
   - [Version management](#version-management)
   - [Transaction](#transaction)
+- [Issue](#issue)
 - [Development](#development)
 - [Resources](#resources)
 - [License](#license)
@@ -162,6 +164,10 @@ In browser (legacy):
 | `IE10`, `IE11` | es.promise                            |
 | `IE10`, `IE11` | es.string.iterator                    |
 | `IE10`, `IE11` | web.dom-collections.iterator          |
+
+### Roadmap
+
+> WIP..
 
 ### Documentation
 
@@ -770,6 +776,10 @@ await box.transaction([
 // AnyTask_1, AnyTask_2, AnyTask_3 task not applied
 // Rollback to before transaction
 ```
+
+### Issue
+
+> WIP
 
 ### Development
 
