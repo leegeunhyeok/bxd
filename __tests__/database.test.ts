@@ -155,4 +155,10 @@ describe('Basic of BoxDB', () => {
       });
     }).not.toThrow();
   });
+
+  test('check ready status', async () => {
+    expect(box.ready).toBe(false);
+    await box.open();
+    expect(box.ready).toBe(true);
+  });
 });

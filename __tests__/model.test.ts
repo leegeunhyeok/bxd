@@ -1,6 +1,6 @@
 import 'fake-indexeddb/auto';
 import BoxDB from '../src/index.es';
-import { createModel } from '../src/core/model';
+import { createModel, mergeObject } from '../src/core/model';
 
 const modelArgs = {
   targetVersion: 1,
@@ -13,6 +13,21 @@ const modelArgs = {
     name: BoxDB.Types.STRING,
   },
 };
+
+describe('model util functions', () => {
+  test('mergeObject()', () => {
+    const base = {
+      name: 'before',
+    };
+
+    const target = {
+      name: 'after',
+    };
+
+    const merged = mergeObject(base, target);
+    expect(merged.name).toBe(target.name);
+  });
+});
 
 describe('checking about model basic features', () => {
   test('create model and prototype check', () => {
