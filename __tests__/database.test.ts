@@ -143,6 +143,18 @@ describe('Basic of BoxDB', () => {
     }).toThrow();
   });
 
+  test('trying to unique option without index', () => {
+    expect(() => {
+      User = box.model(3)('user', {
+        ...testScheme,
+        age: {
+          type: BoxDB.Types.NUMBER,
+          unique: true, // without index
+        },
+      });
+    }).toThrow();
+  });
+
   test('trying to change index', () => {
     // Change index
     expect(() => {
