@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
 import 'fake-indexeddb/auto';
 import BoxDB from '../src/index.es';
-import { BoxModel } from '../src/core/types';
+import { BoxModel, BoxDataTypes } from '../src/core/types';
 
 describe('Basic of BoxDB', () => {
   // global variable for test
@@ -44,6 +45,22 @@ describe('Basic of BoxDB', () => {
       const modelScheme = Object.keys(OldUser.prototype.__scheme__);
       return Object.keys(testScheme).every((field) => !!~modelScheme.indexOf(field));
     }).toBeTruthy();
+  });
+
+  test('create new model with multiple key', () => {
+    expect(() => {
+      // has 2 keys
+      box.model(1)('test', {
+        field_1: {
+          type: BoxDB.Types.NUMBER,
+          key: true,
+        },
+        field_2: {
+          type: BoxDB.Types.NUMBER,
+          key: true,
+        },
+      });
+    }).toThrow();
   });
 
   test('model data validator', () => {
@@ -168,9 +185,28 @@ describe('Basic of BoxDB', () => {
     }).not.toThrow();
   });
 
+  test('drop mode before database open', () => {
+    expect(() => {
+      User.drop();
+    }).toThrow();
+  });
+
+  test('regist database event handler', () => {
+    box.on('versionchange', () => {});
+    box.on('abort', () => {});
+    box.on('error', () => {});
+    box.on('close', () => {});
+  });
+
   test('check ready status', async () => {
     expect(box.ready).toBe(false);
     await box.open();
     expect(box.ready).toBe(true);
+  });
+
+  test('register new model after database open', () => {
+    expect(() => {
+      box.model(1)('test', testScheme);
+    }).toThrow();
   });
 });
