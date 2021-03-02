@@ -192,6 +192,7 @@ describe('Basic of BoxDB', () => {
   });
 
   test('regist database event handler', () => {
+    // TODO: box.off
     box.on('versionchange', () => {});
     box.on('abort', () => {});
     box.on('error', () => {});
