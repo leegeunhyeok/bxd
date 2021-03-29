@@ -48,11 +48,15 @@ export const typeValidator = (type: BoxDataTypes, value: UncheckedData): boolean
  * @param baseObject
  * @param targetObject
  */
-export const mergeObject = <T>(baseObject: T, targetObject?: T): T => {
-  Object.keys(baseObject).forEach((k) => {
-    baseObject[k] = (targetObject && targetObject[k]) || null;
-  });
-  return baseObject;
+export const initBoxData = <T extends BoxScheme>(
+  scheme: T,
+  initalData?: BoxData<T>,
+): BoxData<T> => {
+  const boxData = Object.create(null) as BoxData<T>;
+  Object.keys(scheme).forEach(
+    (k) => (boxData[k as keyof T] = (initalData && initalData[k]) ?? null),
+  );
+  return boxData;
 };
 
 /**
@@ -110,7 +114,7 @@ export const createModel = <S extends BoxScheme>(
     }
 
     // Create empty(null) object or initalData based on scheme
-    Object.assign(this, mergeObject(this.__scheme__, initalData));
+    return initBoxData(this.__scheme__, initalData);
   }
 
   const prototype = {
