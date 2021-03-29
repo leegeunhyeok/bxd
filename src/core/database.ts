@@ -90,6 +90,7 @@ class BoxDB {
         const idx = objectStore.index(name);
         return { keyPath: idx.keyPath, unique: idx.unique } as BoxIndexConfig;
       }),
+      force: false,
     };
   }
 
@@ -139,7 +140,8 @@ class BoxDB {
       keyPath: primaryKeyPath,
       autoIncrement: Boolean(options?.autoIncrement),
       index: indexList,
-    } as BoxModelMeta;
+      force: Boolean(options?.force),
+    };
   }
 
   /**
@@ -162,8 +164,8 @@ class BoxDB {
       const { keyPath, autoIncrement, index } = getBoxMeta(name);
       const objectStore = tx.objectStore(name);
 
-      // Update exist object store
       if (definedModelNames.includes(name)) {
+        // Update exist object store
         const existModelMeta = this._objectStoreToModelMeta(objectStore);
 
         if (existModelMeta.keyPath !== keyPath) {
@@ -197,6 +199,21 @@ class BoxDB {
         db.deleteObjectStore(name);
       }
     });
+
+    // Create new object stores
+    definedModelNames
+      .filter((name) => !objectStoreNames.includes(name))
+      .forEach((name) => {
+        const { keyPath, autoIncrement, index } = getBoxMeta(name);
+        const objectStore = db.createObjectStore(name, {
+          ...(keyPath ? { keyPath } : null),
+          autoIncrement,
+        });
+
+        index.forEach(({ keyPath, unique }) =>
+          objectStore.createIndex(keyPath, keyPath, { unique }),
+        );
+      });
   }
 
   /**

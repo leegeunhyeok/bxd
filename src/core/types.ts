@@ -25,6 +25,7 @@ export enum BoxCursorDirections {
 
 export interface BoxOption {
   autoIncrement?: boolean;
+  force?: boolean;
 }
 
 // BoxModel scheme
@@ -54,6 +55,7 @@ export interface BoxModelMeta {
   keyPath: string;
   autoIncrement: boolean;
   index: BoxIndexConfig[];
+  force: boolean;
 }
 
 export interface BoxIndexConfig {
