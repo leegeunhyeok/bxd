@@ -63,7 +63,6 @@ export interface BoxHandler<S extends BoxScheme> {
   ): Promise<void>;
   find: (filter?: BoxModelFilter<S>) => BoxCursorHandler<S>;
   clear: () => Promise<void>;
-  drop: (targetVersion: number) => void;
 }
 
 // BoxModel.task = BoxTask

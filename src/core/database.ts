@@ -428,11 +428,6 @@ class BoxDB {
 
     const Model = createModel(targetVersion, storeName, scheme);
 
-    /**
-     * @static Model's static methods
-     */
-    Model.drop = (targetVersion) => this._drop(targetVersion, storeName);
-
     this._registModel(Model, options);
 
     return Model;
