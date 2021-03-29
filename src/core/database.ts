@@ -399,13 +399,9 @@ class BoxDB {
 
   /**
    * Returns interrupt transaction task
-   *
-   * @param doInterrupt Do interrupt flag (default: true)
    */
-  static interrupt(doInterrupt = true): TransactionTask {
-    const transactionType =
-      doInterrupt || doInterrupt === undefined ? TransactionType.INTERRUPT : TransactionType.NONE;
-    return new TransactionTask(transactionType, '', TransactionMode.READ, []);
+  static interrupt(): TransactionTask {
+    return new TransactionTask(TransactionType.INTERRUPT, null, TransactionMode.READ, null);
   }
 
   /**
@@ -495,6 +491,7 @@ class BoxDB {
         };
 
         this._preparedModel.forEach((model) => {
+          // Inject transaction context
           if (this._available(model)) {
             model.prototype.__tx__ = this._tx;
             model.prototype.__available__ = true;
