@@ -23,6 +23,10 @@ export enum BoxCursorDirections {
   DESC_UNIQUE = 'prevunique',
 }
 
+export interface BoxOption {
+  autoIncrement?: boolean;
+}
+
 // BoxModel scheme
 export interface BoxScheme {
   [field: string]: ConfiguredType | BoxDataTypes;
@@ -44,6 +48,19 @@ export type UncheckedData = {
 };
 
 // BoxModel
+export interface BoxModelMeta {
+  name: string;
+  scheme: ConfiguredBoxScheme;
+  keyPath: string;
+  autoIncrement: boolean;
+  index: BoxIndexConfig[];
+}
+
+export interface BoxIndexConfig {
+  keyPath: string;
+  unique: boolean;
+}
+
 export interface BoxModel<S extends BoxScheme> extends BoxHandler<S> {
   new (initalData?: BoxData<S>): BoxData<S>;
   task: BoxTask<S>;
