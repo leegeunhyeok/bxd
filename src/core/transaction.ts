@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { BoxDBError } from './errors';
 import { TransactionTask, TransactionType, TransactionMode } from './task';
 import {
   BoxScheme,
@@ -11,15 +12,32 @@ import {
 
 type ObjectStoreKey = any;
 
+interface IDBReference {
+  value: IDBDatabase;
+}
+
 export default class BoxTransaction {
-  constructor(private _idb: IDBDatabase) {}
+  private _idb: IDBReference = { value: null };
+
+  /**
+   * Recive idb instance reference
+   *
+   * @param idb IDBDatabase
+   */
+  public init(idb: IDBDatabase): void {
+    this._idb.value = idb;
+  }
 
   /**
    * Fulfill multiple tasks on transaction
    *
    * @param tasks Transaction tasks
    */
-  private _taskTransactionHandler(tasks: TransactionTask[]): Promise<any> {
+  private _run(tasks: TransactionTask[]): Promise<any> {
+    if (this._idb.value === null) {
+      throw new BoxDBError('Database not ready');
+    }
+
     const needResponse =
       (tasks.length === 1 && tasks[0].action === TransactionType.GET) || TransactionType.CURSOR_GET;
     let res = null;
@@ -45,7 +63,7 @@ export default class BoxTransaction {
 
     return new Promise((resolve, reject) => {
       // Open transaction
-      const tx = this._idb.transaction(
+      const tx = this._idb.value.transaction(
         storeNames,
         isReadonlyMode ? TransactionMode.READ : TransactionMode.WRITE,
       );
@@ -106,13 +124,9 @@ export default class BoxTransaction {
     const res = [];
 
     // Filter function
-    const pass = (value: any) => {
-      if (Array.isArray(filter)) {
-        return filter.every((f) => f(value));
-      } else {
-        return true;
-      }
-    };
+    const pass = (() => {
+      return Array.isArray(filter) ? (value) => filter.every((f) => f(value)) : () => true;
+    })();
 
     let request: IDBRequest<IDBCursorWithValue> = null;
     if (filter && !Array.isArray(filter)) {
@@ -171,7 +185,7 @@ export default class BoxTransaction {
    * @param key idb object store keyPath value
    */
   get<S extends BoxScheme>(storeName: string, key: ObjectStoreKey): Promise<BoxData<S>> {
-    return this._taskTransactionHandler([
+    return this._run([
       new TransactionTask(TransactionType.GET, storeName, TransactionMode.READ, [key]),
     ]).then((data) => data || null);
   }
@@ -184,7 +198,7 @@ export default class BoxTransaction {
    * @param key optional key
    */
   add<S extends BoxScheme>(storeName: string, value: BoxData<S>, key?: IDBValidKey): Promise<void> {
-    return this._taskTransactionHandler([
+    return this._run([
       new TransactionTask(TransactionType.ADD, storeName, TransactionMode.WRITE, [value, key]),
     ]);
   }
@@ -202,7 +216,7 @@ export default class BoxTransaction {
     value: OptionalBoxData<S>,
     key?: IDBValidKey,
   ): Promise<void> {
-    return this._taskTransactionHandler([
+    return this._run([
       new TransactionTask(TransactionType.PUT, storeName, TransactionMode.WRITE, [value, key]),
     ]);
   }
@@ -214,7 +228,7 @@ export default class BoxTransaction {
    * @param key idb object store keyPath value
    */
   delete(storeName: string, key: ObjectStoreKey): Promise<void> {
-    return this._taskTransactionHandler([
+    return this._run([
       new TransactionTask(TransactionType.DELETE, storeName, TransactionMode.WRITE, [key]),
     ]);
   }
@@ -225,7 +239,7 @@ export default class BoxTransaction {
    * @param storeName object store name
    */
   clear(storeName: string): Promise<void> {
-    return this._taskTransactionHandler([
+    return this._run([
       new TransactionTask(TransactionType.CLEAR, storeName, TransactionMode.WRITE, []),
     ]);
   }
@@ -236,7 +250,7 @@ export default class BoxTransaction {
    * @param tasks transacktion tasks
    */
   transaction(tasks: TransactionTask[]): Promise<any> {
-    return this._taskTransactionHandler(tasks);
+    return this._run(tasks);
   }
 
   /**
