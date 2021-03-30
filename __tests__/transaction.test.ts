@@ -5,8 +5,8 @@ import BoxDB from '../src/index.es';
 const Dataset = require('./__mocks__/users.json');
 
 describe('Basic of object store transactions via model', () => {
-  // global variable for test
-  const testScheme = {
+  const box = new BoxDB('transaction-db', 1);
+  const User = box.model('user', {
     _id: {
       type: BoxDB.Types.NUMBER,
       key: true,
@@ -15,26 +15,11 @@ describe('Basic of object store transactions via model', () => {
       type: BoxDB.Types.STRING,
       index: true,
     },
-  };
-
-  const box = new BoxDB('transaction-db', 2);
-  const OldUser = box.model(1)('user', testScheme);
-  const User = box.model(2)('user', {
-    ...testScheme,
     age: BoxDB.Types.NUMBER,
   });
 
   test('prepare boxdb', async () => {
     await box.open();
-  });
-
-  test('trying to use old model', async () => {
-    expect.assertions(1);
-    try {
-      await OldUser.get(1);
-    } catch (e) {
-      expect(e.message).toEqual('This model is not available');
-    }
   });
 
   test('add records', async () => {
@@ -53,12 +38,9 @@ describe('Basic of object store transactions via model', () => {
   });
 
   test('get records by cursor', async () => {
-    const users = await User.find([
-      (value) => value.age > 70,
-      (value) => !~value.name.indexOf('er'),
-    ]).get();
-
-    expect(users.every((user) => user.age > 70)).toBeTruthy();
+    const evalFunctions = [(value) => value.age > 70, (value) => !value.name.includes('er')];
+    const users = await User.find(evalFunctions).get();
+    expect(users.every((user) => evalFunctions.every((f) => f(user)))).toBeTruthy();
   });
 
   test('update records by cursor', async () => {

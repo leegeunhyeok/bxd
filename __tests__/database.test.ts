@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import 'fake-indexeddb/auto';
 import BoxDB from '../src/index.es';
-import { BoxModel, BoxDataTypes } from '../src/core/types';
 
 describe('Basic of BoxDB', () => {
   // global variable for test
@@ -17,7 +16,6 @@ describe('Basic of BoxDB', () => {
     age: BoxDB.Types.NUMBER,
   };
   let box: BoxDB = null;
-  let OldUser: BoxModel<typeof testScheme> = null;
   let User = null;
 
   test('create instance', () => {
@@ -32,25 +30,13 @@ describe('Basic of BoxDB', () => {
 
   test('create new model', () => {
     // Register new model
-    const targetVersion = 1;
-    const storeName = 'user';
-    OldUser = box.model(targetVersion)(storeName, testScheme);
-
-    // Check basic
-    expect(OldUser.prototype.__storeName__).toBe(storeName);
-    expect(OldUser.prototype.__targetVersion__).toBe(targetVersion);
-
-    // Check scheme
-    expect(() => {
-      const modelScheme = Object.keys(OldUser.prototype.__scheme__);
-      return Object.keys(testScheme).every((field) => !!~modelScheme.indexOf(field));
-    }).toBeTruthy();
+    User = box.model('user', testScheme);
   });
 
   test('create new model with multiple key', () => {
     expect(() => {
       // has 2 keys
-      box.model(1)('test', {
+      box.model('test', {
         field_1: {
           type: BoxDB.Types.NUMBER,
           key: true,
@@ -66,7 +52,7 @@ describe('Basic of BoxDB', () => {
   test('model data validator', () => {
     // Correct scheme
     expect(
-      OldUser.prototype.__validate({
+      User.prototype.__validate({
         id: 1,
         name: 'Tom',
         age: 10,
@@ -75,7 +61,7 @@ describe('Basic of BoxDB', () => {
 
     // Wrong scheme
     expect(
-      OldUser.prototype.__validate({
+      User.prototype.__validate({
         id: 'string',
         name: 100,
         age: 'string',
@@ -93,13 +79,13 @@ describe('Basic of BoxDB', () => {
       };
 
       // Test data 1 (basic)
-      const user1 = new OldUser();
+      const user1 = new User();
       user1.id = test.id;
       user1.name = test.name;
       user1.age = test.age;
 
       // Test data 2 (with inital value)
-      const user2 = new OldUser({
+      const user2 = new User({
         id: test.id,
         name: test.name,
         age: test.age,
@@ -112,49 +98,14 @@ describe('Basic of BoxDB', () => {
   test('trying to register same model', () => {
     // trying to register same target version and model name
     expect(() => {
-      box.model(1)('user', testScheme);
-    }).toThrow();
-  });
-
-  test('model version update', () => {
-    // trying to register same model name (but, diffrent target version)
-    // and set index (age)
-    expect(() => {
-      User = box.model(2)('user', {
-        ...testScheme,
-        age: {
-          type: BoxDB.Types.NUMBER,
-          index: true,
-        },
-      });
-    }).not.toThrow();
-
-    expect(() => {
-      const field = User.prototype.__scheme__.age;
-      return typeof field !== 'string' ? field.index : false;
-    }).toBeTruthy();
-  });
-
-  test('trying to change keyPath', () => {
-    // Change keyPath
-    expect(() => {
-      box.model(3)('user', {
-        // In version 1, 2 has key
-        // Now remove key option
-        id: BoxDB.Types.NUMBER,
-        name: {
-          type: BoxDB.Types.STRING,
-          index: true,
-        },
-        age: BoxDB.Types.NUMBER,
-      });
+      box.model('user', testScheme);
     }).toThrow();
   });
 
   test('trying to change autoIncrement option', () => {
     // Change autoIncrement option
     expect(() => {
-      box.model(3)('user', User.prototype.__scheme__, {
+      box.model('user', User.prototype.__scheme__, {
         autoIncrement: true, // before: false
       });
     }).toThrow();
@@ -162,32 +113,13 @@ describe('Basic of BoxDB', () => {
 
   test('trying to unique option without index', () => {
     expect(() => {
-      User = box.model(3)('user', {
+      box.model('user_test', {
         ...testScheme,
         age: {
           type: BoxDB.Types.NUMBER,
           unique: true, // without index
         },
       });
-    }).toThrow();
-  });
-
-  test('trying to change index', () => {
-    // Change index
-    expect(() => {
-      User = box.model(3)('user', {
-        ...testScheme,
-        // In version 1, 2 has index
-        // Now remove index option
-        name: BoxDB.Types.STRING,
-        age: BoxDB.Types.NUMBER,
-      });
-    }).not.toThrow();
-  });
-
-  test('drop mode before database open', () => {
-    expect(() => {
-      User.drop();
     }).toThrow();
   });
 
@@ -207,7 +139,7 @@ describe('Basic of BoxDB', () => {
 
   test('register new model after database open', () => {
     expect(() => {
-      box.model(1)('test', testScheme);
+      box.model('test', testScheme);
     }).toThrow();
   });
 });
