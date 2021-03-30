@@ -4,15 +4,29 @@ import {
   IDBData,
   BoxData,
   BoxModel,
-  BoxModelPrototype,
   BoxScheme,
   BoxDataTypes,
   UncheckedData,
   BoxHandler,
-  ModelContext,
   BoxTask,
 } from './types';
 import BoxTransaction from './transaction';
+
+// BoxModel Prototype
+export interface ModelPrototype {
+  tx: BoxTransaction;
+  __validate(target: UncheckedData): boolean;
+  __createData<T extends BoxScheme>(initalData?: BoxData<T>): BoxData<T>;
+}
+
+export interface ModelProperty {
+  __db__: string;
+  __name__: string;
+  __scheme__: BoxScheme;
+  __version__: number;
+}
+
+export type ModelContext = ModelPrototype & ModelProperty;
 
 /**
  * Check about target value has same type with type identifier
@@ -88,7 +102,7 @@ function createBoxData<T extends BoxScheme>(
 }
 
 export default class BoxModelBuilder {
-  private _prototype: BoxModelPrototype;
+  private _prototype: ModelPrototype;
   private _handler: BoxHandler<IDBData>;
   private _task: BoxTask<IDBData>;
 

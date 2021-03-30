@@ -3,13 +3,13 @@ export { BoxDBError } from './core/errors';
 export {
   BoxScheme,
   BoxModel,
-  BoxModelPrototype,
   BoxData,
   BoxModelFilter,
   BoxDataTypes,
   BoxCursorDirections,
   ConfiguredType,
+  BoxOption,
 } from './core/types';
-export { BoxOption, BoxModelRegister } from './core/database';
+export { BoxModelRegister } from './core/database';
 
 export default BoxDB;

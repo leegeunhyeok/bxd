@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { TransactionTask } from './task';
-import BoxTransaction from './transaction';
 
 // Available types
 export enum BoxDataTypes {
@@ -107,22 +106,6 @@ export interface BoxCursorTask<S extends BoxScheme> {
   update: (value: OptionalBoxData<S>) => TransactionTask;
   delete: () => TransactionTask;
 }
-
-// BoxModel Prototype
-export interface BoxModelPrototype {
-  tx: BoxTransaction;
-  __validate(target: UncheckedData): boolean;
-  __createData<T extends BoxScheme>(initalData?: BoxData<T>): BoxData<T>;
-}
-
-export interface BoxModelProperty {
-  __db__: string;
-  __name__: string;
-  __scheme__: BoxScheme;
-  __version__: number;
-}
-
-export type ModelContext = BoxModelPrototype & BoxModelProperty;
 
 // Filters for BoxModel.find()
 export type BoxModelFilter<S extends BoxScheme> = EvalFunction<S>[] | CursorQuery<S>;
