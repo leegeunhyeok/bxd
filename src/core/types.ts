@@ -37,6 +37,8 @@ export interface ConfiguredBoxScheme {
   [field: string]: ConfiguredType;
 }
 
+export type IDBData = any;
+
 // BoxData based on BoxScheme
 export type BoxData<S extends BoxScheme> = {
   [field in keyof S]: AsType<PickType<S[field]>>;
@@ -66,33 +68,31 @@ export interface BoxIndexConfig {
 export interface BoxModel<S extends BoxScheme> extends BoxHandler<S> {
   new (initalData?: BoxData<S>): BoxData<S>;
   task: BoxTask<S>;
-  prototype: BoxModelPrototype;
-  getName: () => string;
-  getVersion: () => number;
 }
 
 export interface BoxHandler<S extends BoxScheme> {
-  add: (value: BoxData<S>, key?: IDBValidKey) => Promise<void>;
-  get: (
+  getName(): string;
+  getVersion(): number;
+  add(value: BoxData<S>, key?: IDBValidKey): Promise<void>;
+  get(
     key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
-  ) => Promise<BoxData<S>>;
-  put: (value: BoxData<S>, key?: IDBValidKey) => Promise<void>;
+  ): Promise<BoxData<S>>;
+  put(value: BoxData<S>, key?: IDBValidKey): Promise<void>;
   delete(
     key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
   ): Promise<void>;
-  find: (filter?: BoxModelFilter<S>) => BoxCursorHandler<S>;
-  clear: () => Promise<void>;
+  find(filter?: BoxModelFilter<S>): BoxCursorHandler<S>;
+  clear(): Promise<void>;
 }
 
 // BoxModel.task = BoxTask
 export interface BoxTask<S extends BoxScheme> {
-  add: (this: BoxTask<S>, value: BoxData<S>, key?: IDBValidKey) => TransactionTask;
-  put: (this: BoxTask<S>, value: BoxData<S>, key?: IDBValidKey) => TransactionTask;
-  delete: (
-    this: BoxTask<S>,
+  add(value: BoxData<S>, key?: IDBValidKey): TransactionTask;
+  put(value: BoxData<S>, key?: IDBValidKey): TransactionTask;
+  delete(
     key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
-  ) => TransactionTask;
-  find: (this: BoxTask<S>, filter?: BoxModelFilter<S>) => BoxCursorTask<S>;
+  ): TransactionTask;
+  find(filter?: BoxModelFilter<S>): BoxCursorTask<S>;
 }
 
 // BoxModel.find = () => BoxCursorHandler
@@ -110,14 +110,19 @@ export interface BoxCursorTask<S extends BoxScheme> {
 
 // BoxModel Prototype
 export interface BoxModelPrototype {
-  __tx__: BoxTransaction;
-  __targetVersion__: number;
-  __storeName__: string;
-  __available__: boolean;
-  __scheme__: BoxScheme;
-  __validate: (target: UncheckedData) => boolean;
-  __ok: () => true | never;
+  tx: BoxTransaction;
+  __validate(target: UncheckedData): boolean;
+  __createData<T extends BoxScheme>(initalData?: BoxData<T>): BoxData<T>;
 }
+
+export interface BoxModelProperty {
+  __db__: string;
+  __name__: string;
+  __scheme__: BoxScheme;
+  __version__: number;
+}
+
+export type ModelContext = BoxModelPrototype & BoxModelProperty;
 
 // Filters for BoxModel.find()
 export type BoxModelFilter<S extends BoxScheme> = EvalFunction<S>[] | CursorQuery<S>;
