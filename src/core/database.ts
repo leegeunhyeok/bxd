@@ -1,6 +1,6 @@
 import BoxTransaction from './transaction';
+import BoxModelBuilder from './model';
 import { TransactionMode, TransactionTask, TransactionType } from './task';
-import { createModel } from './model';
 import { BoxDBError } from './errors';
 import {
   BoxScheme,
@@ -48,7 +48,8 @@ class BoxDB {
     close: [],
   };
   private _idb: IDBDatabase = null;
-  private _tx: BoxTransaction = null;
+  private _tx: BoxTransaction;
+  private _model: BoxModelBuilder;
 
   /**
    * @constructor
@@ -60,6 +61,8 @@ class BoxDB {
     if (typeof version !== 'number') throw new BoxDBError('version must be number');
     this._databaseName = databaseName;
     this._version = version;
+    this._tx = new BoxTransaction();
+    this._model = new BoxModelBuilder(this._tx);
   }
 
   get databaseName(): string {
@@ -234,7 +237,7 @@ class BoxDB {
       openRequest.onsuccess = (event) => {
         this._ready = true;
         this._idb = openRequest.result;
-        this._tx = new BoxTransaction(this._idb);
+        this._tx.init(openRequest.result);
 
         // IDB event listener
         this._idb.onversionchange = (event) => {
@@ -278,7 +281,7 @@ class BoxDB {
       this._boxMetaMap[storeName] = this._toModelMeta(storeName, scheme, options);
     }
 
-    return createModel(this._version, storeName, scheme);
+    return this._model.build(this._version, storeName, scheme);
   }
 
   /**

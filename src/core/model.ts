@@ -1,22 +1,27 @@
 import { TransactionTask, TransactionMode, TransactionType } from './task';
 import { BoxDBError } from './errors';
 import {
+  IDBData,
   BoxData,
   BoxModel,
   BoxModelPrototype,
   BoxScheme,
   BoxDataTypes,
   UncheckedData,
+  BoxHandler,
+  ModelContext,
+  BoxTask,
 } from './types';
+import BoxTransaction from './transaction';
 
 /**
  * Check about target value has same type with type identifier
  *
- * @param type Type identifier (from enum)
+ * @param type Type identifier
  * @param value Value for check
  */
-export const typeValidator = (type: BoxDataTypes, value: UncheckedData): boolean => {
-  const targetPrototype = value.__proto__;
+const typeValidator = (type: BoxDataTypes, value: UncheckedData): boolean => {
+  const targetPrototype = Object.getPrototypeOf(value);
 
   switch (type) {
     case BoxDataTypes.BOOLEAN:
@@ -43,23 +48,6 @@ export const typeValidator = (type: BoxDataTypes, value: UncheckedData): boolean
 };
 
 /**
- * Merge object to base object
- *
- * @param baseObject
- * @param targetObject
- */
-export const initBoxData = <T extends BoxScheme>(
-  scheme: T,
-  initalData?: BoxData<T>,
-): BoxData<T> => {
-  const boxData = Object.create(null) as BoxData<T>;
-  Object.keys(scheme).forEach(
-    (k) => (boxData[k as keyof T] = (initalData && initalData[k]) ?? null),
-  );
-  return boxData;
-};
-
-/**
  * Check object keys matching and data types
  *
  * 1. Target's key length is same with model scheme's key length
@@ -69,7 +57,7 @@ export const initBoxData = <T extends BoxScheme>(
  * @param this Model
  * @param target target data
  */
-const schemeValidator = function (this: BoxModelPrototype, target: UncheckedData): boolean {
+function schemeValidator(this: ModelContext, target: UncheckedData): boolean {
   const schemeKeys = Object.keys(this.__scheme__);
   const targetKeys = Object.keys(target);
 
@@ -80,141 +68,165 @@ const schemeValidator = function (this: BoxModelPrototype, target: UncheckedData
       typeValidator(typeof v === 'string' ? v : v.type, target[k]),
     )
   );
-};
+}
 
 /**
- * Check this model is available
+ * Create new object and merge object
  *
- * @param this Model
+ * @param baseObject
+ * @param targetObject
  */
-const mustAvailable = function (this: BoxModelPrototype): true | never {
-  if (!this.__available__) {
-    throw new BoxDBError('This model is not available');
-  }
-  return true;
-};
+function createBoxData<T extends BoxScheme>(
+  this: ModelContext,
+  initalData?: BoxData<T>,
+): BoxData<T> {
+  const boxData = Object.create(null) as BoxData<T>;
+  Object.keys(this.__scheme__).forEach(
+    (k) => (boxData[k as keyof T] = (initalData && initalData[k]) ?? null),
+  );
+  return boxData;
+}
 
-/**
- * Create  new model
- *
- * @param storeName Object store name
- * @param scheme Data scheme
- */
-export const createModel = <S extends BoxScheme>(
-  targetVersion: number,
-  storeName: string,
-  scheme: S,
-): BoxModel<S> => {
-  function Model<S extends BoxScheme>(this: BoxModelPrototype, initalData?: BoxData<S>) {
-    this.__ok();
+export default class BoxModelBuilder {
+  private _prototype: BoxModelPrototype;
+  private _handler: BoxHandler<IDBData>;
+  private _task: BoxTask<IDBData>;
 
-    // Check scheme if initial data provided
-    if (initalData && !this.__validate(initalData)) {
-      throw new BoxDBError('data not valid');
-    }
-
-    // Create empty(null) object or initalData based on scheme
-    return initBoxData(this.__scheme__, initalData);
-  }
-
-  const prototype = {
-    __tx__: null,
-    __available__: false,
-    __targetVersion__: targetVersion,
-    __storeName__: storeName,
-    __scheme__: scheme,
-    __validate: schemeValidator,
-    __ok: mustAvailable,
-  } as BoxModelPrototype;
-
-  Model.prototype = prototype;
-  Model.getName = () => prototype.__storeName__;
-  Model.getVersion = () => prototype.__targetVersion__;
-
-  // Model transaction handler (static)
-  Model.add = (value, key) =>
-    prototype.__ok() && prototype.__tx__.add(prototype.__storeName__, value, key);
-  Model.get = (key) => prototype.__ok() && prototype.__tx__.get(prototype.__storeName__, key);
-  Model.put = (value, key) =>
-    prototype.__ok() && prototype.__tx__.put(prototype.__storeName__, value, key);
-  Model.delete = (key) => prototype.__ok() && prototype.__tx__.delete(prototype.__storeName__, key);
-  Model.clear = () => prototype.__ok() && prototype.__tx__.clear(prototype.__storeName__);
-
-  Model.find = (filter) => {
-    prototype.__ok();
-
-    if (filter && !Array.isArray(filter)) {
-      if (Object.keys(filter).length !== 1) {
-        throw new BoxDBError('Cursor query object must be has only one index');
-      }
-    }
-
-    return {
-      get: () =>
-        prototype.__tx__.cursor<typeof TransactionType.CURSOR_GET, S>(
-          TransactionType.CURSOR_GET,
-          prototype.__storeName__,
-          filter,
-          null,
-        ),
-      update: (value) =>
-        prototype.__tx__.cursor<typeof TransactionType.CURSOR_UPDATE, S>(
-          TransactionType.CURSOR_UPDATE,
-          prototype.__storeName__,
-          filter,
-          value,
-        ),
-      delete: () =>
-        prototype.__tx__.cursor<typeof TransactionType.CURSOR_DELETE, S>(
-          TransactionType.CURSOR_DELETE,
-          prototype.__storeName__,
-          filter,
-          null,
-        ),
-    };
-  };
-
-  Model.task = {
-    add: (value, key) =>
-      prototype.__ok() &&
-      new TransactionTask(TransactionType.ADD, prototype.__storeName__, TransactionMode.WRITE, [
-        value,
-        key,
-      ]),
-    put: (value, key) =>
-      prototype.__ok() &&
-      new TransactionTask(TransactionType.PUT, prototype.__storeName__, TransactionMode.WRITE, [
-        value,
-        key,
-      ]),
-    delete: (key) =>
-      prototype.__ok() &&
-      new TransactionTask(TransactionType.DELETE, prototype.__storeName__, TransactionMode.WRITE, [
-        key,
-      ]),
-    find: (filter) =>
-      prototype.__ok() && {
-        update: (value) =>
-          new TransactionTask(
-            TransactionType.CURSOR_UPDATE,
-            prototype.__storeName__,
-            TransactionMode.WRITE,
-            [
-              {
-                filter,
-                updateValue: value,
-              },
-            ],
-          ),
-        delete: () =>
-          new TransactionTask(
-            TransactionType.CURSOR_DELETE,
-            prototype.__storeName__,
-            TransactionMode.WRITE,
-            [{ filter }],
-          ),
+  constructor(tx: BoxTransaction) {
+    this._prototype = { tx, __validate: schemeValidator, __createData: createBoxData };
+    this._handler = {
+      getName(this: ModelContext) {
+        return this.__name__;
       },
-  };
+      getVersion(this: ModelContext) {
+        return this.__version__;
+      },
+      add(this: ModelContext, value, key) {
+        return this.tx.add(this.__name__, value, key);
+      },
+      get(this: ModelContext, key) {
+        return this.tx.get(this.__name__, key);
+      },
+      put(this: ModelContext, value, key) {
+        return this.tx.put(this.__name__, value, key);
+      },
+      delete(this: ModelContext, key) {
+        return this.tx.delete(this.__name__, key);
+      },
+      find(this: ModelContext, filter) {
+        if (filter && !Array.isArray(filter)) {
+          if (Object.keys(filter).length !== 1) {
+            throw new BoxDBError('Cursor query object must be has only one index');
+          }
+        }
 
-  return (Model as unknown) as BoxModel<S>;
-};
+        return {
+          get: () =>
+            this.tx.cursor<typeof TransactionType.CURSOR_GET, IDBData>(
+              TransactionType.CURSOR_GET,
+              this.__name__,
+              filter,
+              null,
+            ),
+          update: (value) =>
+            this.tx.cursor<typeof TransactionType.CURSOR_UPDATE, IDBData>(
+              TransactionType.CURSOR_UPDATE,
+              this.__name__,
+              filter,
+              value,
+            ),
+          delete: () =>
+            this.tx.cursor<typeof TransactionType.CURSOR_DELETE, IDBData>(
+              TransactionType.CURSOR_DELETE,
+              this.__name__,
+              filter,
+              null,
+            ),
+        };
+      },
+      clear() {
+        return this.tx.clear(this.__name__);
+      },
+    };
+
+    this._task = {
+      add(this: ModelContext, value, key) {
+        return new TransactionTask(TransactionType.ADD, this.__name__, TransactionMode.WRITE, [
+          value,
+          key,
+        ]);
+      },
+      put(this: ModelContext, value, key) {
+        return new TransactionTask(TransactionType.PUT, this.__name__, TransactionMode.WRITE, [
+          value,
+          key,
+        ]);
+      },
+      delete(this: ModelContext, key) {
+        return new TransactionTask(TransactionType.DELETE, this.__name__, TransactionMode.WRITE, [
+          key,
+        ]);
+      },
+      find(this: ModelContext, filter) {
+        return {
+          update: (value) =>
+            new TransactionTask(
+              TransactionType.CURSOR_UPDATE,
+              this.__name__,
+              TransactionMode.WRITE,
+              [
+                {
+                  filter,
+                  updateValue: value,
+                },
+              ],
+            ),
+          delete: () =>
+            new TransactionTask(
+              TransactionType.CURSOR_DELETE,
+              this.__name__,
+              TransactionMode.WRITE,
+              [{ filter }],
+            ),
+        };
+      },
+    };
+  }
+
+  /**
+   * Create new model
+   *
+   * @param storeName Object store name
+   * @param scheme Data scheme
+   */
+  build<S extends BoxScheme>(targetVersion: number, storeName: string, scheme: S): BoxModel<S> {
+    const Model = (function Model<S extends BoxScheme>(
+      this: ModelContext,
+      initalData?: BoxData<S>,
+    ) {
+      // Check scheme if initial data provided
+      if (initalData && !this.__validate(initalData)) {
+        throw new BoxDBError('data not valid');
+      }
+
+      // Create empty(null) object or initalData based on scheme
+      return this.__createData(initalData);
+    } as unknown) as BoxModel<S>;
+
+    const context = Object.create(this._prototype) as ModelContext;
+    context.__db__ = '';
+    context.__name__ = storeName;
+    context.__scheme__ = scheme;
+    context.__version__ = targetVersion;
+
+    const contextObject = Object.create(context);
+    const taskHandler = { task: this._task };
+    Object.setPrototypeOf(taskHandler.task, contextObject);
+
+    const handler = Object.assign(contextObject, this._handler, taskHandler);
+    Object.setPrototypeOf(Model, handler);
+    Object.setPrototypeOf(Model.prototype, context);
+
+    return Model;
+  }
+}
