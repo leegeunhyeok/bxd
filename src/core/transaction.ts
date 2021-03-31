@@ -82,10 +82,7 @@ export default class BoxTransaction {
         const { action, storeName, args } = task.valueOf();
         let objectStore: IDBObjectStore = null;
 
-        if (action === TransactionType.NONE) {
-          // do nothing
-          return;
-        } else if (action === TransactionType.INTERRUPT) {
+        if (action === TransactionType.INTERRUPT) {
           // interrupt manually
           tx.abort();
         } else if (

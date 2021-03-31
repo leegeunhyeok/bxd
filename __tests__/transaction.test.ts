@@ -1,5 +1,6 @@
 import 'fake-indexeddb/auto';
 import BoxDB from '../src/index.es';
+import { TransactionTask } from '../src/core/task';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Dataset = require('./__mocks__/users.json');
@@ -16,6 +17,16 @@ describe('Basic of object store transactions via model', () => {
       index: true,
     },
     age: BoxDB.Types.NUMBER,
+  });
+
+  test('do transaction before database open', async () => {
+    await expect(async () => {
+      await User.add({
+        _id: 0,
+        name: '',
+        age: 0,
+      });
+    }).rejects.toThrow();
   });
 
   test('prepare boxdb', async () => {
@@ -43,6 +54,19 @@ describe('Basic of object store transactions via model', () => {
     expect(users.every((user) => evalFunctions.every((f) => f(user)))).toBeTruthy();
   });
 
+  test('update record by key', async () => {
+    const key = 1;
+    const target = Dataset.find((record) => record._id === key);
+    await User.put({
+      _id: 1,
+      name: 'DELETED',
+      age: 0,
+    });
+
+    const record = await User.get(key);
+    expect(record.name).not.toEqual(target.name);
+  });
+
   test('update records by cursor', async () => {
     const newName = 'User';
     await User.find([(value) => value._id === 1]).update({
@@ -53,6 +77,12 @@ describe('Basic of object store transactions via model', () => {
     expect(user.name).toEqual(newName);
   });
 
+  test('delete record by cursor', async () => {
+    await User.delete(1);
+    const record = await User.get(1);
+    expect(record).toBeNull();
+  });
+
   test('delete records by cursor', async () => {
     const filter = (value) => value.age < 10;
     const beforeCount = (await User.find([filter]).get()).length;
@@ -60,6 +90,18 @@ describe('Basic of object store transactions via model', () => {
     const afterCount = (await User.find([filter]).get()).length;
 
     expect(beforeCount > afterCount).toBeTruthy();
+  });
+
+  test('transaction elements type checking', async () => {
+    await expect(async () => {
+      await box.transaction([
+        User.task.delete(5),
+        // Not TransactionTask instance
+        {} as TransactionTask,
+        {} as TransactionTask,
+        {} as TransactionTask,
+      ]);
+    }).rejects.toThrow();
   });
 
   test('do multiple tasks with transaction', async () => {
@@ -114,9 +156,9 @@ describe('Basic of object store transactions via model', () => {
     expect(record2.age).toBe(-1);
   });
 
-  test('clear all records from object store', async () => {
-    await User.clear();
-    const records = await User.find().get();
-    expect(records.length).toBe(0);
-  });
+  // test('clear all records from object store', async () => {
+  //   await User.clear();
+  //   const records = await User.find().get();
+  //   expect(records.length).toBe(0);
+  // });
 });

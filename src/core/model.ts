@@ -35,6 +35,7 @@ export type ModelContext = ModelPrototype & ModelProperty;
  * @param value Value for check
  */
 const typeValidator = (type: BoxDataTypes, value: UncheckedData): boolean => {
+  if (value === null) return true;
   const targetPrototype = Object.getPrototypeOf(value);
 
   switch (type) {
@@ -56,8 +57,6 @@ const typeValidator = (type: BoxDataTypes, value: UncheckedData): boolean => {
       return targetPrototype === Blob.prototype;
     case BoxDataTypes.ANY:
       return true; // any
-    default:
-      return false;
   }
 };
 
