@@ -102,11 +102,19 @@ function createBoxData<T extends BoxScheme>(
 }
 
 export default class BoxModelBuilder {
+  private static _instance: BoxModelBuilder = null;
   private _prototype: ModelPrototype;
   private _handler: BoxHandler<IDBData>;
   private _task: BoxTask<IDBData>;
 
-  constructor(tx: BoxTransaction) {
+  static getInstance(tx: BoxTransaction): BoxModelBuilder {
+    if (!this._instance) {
+      this._instance = new BoxModelBuilder(tx);
+    }
+    return this._instance;
+  }
+
+  private constructor(tx: BoxTransaction) {
     this._prototype = { tx, __validate: schemeValidator, __createData: createBoxData };
     this._handler = {
       getName(this: ModelContext) {
