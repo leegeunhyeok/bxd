@@ -15,6 +15,7 @@ import {
 
 export interface BoxModelOption {
   autoIncrement?: boolean;
+  force?: boolean;
 }
 
 export type BoxModelRegister = <S extends BoxScheme>(
@@ -162,12 +163,19 @@ class BoxDB {
     // Helper function that get metadata of defined model
     const getBoxMeta = (name: string) => this._boxMetaMap[name];
 
-    objectStoreNames.forEach((name) => {
+    objectStoreNames.forEach((name, idx) => {
       // Update exist object store
       if (modelStoreNames.includes(name)) {
-        const { keyPath, autoIncrement, index } = getBoxMeta(name);
+        const { keyPath, autoIncrement, index, force } = getBoxMeta(name);
         const objectStore = tx.objectStore(name);
         const objectStoreMeta = this._objectStoreToModelMeta(objectStore);
+
+        // Delete exist object store
+        if (force) {
+          db.deleteObjectStore(name);
+          objectStoreNames.splice(idx, 1); // This object store will be created
+          return;
+        }
 
         if (objectStoreMeta.keyPath !== keyPath) {
           throw new BoxDBError(

@@ -113,6 +113,13 @@ describe('Basic of BoxDB', () => {
       }).toThrow();
     });
 
+    test('trying to register same model with force option', () => {
+      // trying to register same model name
+      expect(() => {
+        box.model('user', testScheme, { force: true });
+      }).toThrow();
+    });
+
     test('trying to unique option without index', () => {
       expect(() => {
         box.model('user_test', {
