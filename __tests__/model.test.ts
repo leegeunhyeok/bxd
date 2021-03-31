@@ -18,7 +18,7 @@ const modelArgs = {
   },
 };
 
-const builder = BoxModelBuilder.getInstance(null);
+const builder = BoxModelBuilder.get(null);
 
 describe('checking about model basic features', () => {
   const TestModel = builder.build(modelArgs.targetVersion, modelArgs.storeName, modelArgs.scheme);

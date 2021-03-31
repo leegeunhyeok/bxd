@@ -32,7 +32,7 @@ describe('Basic of BoxDB', () => {
       box = new BoxDB(name, ++version);
 
       // check basic information
-      expect(box.databaseName).toBe(name);
+      expect(box.name).toBe(name);
       expect(box.version).toBe(version);
     });
 
@@ -155,23 +155,14 @@ describe('Basic of BoxDB', () => {
       }).toThrow();
     });
 
-    test('get idb instance before database open', () => {
-      expect(() => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (User as BoxModel<any>).getDatabase();
-      }).toThrow();
-    });
-
     test('check ready status', async () => {
       expect(box.ready).toBe(false);
       await box.open();
       expect(box.ready).toBe(true);
     });
 
-    test('get idb instance after database open', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const idb = (User as BoxModel<any>).getDatabase();
-      expect(idb).not.toBeNull();
+    test('check idb instance', async () => {
+      expect(box.idb).not.toBeNull();
     });
 
     test('check object store names', async () => {
