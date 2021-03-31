@@ -39,10 +39,10 @@ class BoxDB {
   public static Types = BoxDataTypes;
   public static Order = BoxCursorDirections;
   private _ready = false;
-  private _databaseName: string;
+  private _name: string;
   private _version: number;
   private _boxMetaMap: BoxMetaMap = {};
-  private _eventListener: ListenerMap = {
+  private _events: ListenerMap = {
     versionchange: [],
     error: [],
     abort: [],
@@ -60,14 +60,18 @@ class BoxDB {
   constructor(databaseName: string, version: number) {
     if (typeof databaseName !== 'string') throw new BoxDBError('databaseName must be string');
     if (typeof version !== 'number') throw new BoxDBError('version must be number');
-    this._databaseName = databaseName;
+    this._name = databaseName;
     this._version = version;
     this._tx = new BoxTransaction();
-    this._model = BoxModelBuilder.getInstance(this._tx);
+    this._model = BoxModelBuilder.get(this._tx);
   }
 
-  get databaseName(): string {
-    return this._databaseName;
+  get idb(): IDBDatabase {
+    return this._idb;
+  }
+
+  get name(): string {
+    return this._name;
   }
 
   get version(): number {
@@ -79,23 +83,179 @@ class BoxDB {
   }
 
   /**
+   * Returns interrupt transaction task
+   */
+  static interrupt(): TransactionTask {
+    return new TransactionTask(TransactionType.INTERRUPT, null, TransactionMode.READ, null);
+  }
+
+  /**
+   * Create/update object stores and open idb
+   */
+  open(): Promise<Event> {
+    return new Promise((resolve, reject) => {
+      const openRequest = self.indexedDB.open(this._name, this._version);
+      const close = () => {
+        openRequest.result && openRequest.result.close();
+      };
+
+      // IDB Open successfully
+      openRequest.onsuccess = (event) => {
+        this._ready = true;
+        this._idb = openRequest.result;
+        this._tx.init(openRequest.result);
+
+        // IDB event listener
+        this._idb.onversionchange = (event) => {
+          this._events['versionchange'].forEach((f) => f(event));
+        };
+        this._idb.onabort = (event) => {
+          this._events['abort'].forEach((f) => f(event));
+        };
+        this._idb.onerror = (event) => {
+          this._events['error'].forEach((f) => f(event));
+        };
+        this._idb.onclose = (event) => {
+          this._events['close'].forEach((f) => f(event));
+        };
+        resolve(event);
+      };
+
+      openRequest.onupgradeneeded = () => {
+        try {
+          this._update(openRequest);
+        } catch (e) {
+          close();
+          reject(e);
+        }
+      };
+
+      openRequest.onblocked = () => {
+        reject(new BoxDBError('Can not upgrade database because the database is already opened'));
+      };
+      openRequest.onerror = (event) => {
+        close();
+        reject(event);
+      };
+    });
+  }
+
+  /**
+   * Define box model
+   *
+   * @param storeName
+   * @param scheme
+   * @param options
+   */
+  model<S extends BoxScheme>(storeName: string, scheme: S, options?: BoxModelOption): BoxModel<S> {
+    if (this._ready) {
+      throw new BoxDBError('Can not define model after database opened');
+    }
+
+    if (this._boxMetaMap[storeName]) {
+      throw new BoxDBError(`${storeName} model already defined`);
+    } else {
+      this._boxMetaMap[storeName] = this._convert(storeName, scheme, options);
+    }
+
+    return this._model.build(this._version, storeName, scheme);
+  }
+
+  /**
+   * Returns model names on this database
+   *
+   * @returns Registred model names (object store names)
+   */
+  modelNames(): string[] {
+    return Object.keys(this._boxMetaMap);
+  }
+
+  /**
+   * Add idb global event listener
+   *
+   * @param type BoxDBEvent
+   * @param listener
+   */
+  on(type: BoxDBEvent, listener: BoxDBEventListener): void {
+    this._events[type].push(listener);
+  }
+
+  /**
+   * Remove registed event listener
+   *
+   * @param type BoxDBEvent
+   * @param listener
+   */
+  off(type: BoxDBEvent, listener: BoxDBEventListener): void {
+    const listenerIdx = this._events[type].indexOf(listener);
+    if (~listenerIdx) return;
+    this._events[type].splice(listenerIdx, 1);
+  }
+
+  /**
+   * Tasks are performed as transactions
+   *
+   * @param tasks Transaction tasks
+   */
+  transaction(tasks: TransactionTask[]): Promise<void> {
+    if (tasks.every((task) => task instanceof TransactionTask)) {
+      return this._tx.transaction(tasks).then(() => void 0);
+    } else {
+      throw new BoxDBError('Tasks must be TransactionTask');
+    }
+  }
+
+  /**
+   * Close database connection
+   */
+  close(): void {
+    if (this._ready) {
+      this._idb.close();
+      this._ready = false;
+    } else {
+      throw new BoxDBError('database not ready');
+    }
+  }
+
+  /**
+   * Create BoxModelMeta object
+   *
+   * @param name
+   * @param scheme
+   * @param keyPath
+   * @param autoIncrement
+   * @param index
+   * @param force
+   * @returns
+   */
+  private _meta(
+    name: string,
+    scheme: ConfiguredBoxScheme,
+    keyPath: string,
+    autoIncrement: boolean,
+    index: BoxIndexConfig[],
+    force: boolean,
+  ): BoxModelMeta {
+    return { name, scheme, keyPath, autoIncrement, index, force };
+  }
+
+  /**
    * IDBObjectStore to BoxModelMeta
    *
    * @param objectStore target object store
    */
-  private _objectStoreToModelMeta(objectStore: IDBObjectStore): BoxModelMeta {
-    return {
-      name: objectStore.name,
-      scheme: null,
-      // info: bxd supports only single in-line key
-      keyPath: Array.isArray(objectStore.keyPath) ? objectStore.keyPath[0] : objectStore.keyPath,
-      autoIncrement: objectStore.autoIncrement,
-      index: Array.from(objectStore.indexNames).map((name) => {
+  private _toMeta(objectStore: IDBObjectStore): BoxModelMeta {
+    return this._meta(
+      objectStore.name,
+      null,
+      Array.isArray(objectStore.keyPath) ? objectStore.keyPath[0] : objectStore.keyPath,
+      objectStore.autoIncrement,
+      Array.from(objectStore.indexNames).map((name) => {
         const idx = objectStore.index(name);
         return { keyPath: idx.keyPath, unique: idx.unique } as BoxIndexConfig;
       }),
-      force: false,
-    };
+      false,
+    );
   }
 
   /**
@@ -104,7 +264,7 @@ class BoxDB {
    * @param storeName object store name
    * @param scheme model scheme
    */
-  private _toModelMeta(storeName: string, scheme: BoxScheme, options?: BoxOption): BoxModelMeta {
+  private _convert(storeName: string, scheme: BoxScheme, options?: BoxOption): BoxModelMeta {
     let primaryKeyPath = null;
     const indexList = [];
 
@@ -137,14 +297,14 @@ class BoxDB {
       return prev;
     }, {} as ConfiguredBoxScheme);
 
-    return {
-      name: storeName,
-      scheme: configuredScheme,
-      keyPath: primaryKeyPath,
-      autoIncrement: Boolean(options?.autoIncrement),
-      index: indexList,
-      force: Boolean(options?.force),
-    };
+    return this._meta(
+      storeName,
+      configuredScheme,
+      primaryKeyPath,
+      Boolean(options?.autoIncrement),
+      indexList,
+      Boolean(options?.force),
+    );
   }
 
   /**
@@ -168,7 +328,7 @@ class BoxDB {
       if (modelStoreNames.includes(name)) {
         const { keyPath, autoIncrement, index, force } = getBoxMeta(name);
         const objectStore = tx.objectStore(name);
-        const objectStoreMeta = this._objectStoreToModelMeta(objectStore);
+        const objectStoreMeta = this._toMeta(objectStore);
 
         // Delete exist object store
         if (force) {
@@ -243,141 +403,6 @@ class BoxDB {
           objectStore.createIndex(keyPath, keyPath, { unique }),
         );
       });
-  }
-
-  /**
-   * Returns interrupt transaction task
-   */
-  static interrupt(): TransactionTask {
-    return new TransactionTask(TransactionType.INTERRUPT, null, TransactionMode.READ, null);
-  }
-
-  /**
-   * Create/update object stores and open idb
-   */
-  open(): Promise<Event> {
-    return new Promise((resolve, reject) => {
-      const openRequest = self.indexedDB.open(this._databaseName, this._version);
-      const close = () => {
-        openRequest.readyState !== 'pending' && openRequest.result && openRequest.result.close();
-      };
-
-      // IDB Open successfully
-      openRequest.onsuccess = (event) => {
-        this._ready = true;
-        this._idb = openRequest.result;
-        this._tx.init(openRequest.result);
-
-        // IDB event listener
-        this._idb.onversionchange = (event) => {
-          this._eventListener['versionchange'].forEach((f) => f(event));
-        };
-        this._idb.onabort = (event) => {
-          this._eventListener['abort'].forEach((f) => f(event));
-        };
-        this._idb.onerror = (event) => {
-          this._eventListener['error'].forEach((f) => f(event));
-        };
-        this._idb.onclose = (event) => {
-          this._eventListener['close'].forEach((f) => f(event));
-        };
-        resolve(event);
-      };
-
-      openRequest.onupgradeneeded = () => {
-        try {
-          this._update(openRequest);
-        } catch (e) {
-          close();
-          reject(e);
-        }
-      };
-
-      openRequest.onblocked = () => {
-        reject(new BoxDBError('Can not upgrade database because the database is already opened'));
-      };
-      openRequest.onerror = (event) => {
-        close();
-        reject(event);
-      };
-    });
-  }
-
-  /**
-   * Close database connection
-   */
-  close(): void {
-    if (this._ready) {
-      this._idb.close();
-      this._ready = false;
-    } else {
-      throw new BoxDBError('database not ready');
-    }
-  }
-
-  /**
-   * Define box model
-   *
-   * @param storeName
-   * @param scheme
-   * @param options
-   */
-  model<S extends BoxScheme>(storeName: string, scheme: S, options?: BoxModelOption): BoxModel<S> {
-    if (this._ready) {
-      throw new BoxDBError('Cannot define model after database opened');
-    }
-
-    if (this._boxMetaMap[storeName]) {
-      throw new BoxDBError(`${storeName} model already defined`);
-    } else {
-      this._boxMetaMap[storeName] = this._toModelMeta(storeName, scheme, options);
-    }
-
-    return this._model.build(this._version, storeName, scheme);
-  }
-
-  /**
-   * Returns model names on this database
-   *
-   * @returns Registred model names (object store names)
-   */
-  modelNames(): string[] {
-    return Object.keys(this._boxMetaMap);
-  }
-
-  /**
-   * Add idb global event listener
-   *
-   * @param type BoxDBEvent
-   * @param listener
-   */
-  on(type: BoxDBEvent, listener: BoxDBEventListener): void {
-    this._eventListener[type].push(listener);
-  }
-
-  /**
-   * Remove registed event listener
-   *
-   * @param type BoxDBEvent
-   * @param listener
-   */
-  off(type: BoxDBEvent, listener: BoxDBEventListener): void {
-    const listenerIdx = this._eventListener[type].indexOf(listener);
-    if (~listenerIdx) return;
-    this._eventListener[type].splice(listenerIdx, 1);
-  }
-
-  /**
-   * Tasks are performed as transactions
-   *
-   * @param tasks Transaction tasks
-   */
-  transaction(tasks: TransactionTask[]): Promise<void> {
-    if (tasks.every((task) => task instanceof TransactionTask)) {
-      return this._tx.transaction(tasks).then(() => void 0);
-    } else {
-      throw new BoxDBError('Argument elements must be TransactionTask instance');
-    }
   }
 }
 

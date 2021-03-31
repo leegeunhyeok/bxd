@@ -13,9 +13,10 @@ export enum TransactionType {
   DELETE = 'delete',
   CLEAR = 'clear',
   COUNT = 'count',
-  CURSOR_GET = 'cursor_get',
-  CURSOR_UPDATE = 'cursor_update',
-  CURSOR_DELETE = 'cursor_delete',
+  // $: Using cursor
+  $GET = '$get',
+  $UPDATE = '$update',
+  $DELETE = '$delete',
   INTERRUPT = 'interrupt',
 }
 

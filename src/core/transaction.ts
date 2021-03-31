@@ -28,14 +28,6 @@ export default class BoxTransaction {
     this._idb.value = idb;
   }
 
-  getIDB(): IDBDatabase {
-    if (this._idb.value) {
-      return this._idb.value;
-    } else {
-      throw new BoxDBError('database not opened');
-    }
-  }
-
   /**
    * Fulfill multiple tasks on transaction
    *
@@ -47,7 +39,7 @@ export default class BoxTransaction {
     }
 
     const needResponse =
-      (tasks.length === 1 && tasks[0].action === TransactionType.GET) || TransactionType.CURSOR_GET;
+      (tasks.length === 1 && tasks[0].action === TransactionType.GET) || TransactionType.$GET;
     let res = null;
 
     // Get store names from tasks
@@ -66,7 +58,7 @@ export default class BoxTransaction {
       (task) =>
         task.action === TransactionType.GET ||
         task.action === TransactionType.COUNT ||
-        task.action === TransactionType.CURSOR_GET,
+        task.action === TransactionType.$GET,
     );
 
     return new Promise((resolve, reject) => {
@@ -86,12 +78,12 @@ export default class BoxTransaction {
           // interrupt manually
           tx.abort();
         } else if (
-          action === TransactionType.CURSOR_GET ||
-          action === TransactionType.CURSOR_UPDATE ||
-          action === TransactionType.CURSOR_DELETE
+          action === TransactionType.$GET ||
+          action === TransactionType.$UPDATE ||
+          action === TransactionType.$DELETE
         ) {
           objectStore = tx.objectStore(storeName);
-          this._cursorTaskHelper(objectStore, task).then((records) => (res = records));
+          this._cursor(objectStore, task).then((records) => (res = records));
         } else {
           // get, add, put, delete, clear
           objectStore = tx.objectStore(storeName);
@@ -118,7 +110,7 @@ export default class BoxTransaction {
    * @param objectStore Target object store object
    * @param task Current task
    */
-  private _cursorTaskHelper(objectStore: IDBObjectStore, task: TransactionTask): Promise<any[]> {
+  private _cursor(objectStore: IDBObjectStore, task: TransactionTask): Promise<any[]> {
     const options = (task.args[0] || ({} as unknown)) as CursorOptions<any>;
     const filter = options.filter || null;
     const updateValue = options.updateValue;
@@ -150,11 +142,11 @@ export default class BoxTransaction {
           const value = cursor.value;
 
           switch (task.action) {
-            case TransactionType.CURSOR_GET:
+            case TransactionType.$GET:
               pass(value) && res.push(value);
               break;
 
-            case TransactionType.CURSOR_UPDATE:
+            case TransactionType.$UPDATE:
               pass(value) &&
                 cursorTaskRequestHandler(
                   cursor.update({
@@ -164,7 +156,7 @@ export default class BoxTransaction {
                 );
               break;
 
-            case TransactionType.CURSOR_DELETE:
+            case TransactionType.$DELETE:
               pass(value) && cursorTaskRequestHandler(cursor.delete());
               break;
           }
@@ -266,12 +258,12 @@ export default class BoxTransaction {
     storeName: string,
     filter: CursorQuery<S> | EvalFunction<S>[],
     updateValue: OptionalBoxData<S>,
-  ): Promise<T extends TransactionType.CURSOR_GET ? BoxData<S>[] : void> {
+  ): Promise<T extends TransactionType.$GET ? BoxData<S>[] : void> {
     return this.transaction([
       new TransactionTask(
         transactionType,
         storeName,
-        transactionType === TransactionType.GET || TransactionType.CURSOR_GET
+        transactionType === TransactionType.GET || TransactionType.$GET
           ? TransactionMode.READ
           : TransactionMode.WRITE,
         [{ filter, updateValue }],

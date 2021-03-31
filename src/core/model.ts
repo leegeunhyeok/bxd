@@ -20,7 +20,6 @@ export interface ModelPrototype {
 }
 
 export interface ModelProperty {
-  __db__: string;
   __name__: string;
   __scheme__: BoxScheme;
   __version__: number;
@@ -106,7 +105,7 @@ export default class BoxModelBuilder {
   private _handler: BoxHandler<IDBData>;
   private _task: BoxTask<IDBData>;
 
-  static getInstance(tx: BoxTransaction): BoxModelBuilder {
+  static get(tx: BoxTransaction): BoxModelBuilder {
     if (!this._instance) {
       this._instance = new BoxModelBuilder(tx);
     }
@@ -121,9 +120,6 @@ export default class BoxModelBuilder {
       },
       getVersion(this: ModelContext) {
         return this.__version__;
-      },
-      getDatabase(this: ModelContext) {
-        return this.tx.getIDB();
       },
       add(this: ModelContext, value, key) {
         return this.tx.add(this.__name__, value, key);
@@ -146,22 +142,22 @@ export default class BoxModelBuilder {
 
         return {
           get: () =>
-            this.tx.cursor<typeof TransactionType.CURSOR_GET, IDBData>(
-              TransactionType.CURSOR_GET,
+            this.tx.cursor<typeof TransactionType.$GET, IDBData>(
+              TransactionType.$GET,
               this.__name__,
               filter,
               null,
             ),
           update: (value) =>
-            this.tx.cursor<typeof TransactionType.CURSOR_UPDATE, IDBData>(
-              TransactionType.CURSOR_UPDATE,
+            this.tx.cursor<typeof TransactionType.$UPDATE, IDBData>(
+              TransactionType.$UPDATE,
               this.__name__,
               filter,
               value,
             ),
           delete: () =>
-            this.tx.cursor<typeof TransactionType.CURSOR_DELETE, IDBData>(
-              TransactionType.CURSOR_DELETE,
+            this.tx.cursor<typeof TransactionType.$DELETE, IDBData>(
+              TransactionType.$DELETE,
               this.__name__,
               filter,
               null,
@@ -194,24 +190,16 @@ export default class BoxModelBuilder {
       find(this: ModelContext, filter) {
         return {
           update: (value) =>
-            new TransactionTask(
-              TransactionType.CURSOR_UPDATE,
-              this.__name__,
-              TransactionMode.WRITE,
-              [
-                {
-                  filter,
-                  updateValue: value,
-                },
-              ],
-            ),
+            new TransactionTask(TransactionType.$UPDATE, this.__name__, TransactionMode.WRITE, [
+              {
+                filter,
+                updateValue: value,
+              },
+            ]),
           delete: () =>
-            new TransactionTask(
-              TransactionType.CURSOR_DELETE,
-              this.__name__,
-              TransactionMode.WRITE,
-              [{ filter }],
-            ),
+            new TransactionTask(TransactionType.$DELETE, this.__name__, TransactionMode.WRITE, [
+              { filter },
+            ]),
         };
       },
     };
@@ -238,7 +226,6 @@ export default class BoxModelBuilder {
     } as unknown) as BoxModel<S>;
 
     const context = Object.create(this._prototype) as ModelContext;
-    context.__db__ = '';
     context.__name__ = storeName;
     context.__scheme__ = scheme;
     context.__version__ = targetVersion;
