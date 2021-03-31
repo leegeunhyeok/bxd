@@ -105,7 +105,7 @@ describe('Basic of object store transactions via model', () => {
   });
 
   test('do multiple tasks with transaction', async () => {
-    const emptyRes = await box.transaction([
+    await box.transaction([
       User.task.add({ _id: 101, name: 'New User 1', age: -99 }),
       User.task.add({ _id: 102, name: 'New User 2', age: -1 }),
       User.task.delete(5),
@@ -114,8 +114,21 @@ describe('Basic of object store transactions via model', () => {
     const record1 = await User.get(101);
     const record2 = await User.get(5);
 
-    expect(emptyRes).toBeUndefined();
     expect(record1.age).toEqual(-99);
+    expect(record2).toBeNull();
+  });
+
+  test('do cursor task with transaction', async () => {
+    const updateValue = { name: 'UPDATED' };
+    await box.transaction([
+      User.task.find([(user) => user._id === 10]).update(updateValue),
+      User.task.find([(user) => user._id === 11]).delete(),
+    ]);
+
+    const record1 = await User.get(10);
+    const record2 = await User.get(11);
+
+    expect(record1.name).toEqual(updateValue.name);
     expect(record2).toBeNull();
   });
 
@@ -138,7 +151,7 @@ describe('Basic of object store transactions via model', () => {
     expect(record2.age).not.toBe(-111);
   });
 
-  test('handling transaction aborts', async () => {
+  test('interrupt transaction', async () => {
     try {
       await box.transaction([
         User.task.put({ _id: 101, name: 'User 1', age: 0 }), // before age: -99
@@ -156,9 +169,9 @@ describe('Basic of object store transactions via model', () => {
     expect(record2.age).toBe(-1);
   });
 
-  // test('clear all records from object store', async () => {
-  //   await User.clear();
-  //   const records = await User.find().get();
-  //   expect(records.length).toBe(0);
-  // });
+  test('clear all records', async () => {
+    await User.clear();
+    const records = await User.find().get();
+    expect(records.length).toEqual(0);
+  });
 });
