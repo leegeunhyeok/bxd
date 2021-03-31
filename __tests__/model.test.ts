@@ -19,8 +19,8 @@ const builder = new BoxModelBuilder(null);
 describe('checking about model basic features', () => {
   test('create model and prototype check', () => {
     const TestModel = builder.build(modelArgs.targetVersion, modelArgs.storeName, modelArgs.scheme);
-    // expect(TestModel.getVersion()).toBe(modelArgs.targetVersion);
-    // expect(TestModel.getName()).toBe(modelArgs.storeName);
+    expect(TestModel.getVersion()).toBe(modelArgs.targetVersion);
+    expect(TestModel.getName()).toBe(modelArgs.storeName);
   });
 
   test('model data validation', () => {
