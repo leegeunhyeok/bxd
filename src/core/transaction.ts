@@ -75,7 +75,6 @@ export default class BoxTransaction {
         storeNames,
         isReadonlyMode ? TransactionMode.READ : TransactionMode.WRITE,
       );
-      let rejected = false;
 
       // Do each tasks
       // abort transaction if error occurs during task
@@ -105,10 +104,7 @@ export default class BoxTransaction {
       });
 
       const errorHandler = (event: Event) => {
-        if (!rejected) {
-          rejected = true;
-          reject(tx.error || (event.target as IDBRequest).error);
-        }
+        reject(tx.error || (event.target as IDBRequest).error);
       };
 
       // On complete

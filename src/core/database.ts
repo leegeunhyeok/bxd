@@ -62,7 +62,7 @@ class BoxDB {
     this._databaseName = databaseName;
     this._version = version;
     this._tx = new BoxTransaction();
-    this._model = new BoxModelBuilder(this._tx);
+    this._model = BoxModelBuilder.getInstance(this._tx);
   }
 
   get databaseName(): string {
@@ -125,12 +125,11 @@ class BoxDB {
         }
 
         if (type.unique && !type.index) {
-          throw new BoxDBError('unique option must with index option');
+          throw new BoxDBError('unique option requires index option');
         }
 
         // If this field configured for using index
         type.index && indexList.push({ keyPath: field, unique: Boolean(type.unique) });
-
         prev[field] = type;
       }
 
@@ -156,10 +155,10 @@ class BoxDB {
   private _update(openRequest: IDBOpenDBRequest) {
     const db = openRequest.result;
     const tx = openRequest.transaction;
-    // idb's object store names
+    // Object store names in IDB
     const objectStoreNames = Array.from(db.objectStoreNames);
     // defined model(object store) names
-    const definedModelNames = Object.keys(this._boxMetaMap);
+    const modelStoreNames = Object.keys(this._boxMetaMap);
     // Helper function that get metadata of defined model
     const getBoxMeta = (name: string) => this._boxMetaMap[name];
 
@@ -167,36 +166,56 @@ class BoxDB {
       const { keyPath, autoIncrement, index } = getBoxMeta(name);
       const objectStore = tx.objectStore(name);
 
-      if (definedModelNames.includes(name)) {
-        // Update exist object store
-        const existModelMeta = this._objectStoreToModelMeta(objectStore);
+      // Update exist object store
+      if (modelStoreNames.includes(name)) {
+        const objectStoreMeta = this._objectStoreToModelMeta(objectStore);
 
-        if (existModelMeta.keyPath !== keyPath) {
+        if (objectStoreMeta.keyPath !== keyPath) {
           throw new BoxDBError(
-            `Can not change in-line-key of ${name} (exist: ${existModelMeta.keyPath})`,
+            `Can not change in-line-key of ${name} (key: ${objectStoreMeta.keyPath})`,
           );
         }
 
-        if (existModelMeta.autoIncrement !== autoIncrement) {
+        if (objectStoreMeta.autoIncrement !== autoIncrement) {
           throw new BoxDBError(`Can not change out-of-line key of ${name}`);
         }
 
         // Update indexes
-        const indexNameExtractor = (indexConfig) => indexConfig.keyPath;
-        const existIndexNameList = existModelMeta.index.map(indexNameExtractor);
-        const definedIndexNameList = index.map(indexNameExtractor);
+        const getKeyPath = (indexConfig) => indexConfig.keyPath;
+        const idbKeyPaths = objectStoreMeta.index.map(getKeyPath);
+        const modelKeyPaths = index.map(getKeyPath);
 
-        // Delete index if index not found in defined model's scheme
-        existIndexNameList.forEach(
-          (keyPath) => !definedIndexNameList.includes(keyPath) && objectStore.deleteIndex(keyPath),
-        );
+        // (1/3) Update unique option of index
+        objectStoreMeta.index.forEach((objectStoreIndex) => {
+          const modelIndex = index.find(({ keyPath }) => keyPath === objectStoreIndex.keyPath);
+          const originKeyPath = objectStoreIndex.keyPath;
 
-        // Create new index if not exist in exist object store
-        index.forEach(
-          ({ keyPath, unique }) =>
-            !existIndexNameList.includes(keyPath) &&
-            objectStore.createIndex(keyPath, keyPath, { unique }),
-        );
+          // Index option updated
+          if (modelIndex && objectStoreIndex.unique !== modelIndex.unique) {
+            // Change unique option true -> false is available
+            if (objectStoreIndex.unique === true) {
+              // Delete exist index and re-create
+              objectStore.deleteIndex(originKeyPath);
+              objectStore.createIndex(originKeyPath, originKeyPath, {
+                unique: modelIndex.unique,
+              });
+            } else {
+              throw new BoxDBError(
+                `Can not change unique option to true (field: ${originKeyPath})`,
+              );
+            }
+          }
+        });
+
+        // (2/3) Delete index if index not found in scheme of target model
+        idbKeyPaths.forEach((keyPath) => {
+          !modelKeyPaths.includes(keyPath) && objectStore.deleteIndex(keyPath);
+        });
+
+        // (3/3) Create new index if index not exist in object store
+        index.forEach(({ keyPath, unique }) => {
+          !idbKeyPaths.includes(keyPath) && objectStore.createIndex(keyPath, keyPath, { unique });
+        });
       } else {
         // Delete object store (model not defined)
         db.deleteObjectStore(name);
@@ -204,7 +223,7 @@ class BoxDB {
     });
 
     // Create new object stores
-    definedModelNames
+    modelStoreNames
       .filter((name) => !objectStoreNames.includes(name))
       .forEach((name) => {
         const { keyPath, autoIncrement, index } = getBoxMeta(name);
@@ -232,6 +251,7 @@ class BoxDB {
   open(): Promise<Event> {
     return new Promise((resolve, reject) => {
       const openRequest = self.indexedDB.open(this._databaseName, this._version);
+      const close = () => openRequest.result && openRequest.result.close();
 
       // IDB Open successfully
       openRequest.onsuccess = (event) => {
@@ -252,15 +272,49 @@ class BoxDB {
         this._idb.onclose = (event) => {
           this._eventListener['close'].forEach((f) => f(event));
         };
-
         resolve(event);
       };
 
-      openRequest.onupgradeneeded = () => this._update(openRequest);
+      openRequest.onupgradeneeded = () => {
+        try {
+          this._update(openRequest);
+        } catch (e) {
+          close();
+          reject(e);
+        }
+      };
 
-      // Error occurs
-      openRequest.onerror = (event) => reject(event);
+      openRequest.onblocked = openRequest.onerror = (event) => {
+        close();
+        reject(event);
+      };
     });
+  }
+
+  /**
+   * Drop current database
+   */
+  drop(): Promise<Event> {
+    return new Promise((resolve, reject) => {
+      const deleteRequest = self.indexedDB.deleteDatabase(this._databaseName);
+      deleteRequest.onsuccess = (event) => {
+        this._ready = false;
+        resolve(event);
+      };
+      deleteRequest.onblocked = deleteRequest.onerror = (event) => reject(event);
+    });
+  }
+
+  /**
+   * Close database connection
+   */
+  close(): void {
+    if (this._ready) {
+      this._idb.close();
+      this._ready = false;
+    } else {
+      throw new BoxDBError('database not ready');
+    }
   }
 
   /**
