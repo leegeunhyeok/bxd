@@ -24,8 +24,16 @@ export default class BoxTransaction {
    *
    * @param idb IDBDatabase
    */
-  public init(idb: IDBDatabase): void {
+  init(idb: IDBDatabase): void {
     this._idb.value = idb;
+  }
+
+  getIDB(): IDBDatabase {
+    if (this._idb.value) {
+      return this._idb.value;
+    } else {
+      throw new BoxDBError('database not opened');
+    }
   }
 
   /**
@@ -35,7 +43,7 @@ export default class BoxTransaction {
    */
   private _run(tasks: TransactionTask[]): Promise<any> {
     if (this._idb.value === null) {
-      throw new BoxDBError('Database not ready');
+      throw new BoxDBError('database not ready');
     }
 
     const needResponse =

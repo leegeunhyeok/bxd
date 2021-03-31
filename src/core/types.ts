@@ -72,6 +72,7 @@ export interface BoxModel<S extends BoxScheme> extends BoxHandler<S> {
 export interface BoxHandler<S extends BoxScheme> {
   getName(): string;
   getVersion(): number;
+  getDatabase(): IDBDatabase;
   add(value: BoxData<S>, key?: IDBValidKey): Promise<void>;
   get(
     key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,

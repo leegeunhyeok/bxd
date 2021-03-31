@@ -115,6 +115,9 @@ export default class BoxModelBuilder {
       getVersion(this: ModelContext) {
         return this.__version__;
       },
+      getDatabase(this: ModelContext) {
+        return this.tx.getIDB();
+      },
       add(this: ModelContext, value, key) {
         return this.tx.add(this.__name__, value, key);
       },
