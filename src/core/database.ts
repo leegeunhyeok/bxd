@@ -163,11 +163,10 @@ class BoxDB {
     const getBoxMeta = (name: string) => this._boxMetaMap[name];
 
     objectStoreNames.forEach((name) => {
-      const { keyPath, autoIncrement, index } = getBoxMeta(name);
-      const objectStore = tx.objectStore(name);
-
       // Update exist object store
       if (modelStoreNames.includes(name)) {
+        const { keyPath, autoIncrement, index } = getBoxMeta(name);
+        const objectStore = tx.objectStore(name);
         const objectStoreMeta = this._objectStoreToModelMeta(objectStore);
 
         if (objectStoreMeta.keyPath !== keyPath) {
@@ -340,6 +339,15 @@ class BoxDB {
     }
 
     return this._model.build(this._version, storeName, scheme);
+  }
+
+  /**
+   * Returns model names on this database
+   *
+   * @returns Registred model names (object store names)
+   */
+  modelNames(): string[] {
+    return Object.keys(this._boxMetaMap);
   }
 
   /**
