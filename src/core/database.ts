@@ -285,26 +285,13 @@ class BoxDB {
         }
       };
 
-      openRequest.onblocked = () =>
+      openRequest.onblocked = () => {
         reject(new BoxDBError('Can not upgrade database because the database is already opened'));
+      };
       openRequest.onerror = (event) => {
         close();
         reject(event);
       };
-    });
-  }
-
-  /**
-   * Drop current database
-   */
-  drop(): Promise<Event> {
-    return new Promise((resolve, reject) => {
-      const deleteRequest = self.indexedDB.deleteDatabase(this._databaseName);
-      deleteRequest.onsuccess = (event) => {
-        this._ready = false;
-        resolve(event);
-      };
-      deleteRequest.onblocked = deleteRequest.onerror = (event) => reject(event);
     });
   }
 
