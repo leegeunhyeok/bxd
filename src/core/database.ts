@@ -30,8 +30,8 @@ interface BoxMetaMap {
 type ListenerMap = {
   [key in BoxDBEvent]: BoxDBEventListener[];
 };
-type BoxDBEvent = 'versionchange' | 'error' | 'abort' | 'close';
-type BoxDBEventListener = (event: Event) => void;
+export type BoxDBEvent = 'versionchange' | 'error' | 'abort' | 'close';
+export type BoxDBEventListener = (event: Event) => void;
 
 export type BoxDBType = typeof BoxDB;
 class BoxDB {
@@ -251,7 +251,9 @@ class BoxDB {
   open(): Promise<Event> {
     return new Promise((resolve, reject) => {
       const openRequest = self.indexedDB.open(this._databaseName, this._version);
-      const close = () => openRequest.result && openRequest.result.close();
+      const close = () => {
+        openRequest.readyState !== 'pending' && openRequest.result && openRequest.result.close();
+      };
 
       // IDB Open successfully
       openRequest.onsuccess = (event) => {
@@ -284,7 +286,9 @@ class BoxDB {
         }
       };
 
-      openRequest.onblocked = openRequest.onerror = (event) => {
+      openRequest.onblocked = () =>
+        reject(new BoxDBError('Can not upgrade database because the database is already opened'));
+      openRequest.onerror = (event) => {
         close();
         reject(event);
       };
