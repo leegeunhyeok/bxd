@@ -1,16 +1,19 @@
-import { TransactionTask, TransactionMode, TransactionType } from './task';
-import { BoxDBError } from './errors';
+import BoxTransaction from './transaction';
+import { TransactionTask, TransactionType } from './task';
 import {
   IDBData,
   BoxData,
   BoxModel,
   BoxScheme,
   BoxDataTypes,
+  CursorQuery,
+  CursorOptions,
   UncheckedData,
   BoxHandler,
   BoxTask,
+  IDBValue,
 } from './types';
-import BoxTransaction from './transaction';
+import { BoxDBError } from './errors';
 
 // BoxModel Prototype
 export interface ModelPrototype {
@@ -99,6 +102,24 @@ function createBoxData<T extends BoxScheme>(
   return boxData;
 }
 
+/**
+ * Returns IDBKeyRange
+ */
+export const rangeBuilder = {
+  equal(value: IDBValue): IDBKeyRange {
+    return IDBKeyRange.only(value);
+  },
+  upper(value: IDBValue): IDBKeyRange {
+    return IDBKeyRange.upperBound(value);
+  },
+  lower(value: IDBValue): IDBKeyRange {
+    return IDBKeyRange.lowerBound(value);
+  },
+  bound(v1: IDBValue, v2: IDBValue): IDBKeyRange {
+    return IDBKeyRange.bound(v1, v2);
+  },
+};
+
 export default class BoxModelBuilder {
   private static _instance: BoxModelBuilder = null;
   private _prototype: ModelPrototype;
@@ -113,6 +134,26 @@ export default class BoxModelBuilder {
   }
 
   private constructor(tx: BoxTransaction) {
+    /**
+     * Convert model handler arguments to CursorOption
+     * @param option
+     * @param value
+     * @param direction
+     * @param limit
+     * @returns
+     */
+    const toCursorOption = (
+      option: CursorQuery<IDBData>,
+      value: IDBData = null,
+      direction: IDBCursorDirection = 'next',
+      limit: number = null,
+    ): CursorOptions<IDBData> => ({
+      direction,
+      filter: option,
+      limit,
+      value,
+    });
+
     this._prototype = { tx, __validate: schemeValidator, __createData: createBoxData };
     this._handler = {
       getName(this: ModelContext) {
@@ -122,16 +163,16 @@ export default class BoxModelBuilder {
         return this.__version__;
       },
       add(this: ModelContext, value, key) {
-        return this.tx.add(this.__name__, value, key);
+        return this.tx.request(TransactionType.ADD, this.__name__, null, [value, key]);
       },
       get(this: ModelContext, key) {
-        return this.tx.get(this.__name__, key);
+        return this.tx.request(TransactionType.GET, this.__name__, null, [key]);
       },
       put(this: ModelContext, value, key) {
-        return this.tx.put(this.__name__, value, key);
+        return this.tx.request(TransactionType.PUT, this.__name__, null, [value, key]);
       },
       delete(this: ModelContext, key) {
-        return this.tx.delete(this.__name__, key);
+        return this.tx.request(TransactionType.DELETE, this.__name__, null, [key]);
       },
       find(this: ModelContext, filter) {
         if (filter && !Array.isArray(filter)) {
@@ -141,65 +182,44 @@ export default class BoxModelBuilder {
         }
 
         return {
-          get: () =>
-            this.tx.cursor<typeof TransactionType.$GET, IDBData>(
+          get: (order, limit) =>
+            this.tx.request(
               TransactionType.$GET,
               this.__name__,
-              filter,
-              null,
+              toCursorOption(filter, null, order, limit),
             ),
           update: (value) =>
-            this.tx.cursor<typeof TransactionType.$UPDATE, IDBData>(
-              TransactionType.$UPDATE,
-              this.__name__,
-              filter,
-              value,
-            ),
+            this.tx.request(TransactionType.$UPDATE, this.__name__, toCursorOption(filter, value)),
           delete: () =>
-            this.tx.cursor<typeof TransactionType.$DELETE, IDBData>(
-              TransactionType.$DELETE,
-              this.__name__,
-              filter,
-              null,
-            ),
+            this.tx.request(TransactionType.$DELETE, this.__name__, toCursorOption(filter)),
         };
       },
-      clear() {
-        return this.tx.clear(this.__name__);
+      clear(this: ModelContext) {
+        return this.tx.request(TransactionType.CLEAR, this.__name__, null);
+      },
+      count(this: ModelContext) {
+        return this.tx.request(TransactionType.COUNT, this.__name__, null);
       },
     };
 
     this._task = {
       add(this: ModelContext, value, key) {
-        return new TransactionTask(TransactionType.ADD, this.__name__, TransactionMode.WRITE, [
-          value,
-          key,
-        ]);
+        return new TransactionTask(TransactionType.ADD, this.__name__, null, [value, key]);
       },
       put(this: ModelContext, value, key) {
-        return new TransactionTask(TransactionType.PUT, this.__name__, TransactionMode.WRITE, [
-          value,
-          key,
-        ]);
+        return new TransactionTask(TransactionType.PUT, this.__name__, null, [value, key]);
       },
       delete(this: ModelContext, key) {
-        return new TransactionTask(TransactionType.DELETE, this.__name__, TransactionMode.WRITE, [
-          key,
-        ]);
+        return new TransactionTask(TransactionType.DELETE, this.__name__, null, [key]);
       },
       find(this: ModelContext, filter) {
         return {
           update: (value) =>
-            new TransactionTask(TransactionType.$UPDATE, this.__name__, TransactionMode.WRITE, [
-              {
-                filter,
-                updateValue: value,
-              },
-            ]),
-          delete: () =>
-            new TransactionTask(TransactionType.$DELETE, this.__name__, TransactionMode.WRITE, [
-              { filter },
-            ]),
+            new TransactionTask(TransactionType.$UPDATE, this.__name__, {
+              filter,
+              value,
+            }),
+          delete: () => new TransactionTask(TransactionType.$DELETE, this.__name__, { filter }),
         };
       },
     };

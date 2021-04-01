@@ -1,6 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { TransactionTask } from './task';
 
+// Follow defined IDB APIs types
+export type IDBData = any;
+export type IDBValue = any;
+
 // Available types
 export enum BoxDataTypes {
   BOOLEAN = '1',
@@ -35,8 +39,6 @@ export interface BoxScheme {
 export interface ConfiguredBoxScheme {
   [field: string]: ConfiguredType;
 }
-
-export type IDBData = any;
 
 // BoxData based on BoxScheme
 export type BoxData<S extends BoxScheme> = {
@@ -80,8 +82,9 @@ export interface BoxHandler<S extends BoxScheme> {
   delete(
     key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
   ): Promise<void>;
-  find(filter?: BoxModelFilter<S>): BoxCursorHandler<S>;
+  find(filter?: CursorQuery<S>): BoxCursorHandler<S>;
   clear(): Promise<void>;
+  count(): Promise<number>;
 }
 
 // BoxModel.task = BoxTask
@@ -91,12 +94,12 @@ export interface BoxTask<S extends BoxScheme> {
   delete(
     key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
   ): TransactionTask;
-  find(filter?: BoxModelFilter<S>): BoxCursorTask<S>;
+  find(filter?: CursorQuery<S>): BoxCursorTask<S>;
 }
 
 // BoxModel.find = () => BoxCursorHandler
 export interface BoxCursorHandler<S extends BoxScheme> {
-  get(): Promise<BoxData<S>[]>;
+  get(order?: IDBCursorDirection, limit?: number): Promise<BoxData<S>[]>;
   update(value: OptionalBoxData<S>): Promise<void>;
   delete(): Promise<void>;
 }
@@ -106,9 +109,6 @@ export interface BoxCursorTask<S extends BoxScheme> {
   update(value: OptionalBoxData<S>): TransactionTask;
   delete(): TransactionTask;
 }
-
-// Filters for BoxModel.find()
-export type BoxModelFilter<S extends BoxScheme> = EvalFunction<S>[] | CursorQuery<S>;
 
 // Key of IDB cursor
 export type CursorKey =
@@ -120,18 +120,25 @@ export type CursorKey =
   | IDBArrayKey
   | IDBKeyRange;
 
-export interface CursorQuery<S extends BoxScheme> {
-  field: Extract<keyof S, string>;
-  key: CursorKey;
-  direction?: BoxCursorDirections;
+// CursorQuery (using IDBKeyRange)
+export interface CursorCondition<S extends BoxScheme> {
+  target?: Extract<keyof S, string>;
+  value: IDBKeyRange;
 }
 
 // Filter function
 export type EvalFunction<S extends BoxScheme> = (value: OptionalBoxData<S>) => boolean;
 
+export type CursorQuery<S extends BoxScheme> = CursorCondition<S> | EvalFunction<S>[];
 export interface CursorOptions<S extends BoxScheme> {
-  filter?: CursorQuery<S> | EvalFunction<S>[];
-  updateValue?: OptionalBoxData<S>;
+  // IDBKeyRange or filter functions
+  filter?: CursorQuery<S>;
+  // For update value
+  value?: OptionalBoxData<S>;
+  // Cursor direction
+  direction?: IDBCursorDirection;
+  // Record limit
+  limit?: number;
 }
 
 // type with other options (configured)

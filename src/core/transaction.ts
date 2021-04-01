@@ -1,26 +1,17 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+import { TransactionTask, TransactionType, TransactionMode, TaskArguments } from './task';
+import { IDBData, CursorOptions } from './types';
 import { BoxDBError } from './errors';
-import { TransactionTask, TransactionType, TransactionMode } from './task';
-import {
-  BoxScheme,
-  BoxData,
-  OptionalBoxData,
-  CursorQuery,
-  EvalFunction,
-  CursorOptions,
-} from './types';
-
-type ObjectStoreKey = any;
 
 interface IDBReference {
   value: IDBDatabase;
 }
 
 export default class BoxTransaction {
+  // Keep idb reference
   private _idb: IDBReference = { value: null };
 
   /**
-   * Recive idb instance reference
+   * Recive reference of idb instance
    *
    * @param idb IDBDatabase
    */
@@ -29,50 +20,52 @@ export default class BoxTransaction {
   }
 
   /**
+   * Reset idb instance
+   */
+  close(): void {
+    this._idb.value = null;
+  }
+
+  /**
    * Fulfill multiple tasks on transaction
    *
    * @param tasks Transaction tasks
    */
-  private _run(tasks: TransactionTask[]): Promise<any> {
+  private _run(tasks: TransactionTask[]): Promise<void | IDBData | IDBData[]> {
     if (this._idb.value === null) {
       throw new BoxDBError('database not ready');
     }
 
     const needResponse =
-      (tasks.length === 1 && tasks[0].action === TransactionType.GET) || TransactionType.$GET;
+      tasks.length === 1 &&
+      (tasks[0].action === TransactionType.GET || tasks[0].action === TransactionType.$GET);
     let res = null;
 
     // Get store names from tasks
     const storeNames = Object.keys(
       tasks
         .map((task) => task.storeName)
-        .filter((name) => name)
         .reduce((set, curr) => {
-          set[curr] = undefined; // Add key into object
+          // In loop: Add key into object
+          // After: get keys from object
+          set[curr] = void 0;
           return set;
         }, {}),
     );
 
     // Check all tasks transaction mode
-    const isReadonlyMode = tasks.every(
-      (task) =>
-        task.action === TransactionType.GET ||
-        task.action === TransactionType.COUNT ||
-        task.action === TransactionType.$GET,
-    );
+    const mode = tasks.every((task) => task.mode === TransactionMode.READ)
+      ? TransactionMode.READ
+      : TransactionMode.WRITE;
 
     return new Promise((resolve, reject) => {
       // Open transaction
-      const tx = this._idb.value.transaction(
-        storeNames,
-        isReadonlyMode ? TransactionMode.READ : TransactionMode.WRITE,
-      );
+      const tx = this._idb.value.transaction(storeNames, mode);
 
       // Do each tasks
       // abort transaction if error occurs during task
       tasks.forEach((task) => {
         const { action, storeName, args } = task.valueOf();
-        let objectStore: IDBObjectStore = null;
 
         if (action === TransactionType.INTERRUPT) {
           // interrupt manually
@@ -82,11 +75,13 @@ export default class BoxTransaction {
           action === TransactionType.$UPDATE ||
           action === TransactionType.$DELETE
         ) {
-          objectStore = tx.objectStore(storeName);
+          // using cursor
+          const objectStore = tx.objectStore(storeName);
           this._cursor(objectStore, task).then((records) => (res = records));
         } else {
           // get, add, put, delete, clear
-          objectStore = tx.objectStore(storeName);
+          const objectStore = tx.objectStore(storeName);
+          // Dodge ts type checking
           const request = objectStore[action].call(objectStore, ...args) as IDBRequest;
           request.onsuccess = () => (res = request.result);
         }
@@ -97,9 +92,9 @@ export default class BoxTransaction {
       };
 
       // On complete
-      tx.oncomplete = () => resolve(needResponse ? res : undefined);
+      tx.oncomplete = () => resolve(needResponse ? res ?? null : void 0);
 
-      // On error / abort event will bubbled to idb
+      // On error/abort event will bubbled to idb
       tx.onerror = errorHandler;
     });
   }
@@ -110,10 +105,11 @@ export default class BoxTransaction {
    * @param objectStore Target object store object
    * @param task Current task
    */
-  private _cursor(objectStore: IDBObjectStore, task: TransactionTask): Promise<any[]> {
-    const options = (task.args[0] || ({} as unknown)) as CursorOptions<any>;
-    const filter = options.filter || null;
-    const updateValue = options.updateValue;
+  private _cursor(
+    objectStore: IDBObjectStore,
+    task: TransactionTask,
+  ): Promise<void | IDBData | IDBData[]> {
+    const { filter, direction, value, limit } = task.cursorOption();
     const res = [];
 
     // Filter function
@@ -122,42 +118,54 @@ export default class BoxTransaction {
     })();
 
     let request: IDBRequest<IDBCursorWithValue> = null;
-    if (filter && !Array.isArray(filter)) {
-      // Use IDB CursorKey
-      request = objectStore.index(filter.field).openCursor(filter.key, filter.direction || 'next');
+    if (filter && 'value' in filter) {
+      // Using IDBKeyRange + IDBCursorDirection
+      if (filter.target) {
+        if (!objectStore.indexNames.contains(filter.target)) {
+          throw new BoxDBError(`${filter.target} field is not an index`);
+        }
+        // Using named index
+        request = objectStore.index(filter.target).openCursor(filter.value, direction);
+      } else {
+        // Using in-line-key
+        request = objectStore.openCursor(filter.value, direction);
+      }
     } else {
-      // Use filter functions
-      request = objectStore.openCursor();
+      // Using custom filter functions(no index) + IDBCursorDirection
+      request = objectStore.openCursor(null, direction);
     }
 
     return new Promise((resolve, reject) => {
+      let rows = 0;
+      let running = true;
+      const limitHandler = () => limit === null || (limit !== null && limit > rows++);
       const cursorTaskRequestHandler = (request: IDBRequest) => {
-        request.onerror = (event) => reject(event);
+        request.onerror = (event) => (running = void reject(event));
       };
 
       request.onsuccess = () => {
         const cursor = request.result;
 
-        if (cursor) {
-          const value = cursor.value;
+        if (running && cursor && limitHandler()) {
+          const record = cursor.value;
 
           switch (task.action) {
             case TransactionType.$GET:
-              pass(value) && res.push(value);
+              pass(record) && res.push(record);
               break;
 
             case TransactionType.$UPDATE:
-              pass(value) &&
+              pass(record) &&
                 cursorTaskRequestHandler(
                   cursor.update({
-                    ...value,
-                    ...(updateValue ? updateValue : null),
+                    ...record,
+                    ...(value ? value : null),
                   }),
                 );
               break;
 
             case TransactionType.$DELETE:
-              pass(value) && cursorTaskRequestHandler(cursor.delete());
+              pass(record) && cursorTaskRequestHandler(cursor.delete());
               break;
           }
 
@@ -170,104 +178,29 @@ export default class BoxTransaction {
   }
 
   /**
-   * Get data from object store
+   * Create single task and do transaction task
    *
-   * If data is not exist, returns `null`
-   *
-   * @param storeName object store name for open transaction
-   * @param key idb object store keyPath value
+   * @param type Transaction type
+   * @param storeName Object store name
+   * @param order Cursor direction
+   * @param args arguments that  IDB API
+   * @returns Result of transaction task
    */
-  get<S extends BoxScheme>(storeName: string, key: ObjectStoreKey): Promise<BoxData<S>> {
-    return this._run([
-      new TransactionTask(TransactionType.GET, storeName, TransactionMode.READ, [key]),
-    ]).then((data) => data || null);
-  }
-
-  /**
-   * Add new record into target object store
-   *
-   * @param storeName object store name for open transaction
-   * @param value object to store
-   * @param key optional key
-   */
-  add<S extends BoxScheme>(storeName: string, value: BoxData<S>, key?: IDBValidKey): Promise<void> {
-    return this._run([
-      new TransactionTask(TransactionType.ADD, storeName, TransactionMode.WRITE, [value, key]),
-    ]);
-  }
-
-  /**
-   * Update record or create new one to target object store
-   *
-   * @param storeName object store name for open transaction
-   * @param value object to store
-   * @param key optional key
-   */
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  put<S extends BoxScheme>(
+  request(
+    type: TransactionType,
     storeName: string,
-    value: OptionalBoxData<S>,
-    key?: IDBValidKey,
-  ): Promise<void> {
-    return this._run([
-      new TransactionTask(TransactionType.PUT, storeName, TransactionMode.WRITE, [value, key]),
-    ]);
+    cursorOption: CursorOptions<IDBData>,
+    args: TaskArguments = [],
+  ): Promise<void | IDBData | IDBData[][]> {
+    return this._run([new TransactionTask(type, storeName, cursorOption, args)]);
   }
 
   /**
-   * Delete data from object store
-   *
-   * @param storeName object store name for open transaction
-   * @param key idb object store keyPath value
-   */
-  delete(storeName: string, key: ObjectStoreKey): Promise<void> {
-    return this._run([
-      new TransactionTask(TransactionType.DELETE, storeName, TransactionMode.WRITE, [key]),
-    ]);
-  }
-
-  /**
-   * Clear all records
-   *
-   * @param storeName object store name
-   */
-  clear(storeName: string): Promise<void> {
-    return this._run([
-      new TransactionTask(TransactionType.CLEAR, storeName, TransactionMode.WRITE, []),
-    ]);
-  }
-
-  /**
-   * Tasks in single transaction
+   * Do multiple transaction tasks
    *
    * @param tasks transacktion tasks
    */
-  transaction(tasks: TransactionTask[]): Promise<any> {
+  transaction(tasks: TransactionTask[]): Promise<void> {
     return this._run(tasks);
-  }
-
-  /**
-   *
-   * @param transactionType transction type
-   * @param storeName object store name
-   * @param filter cursor filter
-   * @param updateValue for update value (Only type = CURSOR_UPDATE)
-   */
-  cursor<T extends TransactionType, S extends BoxScheme>(
-    transactionType: TransactionType,
-    storeName: string,
-    filter: CursorQuery<S> | EvalFunction<S>[],
-    updateValue: OptionalBoxData<S>,
-  ): Promise<T extends TransactionType.$GET ? BoxData<S>[] : void> {
-    return this.transaction([
-      new TransactionTask(
-        transactionType,
-        storeName,
-        transactionType === TransactionType.GET || TransactionType.$GET
-          ? TransactionMode.READ
-          : TransactionMode.WRITE,
-        [{ filter, updateValue }],
-      ),
-    ]);
   }
 }

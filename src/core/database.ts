@@ -1,7 +1,6 @@
 import BoxTransaction from './transaction';
-import BoxModelBuilder from './model';
-import { TransactionMode, TransactionTask, TransactionType } from './task';
-import { BoxDBError } from './errors';
+import BoxModelBuilder, { rangeBuilder } from './model';
+import { TransactionTask, TransactionType } from './task';
 import {
   BoxScheme,
   BoxDataTypes,
@@ -12,6 +11,7 @@ import {
   ConfiguredBoxScheme,
   BoxCursorDirections,
 } from './types';
+import { BoxDBError } from './errors';
 
 export interface BoxModelOption {
   autoIncrement?: boolean;
@@ -38,6 +38,7 @@ export type BoxDBType = typeof BoxDB;
 class BoxDB {
   public static Types = BoxDataTypes;
   public static Order = BoxCursorDirections;
+  public static Range = rangeBuilder;
   private _ready = false;
   private _name: string;
   private _version: number;
@@ -86,7 +87,7 @@ class BoxDB {
    * Returns interrupt transaction task
    */
   static interrupt(): TransactionTask {
-    return new TransactionTask(TransactionType.INTERRUPT, null, TransactionMode.READ, null);
+    return new TransactionTask(TransactionType.INTERRUPT, null, null);
   }
 
   /**
@@ -210,6 +211,7 @@ class BoxDB {
    */
   close(): void {
     if (this._ready) {
+      this._tx.close();
       this._idb.close();
       this._ready = false;
     } else {
