@@ -108,7 +108,7 @@ class BoxDB {
 
       openRequest.onupgradeneeded = () => {
         try {
-          this._update(openRequest);
+          this.update(openRequest);
         } catch (e) {
           close();
           reject(e);
@@ -140,7 +140,7 @@ class BoxDB {
     if (this.metas[storeName]) {
       throw new BoxDBError(storeName + 'model already defined');
     } else {
-      this.metas[storeName] = this._toMeta(storeName, scheme, options);
+      this.metas[storeName] = this.toMeta(storeName, scheme, options);
     }
 
     return this.builder.build(this.version, storeName, scheme);
@@ -213,7 +213,7 @@ class BoxDB {
    * @param force
    * @returns
    */
-  private _meta(
+  private meta(
     name: string,
     scheme: ConfiguredBoxScheme,
     inKey: string,
@@ -229,8 +229,8 @@ class BoxDB {
    *
    * @param objectStore target object store
    */
-  private _convert(objectStore: IDBObjectStore): BoxModelMeta {
-    return this._meta(
+  private convert(objectStore: IDBObjectStore): BoxModelMeta {
+    return this.meta(
       objectStore.name,
       null,
       Array.isArray(objectStore.keyPath) ? objectStore.keyPath[0] : objectStore.keyPath,
@@ -249,7 +249,7 @@ class BoxDB {
    * @param storeName object store name
    * @param scheme model scheme
    */
-  private _toMeta(storeName: string, scheme: BoxScheme, options?: BoxOption): BoxModelMeta {
+  private toMeta(storeName: string, scheme: BoxScheme, options?: BoxOption): BoxModelMeta {
     let primaryKeyPath = null;
     const indexList = [];
 
@@ -282,7 +282,7 @@ class BoxDB {
       return prev;
     }, {} as ConfiguredBoxScheme);
 
-    return this._meta(
+    return this.meta(
       storeName,
       configuredScheme,
       primaryKeyPath,
@@ -298,7 +298,7 @@ class BoxDB {
    * @param openRequest IDBOpenRequest
    * @param event Event from onupgradeneeded event
    */
-  private _update(openRequest: IDBOpenDBRequest) {
+  private update(openRequest: IDBOpenDBRequest) {
     const db = openRequest.result;
     const tx = openRequest.transaction;
     // Object store names in IDB
@@ -313,7 +313,7 @@ class BoxDB {
       if (modelStoreNames.includes(name)) {
         const { inKey, outKey, index, force } = getBoxMeta(name);
         const objectStore = tx.objectStore(name);
-        const objectStoreMeta = this._convert(objectStore);
+        const objectStoreMeta = this.convert(objectStore);
 
         // Delete exist object store
         if (force) {
