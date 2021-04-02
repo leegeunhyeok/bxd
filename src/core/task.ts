@@ -23,7 +23,7 @@ export enum TransactionType {
 
 export interface TransactionTaskMeta {
   action: TransactionType;
-  storeName: string;
+  name: string;
   mode: TransactionMode;
   args: TaskArguments;
 }
@@ -36,9 +36,9 @@ export class TransactionTask {
 
   constructor(
     public action: TransactionType,
-    public storeName: string,
-    public cursorOptions: CursorOptions<IDBData> = {},
-    public args: TaskArguments = [],
+    public name: string,
+    public args: TaskArguments,
+    public cursor: CursorOptions<IDBData>,
   ) {
     this.mode =
       this.action === TransactionType.GET || this.action === TransactionType.$GET
@@ -53,7 +53,7 @@ export class TransactionTask {
   valueOf(): TransactionTaskMeta {
     return {
       action: this.action,
-      storeName: this.storeName,
+      name: this.name,
       mode: this.mode,
       args: this.args,
     };
@@ -64,7 +64,7 @@ export class TransactionTask {
    * @returns
    */
   cursorOption(): CursorOptions<IDBData> {
-    const options = this.cursorOptions;
+    const options = this.cursor;
     const filter = options.filter || null;
     const value = options.value || null;
     const limit = options.limit ?? null;

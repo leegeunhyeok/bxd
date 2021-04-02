@@ -8,7 +8,7 @@ interface IDBReference {
 
 export default class BoxTransaction {
   // Keep idb reference
-  private _idb: IDBReference = { value: null };
+  private idb: IDBReference = { value: null };
 
   /**
    * Recive reference of idb instance
@@ -16,14 +16,41 @@ export default class BoxTransaction {
    * @param idb IDBDatabase
    */
   init(idb: IDBDatabase): void {
-    this._idb.value = idb;
+    this.idb.value = idb;
   }
 
   /**
    * Reset idb instance
    */
   close(): void {
-    this._idb.value = null;
+    this.idb.value = null;
+  }
+
+  /**
+   * Create single task and do transaction task
+   *
+   * @param type Transaction type
+   * @param storeName Object store name
+   * @param order Cursor direction
+   * @param args arguments that  IDB API
+   * @returns Result of transaction task
+   */
+  do(
+    type: TransactionType,
+    storeName: string,
+    args: TaskArguments = [],
+    cursorOption: CursorOptions<IDBData> = null,
+  ): Promise<void | IDBData | IDBData[]> {
+    return this.run([new TransactionTask(type, storeName, args, cursorOption)]);
+  }
+
+  /**
+   * Do multiple transaction tasks
+   *
+   * @param tasks transacktion tasks
+   */
+  runAll(tasks: TransactionTask[]): Promise<void> {
+    return this.run(tasks).then(() => void 0);
   }
 
   /**
@@ -31,9 +58,9 @@ export default class BoxTransaction {
    *
    * @param tasks Transaction tasks
    */
-  private _run(tasks: TransactionTask[]): Promise<void | IDBData | IDBData[]> {
-    if (this._idb.value === null) {
-      throw new BoxDBError('database not ready');
+  private run(tasks: TransactionTask[]): Promise<void | IDBData | IDBData[]> {
+    if (this.idb.value === null) {
+      throw new BoxDBError('Database not ready');
     }
 
     const needResponse =
@@ -44,7 +71,7 @@ export default class BoxTransaction {
     // Get store names from tasks
     const storeNames = Object.keys(
       tasks
-        .map((task) => task.storeName)
+        .map((task) => task.name)
         .reduce((set, curr) => {
           // In loop: Add key into object
           // After: get keys from object
@@ -60,32 +87,33 @@ export default class BoxTransaction {
 
     return new Promise((resolve, reject) => {
       // Open transaction
-      const tx = this._idb.value.transaction(storeNames, mode);
+      const tx = this.idb.value.transaction(storeNames, mode);
 
       // Do each tasks
       // abort transaction if error occurs during task
-      tasks.forEach((task) => {
-        const { action, storeName, args } = task.valueOf();
+      for (const task of tasks) {
+        const { action, name, args } = task.valueOf();
 
         if (action === TransactionType.INTERRUPT) {
           // interrupt manually
           tx.abort();
+          break;
         } else if (
           action === TransactionType.$GET ||
           action === TransactionType.$UPDATE ||
           action === TransactionType.$DELETE
         ) {
           // using cursor
-          const objectStore = tx.objectStore(storeName);
+          const objectStore = tx.objectStore(name);
           this._cursor(objectStore, task).then((records) => (res = records));
         } else {
           // get, add, put, delete, clear
-          const objectStore = tx.objectStore(storeName);
+          const objectStore = tx.objectStore(name);
           // Dodge ts type checking
           const request = objectStore[action].call(objectStore, ...args) as IDBRequest;
           request.onsuccess = () => (res = request.result);
         }
-      });
+      }
 
       const errorHandler = (event: Event) => {
         reject(tx.error || (event.target as IDBRequest).error);
@@ -136,6 +164,7 @@ export default class BoxTransaction {
     }
 
     return new Promise((resolve, reject) => {
+      // Counting for limit
       let rows = 0;
       let running = true;
       const limitHandler = () => limit === null || (limit !== null && limit > rows++);
@@ -175,32 +204,5 @@ export default class BoxTransaction {
         }
       };
     });
-  }
-
-  /**
-   * Create single task and do transaction task
-   *
-   * @param type Transaction type
-   * @param storeName Object store name
-   * @param order Cursor direction
-   * @param args arguments that  IDB API
-   * @returns Result of transaction task
-   */
-  request(
-    type: TransactionType,
-    storeName: string,
-    cursorOption: CursorOptions<IDBData>,
-    args: TaskArguments = [],
-  ): Promise<void | IDBData | IDBData[][]> {
-    return this._run([new TransactionTask(type, storeName, cursorOption, args)]);
-  }
-
-  /**
-   * Do multiple transaction tasks
-   *
-   * @param tasks transacktion tasks
-   */
-  transaction(tasks: TransactionTask[]): Promise<void> {
-    return this._run(tasks);
   }
 }

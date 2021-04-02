@@ -1,8 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { TransactionTask } from './task';
-
-// Follow defined IDB APIs types
+// Follows defined IDB APIs types
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type IDBData = any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type IDBValue = any;
 
 // Available types
@@ -48,15 +47,15 @@ export type BoxData<S extends BoxScheme> = {
 export type OptionalBoxData<S extends BoxScheme> = Partial<BoxData<S>>;
 
 export type UncheckedData = {
-  [field: string]: any;
+  [field: string]: IDBValue;
 };
 
 // BoxModel
 export interface BoxModelMeta {
   name: string;
   scheme: ConfiguredBoxScheme;
-  keyPath: string;
-  autoIncrement: boolean;
+  inKey: string;
+  outKey: boolean;
   index: BoxIndexConfig[];
   force: boolean;
 }
@@ -65,61 +64,6 @@ export interface BoxIndexConfig {
   keyPath: string;
   unique: boolean;
 }
-
-export interface BoxModel<S extends BoxScheme> extends BoxHandler<S> {
-  new (initalData?: BoxData<S>): BoxData<S>;
-  task: BoxTask<S>;
-}
-
-export interface BoxHandler<S extends BoxScheme> {
-  getName(): string;
-  getVersion(): number;
-  add(value: BoxData<S>, key?: IDBValidKey): Promise<void>;
-  get(
-    key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
-  ): Promise<BoxData<S>>;
-  put(value: BoxData<S>, key?: IDBValidKey): Promise<void>;
-  delete(
-    key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
-  ): Promise<void>;
-  find(filter?: CursorQuery<S>): BoxCursorHandler<S>;
-  clear(): Promise<void>;
-  count(): Promise<number>;
-}
-
-// BoxModel.task = BoxTask
-export interface BoxTask<S extends BoxScheme> {
-  add(value: BoxData<S>, key?: IDBValidKey): TransactionTask;
-  put(value: BoxData<S>, key?: IDBValidKey): TransactionTask;
-  delete(
-    key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
-  ): TransactionTask;
-  find(filter?: CursorQuery<S>): BoxCursorTask<S>;
-}
-
-// BoxModel.find = () => BoxCursorHandler
-export interface BoxCursorHandler<S extends BoxScheme> {
-  get(order?: IDBCursorDirection, limit?: number): Promise<BoxData<S>[]>;
-  update(value: OptionalBoxData<S>): Promise<void>;
-  delete(): Promise<void>;
-}
-
-// BoxModel.task.find = () => BoxCursorTask
-export interface BoxCursorTask<S extends BoxScheme> {
-  update(value: OptionalBoxData<S>): TransactionTask;
-  delete(): TransactionTask;
-}
-
-// Key of IDB cursor
-export type CursorKey =
-  | string
-  | number
-  | Date
-  | ArrayBufferView
-  | ArrayBuffer
-  | IDBArrayKey
-  | IDBKeyRange;
-
 // CursorQuery (using IDBKeyRange)
 export interface CursorCondition<S extends BoxScheme> {
   target?: Extract<keyof S, string>;
@@ -162,7 +106,7 @@ type AsType<T extends BoxDataTypes> = T extends BoxDataTypes.BOOLEAN
   : T extends BoxDataTypes.DATE
   ? Date
   : T extends BoxDataTypes.ARRAY
-  ? any[]
+  ? IDBValue[]
   : T extends BoxDataTypes.OBJECT
   ? // eslint-disable-next-line @typescript-eslint/ban-types
     object
@@ -173,5 +117,5 @@ type AsType<T extends BoxDataTypes> = T extends BoxDataTypes.BOOLEAN
   : T extends BoxDataTypes.BLOB
   ? Blob
   : T extends BoxDataTypes.ANY
-  ? any
+  ? IDBValue
   : never;
