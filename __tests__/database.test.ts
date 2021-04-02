@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import 'fake-indexeddb/auto';
 import { BoxDBEvent } from '../src/core/database';
-import BoxDB, { BoxModel } from '../src/index.es';
+import BoxDB from '../src/index.es';
 
 let version = 0;
 const name = 'database-db';
@@ -32,8 +32,8 @@ describe('Basic of BoxDB', () => {
       box = new BoxDB(name, ++version);
 
       // check basic information
-      expect(box.name).toBe(name);
-      expect(box.version).toBe(version);
+      expect(box.getName()).toBe(name);
+      expect(box.getVersion()).toBe(version);
     });
 
     test('create new model', () => {
@@ -61,7 +61,7 @@ describe('Basic of BoxDB', () => {
     test('model data validator', () => {
       // Correct scheme
       expect(
-        User.prototype.__validate({
+        User.prototype.validate({
           id: 1,
           name: 'Tom',
           number: 0,
@@ -71,7 +71,7 @@ describe('Basic of BoxDB', () => {
 
       // Wrong scheme
       expect(
-        User.prototype.__validate({
+        User.prototype.validate({
           id: 'string',
           name: 100,
           number: 0,
@@ -156,13 +156,13 @@ describe('Basic of BoxDB', () => {
     });
 
     test('check ready status', async () => {
-      expect(box.ready).toBe(false);
+      expect(box.isReady()).toBe(false);
       await box.open();
-      expect(box.ready).toBe(true);
+      expect(box.isReady()).toBe(true);
     });
 
     test('check idb instance', async () => {
-      expect(box.idb).not.toBeNull();
+      expect(box.getDB()).not.toBeNull();
     });
 
     test('check object store names', async () => {

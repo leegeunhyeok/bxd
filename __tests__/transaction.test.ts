@@ -3,7 +3,13 @@ import BoxDB from '../src/index.es';
 import { TransactionTask } from '../src/core/task';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const Dataset = require('./__mocks__/users.json');
+const Dataset: Data[] = require('./__mocks__/users.json');
+
+interface Data {
+  _id: number;
+  name: string;
+  age: number;
+}
 
 describe('Basic of object store transactions via model', () => {
   const box = new BoxDB('transaction-db', 1);
@@ -53,6 +59,21 @@ describe('Basic of object store transactions via model', () => {
     const users = await User.find(evalFunctions).get();
     expect(users.every((user) => evalFunctions.every((f) => f(user)))).toBeTruthy();
   });
+
+  test('get records with filtering by cursor', async () => {
+    const targetId = 30;
+    const users = await User.find({
+      value: BoxDB.Range.equal(targetId),
+    }).get();
+
+    const usersFromDS = Dataset.filter((user) => user._id === targetId);
+    expect(users.length === usersFromDS.length).toBeTruthy();
+  });
+
+  // test('get sorted records by cursor', async () => {
+  //   const reverse = await User.order(BoxDB.Order.DESC).find().get();
+  //   expect(users.length === usersFromDS.length).toBeTruthy();
+  // });
 
   test('update record by key', async () => {
     const key = 1;

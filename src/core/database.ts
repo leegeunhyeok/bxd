@@ -116,7 +116,7 @@ class BoxDB {
       };
 
       openRequest.onblocked = () => {
-        reject(new BoxDBError('Can not upgrade database because the database is already opened'));
+        reject(new BoxDBError('Can not upgrade because the database is already opened'));
       };
       openRequest.onerror = (event) => {
         close();
@@ -134,11 +134,11 @@ class BoxDB {
    */
   model<S extends BoxScheme>(storeName: string, scheme: S, options?: BoxModelOption): BoxModel<S> {
     if (this.ready) {
-      throw new BoxDBError('Can not define model after database opened');
+      throw new BoxDBError('Cannot define model after database opened');
     }
 
     if (this.metas[storeName]) {
-      throw new BoxDBError(storeName + 'model already defined');
+      throw new BoxDBError(storeName + ' model already defined');
     } else {
       this.metas[storeName] = this.toMeta(storeName, scheme, options);
     }
