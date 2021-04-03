@@ -106,10 +106,16 @@ describe('Basic of object store transactions via model', () => {
     }).rejects.toThrow();
   });
 
-  // test('get sorted records by cursor', async () => {
-  //   const reverse = await User.order(BoxDB.Order.DESC).find().get();
-  //   expect(users.length === usersFromDS.length).toBeTruthy();
-  // });
+  test('ordering records by cursor', async () => {
+    const forward = await User.find().get(BoxDB.Order.ASC, 1); // default
+    const reverse = await User.find().get(BoxDB.Order.DESC, 1);
+
+    const firstRecord = Dataset[0];
+    const lastRecord = Dataset[Dataset.length - 1];
+
+    expect(forward[0]._id).toEqual(firstRecord._id);
+    expect(reverse[0]._id).toEqual(lastRecord._id);
+  });
 
   test('update record by key', async () => {
     const key = 1;
