@@ -66,9 +66,12 @@ export default class BoxTransaction {
       throw new BoxDBError('Database not ready');
     }
 
+    const firstTaskType = tasks[0].action;
     const needResponse =
       tasks.length === 1 &&
-      (tasks[0].action === TransactionType.GET || tasks[0].action === TransactionType.$GET);
+      (firstTaskType === TransactionType.GET ||
+        firstTaskType === TransactionType.$GET ||
+        firstTaskType === TransactionType.COUNT);
     let res = null;
 
     // Get store names from tasks
@@ -76,7 +79,7 @@ export default class BoxTransaction {
       tasks.reduce((set, curr) => {
         // In loop: Add key into object
         // After: get keys from object
-        set[curr.name] = void 0;
+        curr.name && (set[curr.name] = 0);
         return set;
       }, {}),
     );
@@ -93,25 +96,24 @@ export default class BoxTransaction {
       // Do each tasks
       // abort transaction if error occurs during task
       for (const task of tasks) {
-        const { action, name, args } = task.valueOf();
+        const action = task.action;
 
         if (action === TransactionType.INTERRUPT) {
           // interrupt manually
           tx.abort();
-          break;
         } else if (
           action === TransactionType.$GET ||
           action === TransactionType.$UPDATE ||
           action === TransactionType.$DELETE
         ) {
           // using cursor
-          const objectStore = tx.objectStore(name);
+          const objectStore = tx.objectStore(task.name);
           this.cursor(objectStore, task).then((records) => (res = records));
         } else {
           // get, add, put, delete, clear
-          const objectStore = tx.objectStore(name);
+          const objectStore = tx.objectStore(task.name);
           // Dodge ts type checking
-          const request = objectStore[action].call(objectStore, ...args) as IDBRequest;
+          const request = objectStore[action].call(objectStore, ...task.args) as IDBRequest;
           request.onsuccess = () => (res = request.result);
         }
       }
@@ -138,7 +140,11 @@ export default class BoxTransaction {
     objectStore: IDBObjectStore,
     task: TransactionTask,
   ): Promise<void | IDBData | IDBData[]> {
-    const { filter, direction, value, limit } = task.cursorOption();
+    const options = task.cursor;
+    const filter = options.filter || null;
+    const value = options.value || null;
+    const limit = options.limit ?? null;
+    const direction = options.direction || 'next';
     const res = [];
 
     // Filter function

@@ -23,7 +23,7 @@ const testScheme = {
 };
 
 describe('Basic of BoxDB', () => {
-  describe('1 of 3', () => {
+  describe('1 of 4', () => {
     // global variable for test
     let box: BoxDB = null;
     let User = null;
@@ -39,7 +39,8 @@ describe('Basic of BoxDB', () => {
     test('create new model', () => {
       // Register new model
       User = box.model('user', testScheme);
-      box.model('user2', testScheme);
+      box.model('user2', testScheme); // unused
+      box.model('temp', { data: BoxDB.Types.ANY }); // unused
     });
 
     test('create new model with multiple key', () => {
@@ -113,13 +114,6 @@ describe('Basic of BoxDB', () => {
       }).toThrow();
     });
 
-    test('trying to register same model with force option', () => {
-      // trying to register same model name
-      expect(() => {
-        box.model('user', testScheme, { force: true });
-      }).toThrow();
-    });
-
     test('trying to unique option without index', () => {
       expect(() => {
         box.model('user_test', {
@@ -174,7 +168,7 @@ describe('Basic of BoxDB', () => {
     test('close', () => box.close());
   });
 
-  describe('2 of 3', () => {
+  describe('2 of 4', () => {
     // global variable for test
 
     test('tying to change in-line key', async () => {
@@ -264,7 +258,18 @@ describe('Basic of BoxDB', () => {
     });
   });
 
-  describe('3 of 3', () => {
+  describe('3 of 4', () => {
+    test('trying to register same model with force option', async () => {
+      const box = new BoxDB(name, ++version);
+
+      // trying to register same model name
+      box.model('user', testScheme, { force: true });
+      await box.open();
+      box.close();
+    });
+  });
+
+  describe('4 of 4', () => {
     let box1 = null;
 
     test('open database', async () => {

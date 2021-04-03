@@ -45,6 +45,11 @@ describe('Basic of object store transactions via model', () => {
     }
   });
 
+  test('get records count', async () => {
+    const count = await User.count();
+    expect(count).toEqual(Dataset.length);
+  });
+
   test('get record by key', async () => {
     const key = 1;
     const target = Dataset.find((record) => record._id === key);
@@ -60,14 +65,45 @@ describe('Basic of object store transactions via model', () => {
     expect(users.every((user) => evalFunctions.every((f) => f(user)))).toBeTruthy();
   });
 
-  test('get records with filtering by cursor', async () => {
+  test('get records by cursor with limit', async () => {
+    const limit = 5;
+    const users = await User.find().get(null, limit);
+    expect(users.length).toEqual(limit);
+  });
+
+  test('get in-line-key based filtered records by cursor', async () => {
     const targetId = 30;
     const users = await User.find({
       value: BoxDB.Range.equal(targetId),
+      // no target: based on in-line-key
     }).get();
 
     const usersFromDS = Dataset.filter((user) => user._id === targetId);
     expect(users.length === usersFromDS.length).toBeTruthy();
+  });
+
+  test('get index based filtered records by cursor', async () => {
+    const targetName = Dataset[0].name;
+    const users = await User.find({
+      value: BoxDB.Range.equal(targetName),
+      target: 'name', // search from name index
+    }).get();
+
+    const usersFromDS = Dataset.filter((user) => user.name === targetName);
+    expect(users.length === usersFromDS.length).toBeTruthy();
+    expect(users[0].name).toEqual(targetName);
+  });
+
+  test('trying to filtering based on undefined index', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const query: any = {
+      value: BoxDB.Range.equal('value'),
+      target: 'undefined_field',
+    };
+
+    await expect(async () => {
+      await User.find(query).get();
+    }).rejects.toThrow();
   });
 
   // test('get sorted records by cursor', async () => {
@@ -180,7 +216,7 @@ describe('Basic of object store transactions via model', () => {
         User.task.add({ _id: 102, name: 'User 2', age: 0 }), // before age: -1
       ]);
     } catch (e) {
-      // Empty
+      // empty
     }
 
     // Transaction aborted. (will be rollback to before transaction)

@@ -212,12 +212,6 @@ export default class BoxModelBuilder {
         return this.tx.do(TransactionType.DELETE, this.store, [key]);
       },
       find(this: ModelContext, filter) {
-        if (filter && !Array.isArray(filter)) {
-          if (Object.keys(filter).length !== 1) {
-            throw new BoxDBError('Cursor query object must be has only one index');
-          }
-        }
-
         return {
           get: (order, limit) =>
             this.tx.do(

@@ -21,13 +21,6 @@ export enum TransactionType {
   INTERRUPT = 'interrupt',
 }
 
-export interface TransactionTaskMeta {
-  action: TransactionType;
-  name: string;
-  mode: TransactionMode;
-  args: TaskArguments;
-}
-
 /**
  * VO for transaction task
  */
@@ -44,31 +37,5 @@ export class TransactionTask {
       this.action === TransactionType.GET || this.action === TransactionType.$GET
         ? TransactionMode.READ
         : TransactionMode.WRITE;
-  }
-
-  /**
-   * Convert task datas
-   * @returns
-   */
-  valueOf(): TransactionTaskMeta {
-    return {
-      action: this.action,
-      name: this.name,
-      mode: this.mode,
-      args: this.args,
-    };
-  }
-
-  /**
-   * Convert task datas to CursorOption for use immediately
-   * @returns
-   */
-  cursorOption(): CursorOptions<IDBData> {
-    const options = this.cursor;
-    const filter = options.filter || null;
-    const value = options.value || null;
-    const limit = options.limit ?? null;
-    const direction = options.direction || 'next';
-    return { filter, value, limit, direction };
   }
 }

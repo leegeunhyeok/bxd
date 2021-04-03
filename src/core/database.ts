@@ -137,12 +137,11 @@ class BoxDB {
       throw new BoxDBError('Cannot define model after database opened');
     }
 
-    if (this.metas[storeName]) {
+    if (!options?.force && this.metas[storeName]) {
       throw new BoxDBError(storeName + ' model already defined');
-    } else {
-      this.metas[storeName] = this.toMeta(storeName, scheme, options);
     }
 
+    this.metas[storeName] = this.toMeta(storeName, scheme, options);
     return this.builder.build(this.version, storeName, scheme);
   }
 
