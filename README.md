@@ -172,6 +172,8 @@ In browser (legacy):
 
 > All of features follows IndexedDB mechanism
 
+- References: [w3c](https://w3c.github.io/IndexedDB), [MDN](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API)
+
 #### BoxDB
 
 > The BoxDB class for IndexedDB and object stores management
