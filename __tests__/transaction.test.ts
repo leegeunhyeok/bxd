@@ -159,7 +159,7 @@ describe('Basic of object store transactions via model', () => {
         User.task.put({ _id: 101, name: 'New User 1 updated', age: -999 }), // before age: -99
         User.task.put({ _id: 102, name: 'New User 2 updated', age: -111 }), // before age: -1
         User.task.add({ _id: 103, name: 'Duplicated', age: 0 }),
-        User.task.add({ _id: 103, name: 'Duplicated', age: 1 }), // ConstraintError: id 103 already exist
+        User.task.add({ _id: 103, name: 'New name', age: 1 }), // ConstraintError: _id 103 already exist
       ]);
     } catch (e) {
       // Empty

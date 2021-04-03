@@ -23,7 +23,7 @@ const testScheme = {
 };
 
 describe('Basic of BoxDB', () => {
-  describe('1 of 4', () => {
+  describe('1 of 3', () => {
     // global variable for test
     let box: BoxDB = null;
     let User = null;
@@ -61,7 +61,7 @@ describe('Basic of BoxDB', () => {
     test('model data validator', () => {
       // Correct scheme
       expect(
-        User.prototype.validate({
+        User.prototype.pass({
           id: 1,
           name: 'Tom',
           number: 0,
@@ -71,7 +71,7 @@ describe('Basic of BoxDB', () => {
 
       // Wrong scheme
       expect(
-        User.prototype.validate({
+        User.prototype.pass({
           id: 'string',
           name: 100,
           number: 0,
@@ -165,10 +165,6 @@ describe('Basic of BoxDB', () => {
       expect(box.getDB()).not.toBeNull();
     });
 
-    test('check object store names', async () => {
-      expect(box.modelNames().length).toBe(2); // 2 models (User, User2)
-    });
-
     test('register new model after database open', () => {
       expect(() => {
         box.model('test', testScheme);
@@ -178,20 +174,7 @@ describe('Basic of BoxDB', () => {
     test('close', () => box.close());
   });
 
-  describe('2 of 4', () => {
-    test('check about undefined model handling', async () => {
-      const box = new BoxDB(name, ++version);
-
-      // Defined models at version 1: User, User2
-      // Current: User (User2 skipped -> will be deleted)
-      box.model('user', testScheme);
-      await box.open();
-      expect(box.modelNames().length).toBe(1);
-      box.close();
-    });
-  });
-
-  describe('3 of 4', () => {
+  describe('2 of 3', () => {
     // global variable for test
 
     test('tying to change in-line key', async () => {
@@ -281,7 +264,7 @@ describe('Basic of BoxDB', () => {
     });
   });
 
-  describe('4 of 4', () => {
+  describe('3 of 3', () => {
     let box1 = null;
 
     test('open database', async () => {
