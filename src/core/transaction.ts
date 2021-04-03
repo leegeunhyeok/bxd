@@ -1,5 +1,5 @@
 import { TransactionTask, TransactionType, TransactionMode, TaskArguments } from './task';
-import { IDBData, CursorOptions } from './types';
+import { IDBData, CursorOptions, CursorCondition } from './types';
 import { BoxDBError } from './errors';
 
 interface IDBReference {
@@ -50,6 +50,9 @@ export default class BoxTransaction {
    * @param tasks transacktion tasks
    */
   runAll(tasks: TransactionTask[]): Promise<void> {
+    if (!tasks.every((task) => task instanceof TransactionTask)) {
+      throw new BoxDBError('Invalid elements');
+    }
     return this.run(tasks).then(() => void 0);
   }
 
@@ -69,15 +72,13 @@ export default class BoxTransaction {
     let res = null;
 
     // Get store names from tasks
-    const storeNames = Object.keys(
-      tasks
-        .map((task) => task.name)
-        .reduce((set, curr) => {
-          // In loop: Add key into object
-          // After: get keys from object
-          set[curr] = void 0;
-          return set;
-        }, {}),
+    const storeNamesInTasks = Object.keys(
+      tasks.reduce((set, curr) => {
+        // In loop: Add key into object
+        // After: get keys from object
+        set[curr.name] = void 0;
+        return set;
+      }, {}),
     );
 
     // Check all tasks transaction mode
@@ -87,7 +88,7 @@ export default class BoxTransaction {
 
     return new Promise((resolve, reject) => {
       // Open transaction
-      const tx = this.idb.value.transaction(storeNames, mode);
+      const tx = this.idb.value.transaction(storeNamesInTasks, mode);
 
       // Do each tasks
       // abort transaction if error occurs during task
@@ -105,7 +106,7 @@ export default class BoxTransaction {
         ) {
           // using cursor
           const objectStore = tx.objectStore(name);
-          this._cursor(objectStore, task).then((records) => (res = records));
+          this.cursor(objectStore, task).then((records) => (res = records));
         } else {
           // get, add, put, delete, clear
           const objectStore = tx.objectStore(name);
@@ -133,7 +134,7 @@ export default class BoxTransaction {
    * @param objectStore Target object store object
    * @param task Current task
    */
-  private _cursor(
+  private cursor(
     objectStore: IDBObjectStore,
     task: TransactionTask,
   ): Promise<void | IDBData | IDBData[]> {
@@ -146,28 +147,29 @@ export default class BoxTransaction {
     })();
 
     let request: IDBRequest<IDBCursorWithValue> = null;
-    if (filter && 'value' in filter) {
-      // Using IDBKeyRange + IDBCursorDirection
-      if (filter.target) {
-        if (!objectStore.indexNames.contains(filter.target)) {
-          throw new BoxDBError(`${filter.target} field is not an index`);
-        }
-        // Using named index
-        request = objectStore.index(filter.target).openCursor(filter.value, direction);
-      } else {
-        // Using in-line-key
-        request = objectStore.openCursor(filter.value, direction);
-      }
-    } else {
+    if (!filter || Array.isArray(filter)) {
       // Using custom filter functions(no index) + IDBCursorDirection
       request = objectStore.openCursor(null, direction);
+    } else {
+      filter as CursorCondition<IDBData>;
+      // Using IDBKeyRange + IDBCursorDirection
+      const index = filter.target;
+
+      if (index && !objectStore.indexNames.contains(index)) {
+        throw new BoxDBError(index + ' field is not an index');
+      }
+
+      request = (index ? objectStore.index(index) : objectStore).openCursor(
+        filter.value,
+        direction,
+      );
     }
 
     return new Promise((resolve, reject) => {
       // Counting for limit
       let rows = 0;
       let running = true;
-      const limitHandler = () => limit === null || (limit !== null && limit > rows++);
+      const limitHandler = () => limit === null || limit === null || limit > rows++;
       const cursorTaskRequestHandler = (request: IDBRequest) => {
         request.onerror = (event) => (running = void reject(event));
       };

@@ -147,15 +147,6 @@ class BoxDB {
   }
 
   /**
-   * Returns model names on this database
-   *
-   * @returns Registred model names (object store names)
-   */
-  modelNames(): string[] {
-    return Object.keys(this.metas);
-  }
-
-  /**
    * Add idb global event listener
    *
    * @param type BoxDBEvent
@@ -182,24 +173,19 @@ class BoxDB {
    * @param tasks Transaction tasks
    */
   transaction(tasks: TransactionTask[]): Promise<void> {
-    if (tasks.every((task) => task instanceof TransactionTask)) {
-      return this.tx.runAll(tasks);
-    } else {
-      throw new BoxDBError('Invalid elements');
-    }
+    return this.tx.runAll(tasks);
   }
 
   /**
    * Close database connection
    */
   close(): void {
-    if (this.ready) {
-      this.tx.close();
-      this.idb.close();
-      this.ready = false;
-    } else {
+    if (!this.ready) {
       throw new BoxDBError('Database not ready');
     }
+    this.tx.close();
+    this.idb.close();
+    this.ready = false;
   }
 
   /**
@@ -260,22 +246,20 @@ class BoxDB {
       } else {
         // Is ConfiguredType
         // If this field use as keyPath(in-line key) for object store
-        if (type.key) {
+        if (type.key && primaryKeyPath) {
           // info: not available multiple in-line-key in bxd
-          if (primaryKeyPath) {
-            throw new BoxDBError('Cannot define mutiple in-line-key: ' + storeName);
-          }
-
-          // Set this field to in-line key
-          primaryKeyPath = field;
+          throw new BoxDBError('Cannot define mutiple in-line-key: ' + storeName);
         }
 
+        // Set this field as in-line-key
+        type.key && (primaryKeyPath = field);
+
         if (type.unique && !type.index) {
-          throw new BoxDBError('`unique` option requires index option');
+          throw new BoxDBError('unique option requires index option');
         }
 
         // If this field configured for using index
-        type.index && indexList.push({ keyPath: field, unique: Boolean(type.unique) });
+        type.index && indexList.push({ keyPath: field, unique: !!type.unique });
         prev[field] = type;
       }
 
@@ -286,9 +270,9 @@ class BoxDB {
       storeName,
       configuredScheme,
       primaryKeyPath,
-      Boolean(options?.autoIncrement),
+      !!options?.autoIncrement,
       indexList,
-      Boolean(options?.force),
+      !!options?.force,
     );
   }
 
@@ -346,11 +330,9 @@ class BoxDB {
             if (objectStoreIndex.unique === true) {
               // Delete exist index and re-create
               objectStore.deleteIndex(originKeyPath);
-              objectStore.createIndex(originKeyPath, originKeyPath, {
-                unique: modelIndex.unique,
-              });
+              objectStore.createIndex(originKeyPath, originKeyPath); // unique: false
             } else {
-              throw new BoxDBError('Unique option cannot be changed to true: ' + originKeyPath);
+              throw new BoxDBError('unique option cannot be changed to true: ' + originKeyPath);
             }
           }
         });

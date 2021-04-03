@@ -8,7 +8,6 @@ import {
   CursorQuery,
   CursorOptions,
   UncheckedData,
-  IDBValue,
   OptionalBoxData,
 } from './types';
 import { BoxDBError } from './errors';
@@ -63,7 +62,7 @@ export interface BoxCursorTask<S extends BoxScheme> {
 // BoxModel Prototype
 export interface ModelPrototype {
   tx: BoxTransaction;
-  validate(target: UncheckedData): boolean;
+  pass(target: UncheckedData): boolean;
   data<T extends BoxScheme>(initalData?: BoxData<T>): BoxData<T>;
 }
 
@@ -140,7 +139,7 @@ function createBoxData<T extends BoxScheme>(
   this: ModelContext,
   initalData?: BoxData<T>,
 ): BoxData<T> {
-  const boxData = Object.create(null) as BoxData<T>;
+  const boxData = {} as BoxData<T>;
   Object.keys(this.scheme).forEach(
     (k) => (boxData[k as keyof T] = (initalData && initalData[k]) ?? null),
   );
@@ -150,19 +149,12 @@ function createBoxData<T extends BoxScheme>(
 /**
  * Returns IDBKeyRange
  */
+const i = IDBKeyRange;
 export const rangeBuilder = {
-  equal(value: IDBValue): IDBKeyRange {
-    return IDBKeyRange.only(value);
-  },
-  upper(value: IDBValue): IDBKeyRange {
-    return IDBKeyRange.upperBound(value);
-  },
-  lower(value: IDBValue): IDBKeyRange {
-    return IDBKeyRange.lowerBound(value);
-  },
-  bound(v1: IDBValue, v2: IDBValue): IDBKeyRange {
-    return IDBKeyRange.bound(v1, v2);
-  },
+  equal: i.only,
+  upper: i.upperBound,
+  lower: i.lowerBound,
+  bound: i.bound,
 };
 
 export default class BoxModelBuilder {
@@ -199,7 +191,7 @@ export default class BoxModelBuilder {
       value,
     });
 
-    this._proto = { tx, validate: schemeValidator, data: createBoxData };
+    this._proto = { tx, pass: schemeValidator, data: createBoxData };
     this._handler = {
       getName(this: ModelContext) {
         return this.store;
@@ -283,7 +275,7 @@ export default class BoxModelBuilder {
       initalData?: BoxData<S>,
     ) {
       // Check scheme if initial data provided
-      if (initalData && !this.validate(initalData)) {
+      if (initalData && !this.pass(initalData)) {
         throw new BoxDBError('data not valid');
       }
 
@@ -296,11 +288,11 @@ export default class BoxModelBuilder {
     context.scheme = scheme;
     context.v = targetVersion;
 
-    const contextObject = Object.create(context);
-    const taskHandler = { task: this._task };
-    Object.setPrototypeOf(taskHandler.task, contextObject);
+    // Model.task
+    const task = Object.assign(Object.create(context), this._task);
+    // Model.get, ...
+    const handler = Object.assign(context, this._handler, { task });
 
-    const handler = Object.assign(contextObject, this._handler, taskHandler);
     Object.setPrototypeOf(Model, handler);
     Object.setPrototypeOf(Model.prototype, context);
 
