@@ -63,7 +63,7 @@ await box.transaction([
 ]);
 ```
 
-## Table of Contents
+## 📃 Table of Contents
 
 - [Features](#features)
 - [Browser Support](#browser-support)
@@ -106,14 +106,13 @@ await box.transaction([
     - [Boxcursortask.delete()](#boxcursortaskdelete)
 - [Example](#example)
   - [Basic](#basic)
-  - [Version management](#version-management)
   - [Transaction](#transaction)
 - [Issue](#issue)
 - [Development](#development)
 - [Resources](#resources)
 - [License](#license)
 
-### Features
+### 🌟 Features
 
 - [x] Promise based and easy to use
 - [x] Zero dependencies
@@ -122,11 +121,11 @@ await box.transaction([
 - [x] ACID(Atomicity, Consistency, Isolation, Durability) guaranteed with transaction
 - [x] Supports TypeScript
 
-### Browser Support
+### 👉 Browser Support
 
 > WIP..
 
-### Installation
+### 🛠 Installation
 
 ```bash
 npm install --save bxd
@@ -145,7 +144,7 @@ In browser (legacy):
 ```html
 <!-- Polyfills required -->
 <script src="https://polyfill.io/v3/polyfill.min.js?features=Symbol%2CSymbol.asyncIterator%2CSymbol.prototype.description%2CSymbol.iterator%2CArray.prototype.indexOf%2CArray.prototype.%40%40iterator%2CObject.assign%2CObject.getOwnPropertyDescriptor%2CObject.setPrototypeOf%2CPromise%2CString.prototype.%40%40iterator"></script>
-<script src="/path/to/bxd.min.js">
+<script src="/path/to/bxd.js">
 ```
 
 |     Target     | Polyfill (Based on core-js 3)         |
@@ -165,11 +164,11 @@ In browser (legacy):
 | `IE10`, `IE11` | es.string.iterator                    |
 | `IE10`, `IE11` | web.dom-collections.iterator          |
 
-### Roadmap
+### 🚗 Roadmap
 
 > WIP..
 
-### Documentation
+### 📖 Documentation
 
 > All of features follows IndexedDB mechanism
 
@@ -610,7 +609,7 @@ Methods
 - [BoxCursorTask.update()](#boxcursortaskupdate)
 - [BoxCursorTask.delete()](#boxcursortaskdelete)
 
-### Example
+### 🌱 Example
 
 - Create `BoxDB` instance.
 - Define object store and data scheme as model
@@ -618,15 +617,11 @@ Methods
   - **WARNING**: Can not create/update/drop model after `BoxDB.open()`
 - Do transactions task via Models!
 
-#### Basic
+#### 🐣 Basic
 
 > WIP
 
-#### Version management
-
-> WIP
-
-#### Transaction
+#### 💵 Transaction
 
 > WIP
 
@@ -777,11 +772,11 @@ await box.transaction([
 // Rollback to before transaction
 ```
 
-### Issue
+### 🔥 Issue
 
 > WIP
 
-### Development
+### 👨‍💻 Development
 
 ```bash
 # Install dependencies
@@ -794,10 +789,10 @@ npm run test
 npm run build
 ```
 
-### Resources
+### 🎨 Resources
 
 - Logo based on [Icon Fonts](http://www.onlinewebfonts.com/icon) (by CC BY 3.0)
 
-### License
+### 🍀 License
 
 [MIT](./LICENSE)
