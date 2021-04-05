@@ -13,13 +13,11 @@ import {
 import { BoxDBError } from './errors';
 
 // BoxModel
-export interface BoxModel<S extends BoxScheme> extends BoxHandler<S> {
+export interface BoxModel<S extends BoxScheme> extends BoxHandler<S>, BoxTask<S> {
   new (initalData?: BoxData<S>): BoxData<S>;
-  task: BoxTask<S>;
 }
 
 // Transaction handlers of BoxModel
-
 export interface BoxHandler<S extends BoxScheme> {
   getName(): string;
   getVersion(): number;
@@ -38,12 +36,12 @@ export interface BoxHandler<S extends BoxScheme> {
 
 // BoxModel.task = BoxTask
 export interface BoxTask<S extends BoxScheme> {
-  add(value: BoxData<S>, key?: IDBValidKey): TransactionTask;
-  put(value: BoxData<S>, key?: IDBValidKey): TransactionTask;
-  delete(
+  $add(value: BoxData<S>, key?: IDBValidKey): TransactionTask;
+  $put(value: BoxData<S>, key?: IDBValidKey): TransactionTask;
+  $delete(
     key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
   ): TransactionTask;
-  find(filter?: CursorQuery<S>): BoxCursorTask<S>;
+  $find(filter?: CursorQuery<S>): BoxCursorTask<S>;
 }
 
 // BoxModel.find = () => BoxCursorHandler
@@ -235,16 +233,16 @@ export default class BoxModelBuilder {
     };
 
     this._task = {
-      add(this: ModelContext, value, key) {
+      $add(this: ModelContext, value, key) {
         return new TransactionTask(TransactionType.ADD, this.store, [value, key], null);
       },
-      put(this: ModelContext, value, key) {
+      $put(this: ModelContext, value, key) {
         return new TransactionTask(TransactionType.PUT, this.store, [value, key], null);
       },
-      delete(this: ModelContext, key) {
+      $delete(this: ModelContext, key) {
         return new TransactionTask(TransactionType.DELETE, this.store, [key], null);
       },
-      find(this: ModelContext, filter) {
+      $find(this: ModelContext, filter) {
         return {
           update: (value) =>
             new TransactionTask(TransactionType.$UPDATE, this.store, null, {
@@ -282,11 +280,8 @@ export default class BoxModelBuilder {
     context.scheme = scheme;
     context.v = targetVersion;
 
-    // Model.task
-    const task = Object.assign(Object.create(context), this._task);
-    // Model.get, ...
-    const handler = Object.assign(context, this._handler, { task });
-
+    // Handlers
+    const handler = Object.assign(context, this._handler, this._task);
     Object.setPrototypeOf(Model, handler);
     Object.setPrototypeOf(Model.prototype, context);
 
