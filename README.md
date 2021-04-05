@@ -2,9 +2,9 @@
 
 # bxd
 
-<img src="logo.png" width="250">
+<img src="https://user-images.githubusercontent.com/26512984/113550066-6b21bd00-962d-11eb-8e27-835d543199fe.png" width="250">
 
-Boxdb is a promise-based browser ORM for [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API) - WIP..
+Boxdb is a promise-based browser ORM for [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API)
 
   <a href="https://github.com/leegeunhyeok/bxd/actions?query=workflow:build" alt="Github actions">
     <img src="https://github.com/leegeunhyeok/bxd/workflows/build/badge.svg">
@@ -21,46 +21,55 @@ Boxdb is a promise-based browser ORM for [IndexedDB](https://developer.mozilla.o
 </div>
 
 ```typescript
-const tom = { _id: 1, name: 'Tom', age: 10 };
-const users = [
-  tom,
-  { _id: 2, name: 'Jessica', age: 12 },
-  { _id: 3, name: 'Ellis', age: 15 },
-  { _id: 4, name: 'John', age: 11 },
-  { _id: 5, name: 'Unknown', age: -1 },
-];
+import BoxDB from 'bxd';
 
-// Add all data
-for (const user of users) {
-  await User.add(user);
-}
-await User.put({ ...tom, age: 15 }); // Update tom's age to 15
-await User.get(1); // { _id: 1, name: 'Tom', age: 15 }
-await User.delete(3); // Delete record that `_id` is 3
+// Auto version managing
+const box = new BoxDB('application-db', 1);
 
-// Get records that `age` is not -1 and over 10 and "i" character included in `name` value
+// Define your data models
+const User = box.model('user', {
+  id: {
+    type: BoxDB.Types.NUMBER,
+    key: true,
+  },
+  name: {
+    type: BoxDB.Types.STRING,
+    index: true,
+  },
+  age: BoxDB.Types.NUMBER,
+});
+
+await box.open();
+
+// Basics
+await User.add({ id: 1, name: 'Tom', age: 10 });
+await User.get(1);
+await User.put({ id: 1, name: 'Tommy', age: 12 }); // Update values
+await User.delete(1);
+
+// Using cursor
+await User.find().get(); // Get all records
 await User.find([
-  (user) => user.age !== -1,
+  (user) => user.id % 2 !== 0,
   (user) => user.age > 10,
-  (user) => user.name.indexOf('i') !== -1,
-]).get();
+  (user) => user.name.includes('y'),
+]).get(BoxDB.Order.DESC, 10); // Filter/sort/limit
+await User.find([(user) => user.age !== 0]).update({ name: 'Timmy' }); // Update filtered data
+await User.find([(user) => user.age === 99]).delete(); // Delete filtered data
 
-// Delete records that `age` is negative number
-await User.find([(user) => user.age < 0]).delete();
-
-// Update records that `_id` is even number
-await User.find([(user) => user._id % 2 === 0]).put({ age: 12 }); // `age` to 12
-
-// Run multiple tasks via transaction
-// 1. Update tom's age
-// 2. Add new record
-// 3. Delete records that `age` < 20
-// : If error occurs during transaction, rollback to before transaction
+// Using transaction tasks
 await box.transaction([
-  User.task.put({ ...tom, age: 20 }),
-  User.task.add({ _id: 6, name: 'Hans', age: 22 }),
-  User.task.find([(user) => user.age < 20]).delete(),
+  User.$put({ id: 1, name: 'Tim', age: 20 }),
+  User.$add({ id: 2, name: 'Jessica', age: 15 }),
+  User.$add({ id: 3, name: 'Ellis', age: 13 }),
+  BoxDB.interrupt(); // You can stop this transaction!
+  User.$delete(2),
+  User.$find([(user) => user.age < 20]).put({ name: 'Young' }),
 ]);
+
+// And other IndexedDB API features!
+await User.count(); // Records count
+await User.clear(); // Delete all records
 ```
 
 ## 📃 Table of Contents
@@ -79,6 +88,7 @@ await box.transaction([
 ## 🌟 Features
 
 - [x] Promise based and easy to use
+- [x] Works on [Web Workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API)
 - [x] Zero dependencies
 - [x] Database and object store version management
 - [x] Transaction control and data validation via model
