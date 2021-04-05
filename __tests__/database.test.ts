@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import 'fake-indexeddb/auto';
-import { BoxDBEvent } from '../src/core/database';
 import BoxDB from '../src/index.es';
 
 let version = 0;
@@ -124,23 +123,6 @@ describe('Basic of BoxDB', () => {
           },
         });
       }).toThrow();
-    });
-
-    test('un/regist database event handler', () => {
-      const testHandler = {
-        versionchange: () => {},
-        abort: () => {},
-        error: () => {},
-        close: () => {},
-      };
-
-      Object.entries(testHandler).forEach(([eventType, handler]) => {
-        box.on(eventType as BoxDBEvent, handler);
-      });
-
-      Object.entries(testHandler).forEach(([eventType, handler]) => {
-        box.off(eventType as BoxDBEvent, handler);
-      });
     });
 
     test('close before database open', () => {
