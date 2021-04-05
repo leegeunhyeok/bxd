@@ -1,10 +1,14 @@
 # Change Log
 
-## [0.0.0] 2000-00-00
+## [1.0.0-rc.1] 2021-04-05
 
-### BoxDB Version 0.0.0
+### BoxDB Version 1.0.0-rc.1
 
-- Work In Progress
-  - `a` this is a
-  - `b` this is b
-  - `c` this is c
+- First published version!
+  - Promise based and easy to use
+  - Works on Web Workers
+  - Zero dependencies
+  - Database and object store version management
+  - Transaction control and data validation via model
+  - ACID(Atomicity, Consistency, Isolation, Durability) guaranteed with transaction
+  - Supports TypeScript
