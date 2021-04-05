@@ -175,7 +175,7 @@ export default class BoxTransaction {
       // Counting for limit
       let rows = 0;
       let running = true;
-      const limitHandler = () => limit === null || limit === null || limit > rows++;
+      const limitHandler = () => limit === null || limit === null || limit > rows;
       const cursorTaskRequestHandler = (request: IDBRequest) => {
         request.onerror = (event) => (running = void reject(event));
       };
@@ -188,7 +188,7 @@ export default class BoxTransaction {
 
           switch (task.action) {
             case TransactionType.$GET:
-              pass(record) && res.push(record);
+              pass(record) && ++rows && res.push(record);
               break;
 
             case TransactionType.$UPDATE:
