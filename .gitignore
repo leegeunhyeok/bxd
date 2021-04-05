@@ -106,3 +106,6 @@ types
 
 # sourcemap visualizer
 stats.html
+
+# macOS
+.DS_Store
