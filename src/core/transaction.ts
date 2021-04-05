@@ -196,7 +196,7 @@ export default class BoxTransaction {
                 cursorTaskRequestHandler(
                   cursor.update({
                     ...record,
-                    ...(value ? value : null),
+                    ...value,
                   }),
                 );
               break;

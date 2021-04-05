@@ -71,7 +71,7 @@ export interface CursorCondition<S extends BoxScheme> {
 }
 
 // Filter function
-export type EvalFunction<S extends BoxScheme> = (value: OptionalBoxData<S>) => boolean;
+export type EvalFunction<S extends BoxScheme> = (value: BoxData<S>) => boolean;
 
 export type CursorQuery<S extends BoxScheme> = CursorCondition<S> | EvalFunction<S>[];
 export interface CursorOptions<S extends BoxScheme> {
