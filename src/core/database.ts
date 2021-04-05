@@ -21,30 +21,18 @@ interface BoxMetaMap {
   [storeName: string]: BoxModelMeta;
 }
 
-type ListenerMap = {
-  [key in BoxDBEvent]: BoxDBEventListener[];
-};
-export type BoxDBEvent = 'versionchange' | 'error' | 'abort' | 'close';
-export type BoxDBEventListener = (event: Event) => void;
-
 export type BoxDBType = typeof BoxDB;
 class BoxDB {
   public static Types = BoxDataTypes;
   public static Order = BoxCursorDirections;
   public static Range = rangeBuilder;
-  private idb: IDBDatabase = null;
-  private ready = false;
   private name: string;
   private version: number;
   private metas: BoxMetaMap = {};
-  private events: ListenerMap = {
-    versionchange: [],
-    error: [],
-    abort: [],
-    close: [],
-  };
   private tx: BoxTransaction;
   private builder: BoxModelBuilder;
+  private idb: IDBDatabase = null;
+  private ready = false;
 
   /**
    * @constructor
@@ -96,13 +84,6 @@ class BoxDB {
         this.ready = true;
         this.idb = openRequest.result;
         this.tx.init(openRequest.result);
-
-        // IDB event listener
-        for (const type in this.events) {
-          this.idb.addEventListener(type, (event) => {
-            this.events[type].forEach((f) => f(event));
-          });
-        }
         resolve(event);
       };
 
@@ -143,27 +124,6 @@ class BoxDB {
 
     this.metas[storeName] = this.toMeta(storeName, scheme, options);
     return this.builder.build(this.version, storeName, scheme);
-  }
-
-  /**
-   * Add idb global event listener
-   *
-   * @param type BoxDBEvent
-   * @param listener
-   */
-  on(type: BoxDBEvent, listener: BoxDBEventListener): void {
-    this.events[type].push(listener);
-  }
-
-  /**
-   * Remove registed event listener
-   *
-   * @param type BoxDBEvent
-   * @param listener
-   */
-  off(type: BoxDBEvent, listener: BoxDBEventListener): void {
-    const listenerIdx = this.events[type].indexOf(listener);
-    ~listenerIdx && this.events[type].splice(listenerIdx, 1);
   }
 
   /**
