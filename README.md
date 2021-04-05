@@ -85,7 +85,7 @@ await box.transaction([
 - [x] ACID(Atomicity, Consistency, Isolation, Durability) guaranteed with transaction
 - [x] Supports TypeScript
 
-## 👉 Browser Support
+## 🌍 Browser Support
 
 > WIP..
 
