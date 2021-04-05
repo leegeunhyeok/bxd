@@ -60,7 +60,7 @@ export interface BoxCursorTask<S extends BoxScheme> {
 // BoxModel Prototype
 export interface ModelPrototype {
   tx: BoxTransaction;
-  pass(target: UncheckedData): boolean;
+  pass(target: UncheckedData, strict?: boolean): void | never;
   data<T extends BoxScheme>(initalData?: BoxData<T>): BoxData<T>;
 }
 
@@ -112,19 +112,24 @@ const typeValidator = (type: BoxDataTypes, value: UncheckedData): boolean => {
  * 3. Target's value types are correct with scheme
  *
  * @param this Model
- * @param target target data
+ * @param target Target data
+ * @param strict Enable strict mode (disabled: check properties(like optinal) / enabled: +types)
  */
-function schemeValidator(this: ModelContext, target: UncheckedData): boolean {
+function schemeValidator(this: ModelContext, target: UncheckedData, strict = true): void | never {
   const schemeKeys = Object.keys(this.scheme);
   const targetKeys = Object.keys(target);
 
-  return (
-    schemeKeys.length === targetKeys.length &&
-    schemeKeys.every((k) => ~targetKeys.indexOf(k)) &&
+  // Checking in strict mode
+  const samekeyLength = !strict || schemeKeys.length === targetKeys.length;
+  const correctValueTypes =
+    !strict ||
     Object.entries(this.scheme).every(([k, v]) =>
       typeValidator(typeof v === 'string' ? v : v.type, target[k]),
-    )
-  );
+    );
+
+  if (!(samekeyLength && correctValueTypes && targetKeys.every((k) => schemeKeys.includes(k)))) {
+    throw new BoxDBError('Data not valid');
+  }
 }
 
 /**
@@ -198,12 +203,14 @@ export default class BoxModelBuilder {
         return this.v;
       },
       add(this: ModelContext, value, key) {
+        this.pass(value);
         return this.tx.do(TransactionType.ADD, this.store, [value, key]);
       },
       get(this: ModelContext, key) {
         return this.tx.do(TransactionType.GET, this.store, [key]);
       },
       put(this: ModelContext, value, key) {
+        this.pass(value);
         return this.tx.do(TransactionType.PUT, this.store, [value, key]);
       },
       delete(this: ModelContext, key) {
@@ -211,17 +218,26 @@ export default class BoxModelBuilder {
       },
       find(this: ModelContext, filter) {
         return {
-          get: (order, limit) =>
-            this.tx.do(
+          get: (order, limit) => {
+            return this.tx.do(
               TransactionType.$GET,
               this.store,
               null,
               toCursorOption(filter, null, order, limit),
-            ),
-          update: (value) =>
-            this.tx.do(TransactionType.$UPDATE, this.store, null, toCursorOption(filter, value)),
-          delete: () =>
-            this.tx.do(TransactionType.$DELETE, this.store, null, toCursorOption(filter)),
+            );
+          },
+          update: (value) => {
+            this.pass(value, false);
+            return this.tx.do(
+              TransactionType.$UPDATE,
+              this.store,
+              null,
+              toCursorOption(filter, value),
+            );
+          },
+          delete: () => {
+            return this.tx.do(TransactionType.$DELETE, this.store, null, toCursorOption(filter));
+          },
         };
       },
       clear(this: ModelContext) {
@@ -234,9 +250,11 @@ export default class BoxModelBuilder {
 
     this._task = {
       $add(this: ModelContext, value, key) {
+        this.pass(value);
         return new TransactionTask(TransactionType.ADD, this.store, [value, key], null);
       },
       $put(this: ModelContext, value, key) {
+        this.pass(value);
         return new TransactionTask(TransactionType.PUT, this.store, [value, key], null);
       },
       $delete(this: ModelContext, key) {
@@ -244,12 +262,16 @@ export default class BoxModelBuilder {
       },
       $find(this: ModelContext, filter) {
         return {
-          update: (value) =>
-            new TransactionTask(TransactionType.$UPDATE, this.store, null, {
+          update: (value) => {
+            this.pass(value, false);
+            return new TransactionTask(TransactionType.$UPDATE, this.store, null, {
               filter,
               value,
-            }),
-          delete: () => new TransactionTask(TransactionType.$DELETE, this.store, null, { filter }),
+            });
+          },
+          delete: () => {
+            return new TransactionTask(TransactionType.$DELETE, this.store, null, { filter });
+          },
         };
       },
     };
@@ -267,9 +289,7 @@ export default class BoxModelBuilder {
       initalData?: BoxData<S>,
     ) {
       // Check scheme if initial data provided
-      if (initalData && !this.pass(initalData)) {
-        throw new BoxDBError('data not valid');
-      }
+      initalData && this.pass(initalData);
 
       // Create empty(null) object or initalData based on scheme
       return this.data(initalData);

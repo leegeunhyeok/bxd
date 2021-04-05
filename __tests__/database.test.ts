@@ -60,24 +60,24 @@ describe('Basic of BoxDB', () => {
 
     test('model data validator', () => {
       // Correct scheme
-      expect(
+      expect(() => {
         User.prototype.pass({
           id: 1,
           name: 'Tom',
           number: 0,
           age: 10,
-        }),
-      ).toBeTruthy();
+        });
+      }).not.toThrow();
 
       // Wrong scheme
-      expect(
+      expect(() => {
         User.prototype.pass({
           id: 'string',
           name: 100,
           number: 0,
           age: 'string',
-        }),
-      ).toBeFalsy();
+        });
+      }).toThrow();
     });
 
     test('create model based data and validate', () => {
