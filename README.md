@@ -146,7 +146,7 @@ Boxdb documentation is on [wiki](https://github.com/leegeunhyeok/bxd/wiki)!
 
 ## 🌱 Examples
 
-[Examples](https://github.com/leegeunhyeok/bxd/wiki#examples)
+[Examples](https://github.com/leegeunhyeok/bxd/wiki/examples)
 
 ## 🔥 Issue
 
