@@ -178,7 +178,7 @@ class BoxDB {
     return this.meta(
       objectStore.name,
       null,
-      Array.isArray(objectStore.keyPath) ? objectStore.keyPath[0] : objectStore.keyPath,
+      objectStore.keyPath as string, // assertion (origin: string[] | string)
       objectStore.autoIncrement,
       Array.from(objectStore.indexNames).map((name) => {
         const idx = objectStore.index(name);

@@ -9,11 +9,17 @@ Boxdb is a promise-based browser ORM for [IndexedDB](https://developer.mozilla.o
   <a href="https://github.com/leegeunhyeok/bxd/actions?query=workflow:build" alt="Github actions">
     <img src="https://github.com/leegeunhyeok/bxd/workflows/build/badge.svg">
   </a>
+  <a href="https://lgtm.com/projects/g/leegeunhyeok/bxd/context:javascript" alt="lgtm">
+    <img src="https://img.shields.io/lgtm/grade/javascript/g/leegeunhyeok/bxd.svg?logo=lgtm&logoWidth=18">
+  </a>
   <a href="https://codecov.io/gh/leegeunhyeok/bxd" alt="codecov">
     <img src="https://codecov.io/gh/leegeunhyeok/bxd/branch/dev/graph/badge.svg?token=I5YZWY8PGT">
   </a>
   <a href="https://www.npmjs.com/package/bxd" alt="npm">
     <img src="https://img.shields.io/npm/v/bxd">
+  </a>
+  <a href="https://www.npmjs.com/package/bxd">
+    <img alt="npm bundle size" src="https://img.shields.io/bundlephobia/min/bxd">
   </a>
   <img src="https://img.shields.io/github/license/leegeunhyeok/bxd">
   <img src="https://badgen.net/badge/-/TypeScript/blue?icon=typescript&label" alt="typescript">
@@ -44,7 +50,7 @@ await box.open();
 // Basics
 await User.add({ id: 1, name: 'Tom', age: 10 });
 await User.get(1);
-await User.put({ id: 1, name: 'Tommy', age: 12 }); // Update values
+await User.put({ id: 1, name: 'Tommy', age: 12 }); // Update record
 await User.delete(1);
 
 // Using cursor
@@ -54,46 +60,47 @@ await User.find([
   (user) => user.age > 10,
   (user) => user.name.includes('y'),
 ]).get(BoxDB.Order.DESC, 10); // Filter/sort/limit
-await User.find([(user) => user.age !== 0]).update({ name: 'Timmy' }); // Update filtered data
-await User.find([(user) => user.age === 99]).delete(); // Delete filtered data
+await User.find([(user) => user.age !== 0]).update({ name: 'Timmy' }); // Update filtered records
+await User.find([(user) => user.age === 99]).delete(); // Delete filtered records
 
 // Using transaction tasks
 await box.transaction([
   User.$put({ id: 1, name: 'Tim', age: 20 }),
   User.$add({ id: 2, name: 'Jessica', age: 15 }),
   User.$add({ id: 3, name: 'Ellis', age: 13 }),
-  BoxDB.interrupt(); // You can stop this transaction!
+  BoxDB.interrupt(); // You can stop transaction like this!
   User.$delete(2),
   User.$find([(user) => user.age < 20]).put({ name: 'Young' }),
 ]);
 
 // And other IndexedDB API features!
-await User.count(); // Records count
-await User.clear(); // Delete all records
+await User.count(); // All records count of object store
+await User.clear(); // Delete all of records in object store
 ```
 
 ## 📃 Table of Contents
 
-- [Features](#features)
-- [Browser Support](#browser-support)
-- [Installation](#installation)
-- [Roadmap](#roadmap)
-- [Documentation](#documentation)
-- [Examples](#examples)
-- [Issue](#issue)
-- [Development](#development)
-- [Resources](#resources)
-- [License](#license)
+- [Features](#-features)
+- [Browser Support](#-browser-support)
+- [Installation](#-installation)
+- [Documentation](#-documentation)
+- [Examples](#-examples)
+- [Issue](#-issue)
+- [Development](#-development)
+- [Resources](#-resources)
+- [License](#-license)
 
 ## 🌟 Features
 
-- [x] Promise based and easy to use
-- [x] Works on [Web Workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API)
-- [x] Zero dependencies
-- [x] Database and object store version management
-- [x] Transaction control and data validation via model
-- [x] ACID(Atomicity, Consistency, Isolation, Durability) guaranteed with transaction
-- [x] Supports TypeScript
+- Promise based ORM
+- User friendly and easy to use
+- Lightweight(< 10kb) IndexedDB wrapper
+- Zero dependencies
+- Database and object store version management
+- Data validation and transaction control via model
+- ACID(Atomicity, Consistency, Isolation, Durability) guaranteed with transaction
+- Supports TypeScript
+- Works on [Web Workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API)
 
 ## 🌍 Browser Support
 
@@ -102,7 +109,7 @@ await User.clear(); // Delete all records
 ## 🛠 Installation
 
 ```bash
-npm install --save bxd
+npm install bxd
 ```
 
 In browser:
@@ -138,21 +145,17 @@ In browser (legacy):
 | `IE10`, `IE11` | es.string.iterator                    |
 | `IE10`, `IE11` | web.dom-collections.iterator          |
 
-## 🚗 Roadmap
-
-> WIP..
-
 ## 📖 Documentation
 
 Boxdb documentation is on [wiki](https://github.com/leegeunhyeok/bxd/wiki)!
 
 ## 🌱 Examples
 
-[Examples](https://github.com/leegeunhyeok/bxd/wiki#examples)
+[Examples](https://github.com/leegeunhyeok/bxd/wiki/examples)
 
 ## 🔥 Issue
 
-> WIP
+Opening an issue or feature request [here](https://github.com/leegeunhyeok/bxd/issues)
 
 ## 👨‍💻 Development
 

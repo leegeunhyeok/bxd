@@ -21,7 +21,7 @@ export interface BoxModel<S extends BoxScheme> extends BoxHandler<S>, BoxTask<S>
 export interface BoxHandler<S extends BoxScheme> {
   getName(): string;
   getVersion(): number;
-  add(value: BoxData<S>, key?: IDBValidKey): Promise<void>;
+  add(value: BoxData<S>, key?: IDBValidKey): Promise<IDBValidKey>;
   get(
     key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
   ): Promise<BoxData<S>>;
@@ -89,6 +89,8 @@ const typeValidator = (type: BoxDataTypes, value: UncheckedData): boolean => {
       return targetPrototype === Number.prototype;
     case BoxDataTypes.STRING:
       return targetPrototype === String.prototype;
+    case BoxDataTypes.DATE:
+      return value instanceof Date;
     case BoxDataTypes.ARRAY:
       return targetPrototype === Array.prototype;
     case BoxDataTypes.OBJECT:

@@ -71,7 +71,8 @@ export default class BoxTransaction {
       tasks.length === 1 &&
       (firstTaskType === TransactionType.GET ||
         firstTaskType === TransactionType.$GET ||
-        firstTaskType === TransactionType.COUNT);
+        firstTaskType === TransactionType.COUNT ||
+        firstTaskType === TransactionType.ADD);
     let res = null;
 
     // Get store names from tasks
@@ -175,7 +176,7 @@ export default class BoxTransaction {
       // Counting for limit
       let rows = 0;
       let running = true;
-      const limitHandler = () => limit === null || limit === null || limit > rows;
+      const limitHandler = () => limit === null || limit > rows;
       const cursorTaskRequestHandler = (request: IDBRequest) => {
         request.onerror = (event) => (running = void reject(event));
       };
