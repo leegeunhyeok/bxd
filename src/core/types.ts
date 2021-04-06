@@ -25,7 +25,7 @@ export enum BoxCursorDirections {
   DESC_UNIQUE = 'prevunique',
 }
 
-export interface BoxOption {
+export interface BoxOptions {
   autoIncrement?: boolean;
   force?: boolean;
 }

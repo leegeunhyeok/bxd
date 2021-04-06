@@ -4,7 +4,7 @@ import { TransactionTask, TransactionType } from './task';
 import {
   BoxScheme,
   BoxDataTypes,
-  BoxOption,
+  BoxOptions,
   BoxModelMeta,
   BoxIndexConfig,
   ConfiguredBoxScheme,
@@ -194,7 +194,7 @@ class BoxDB {
    * @param storeName object store name
    * @param scheme model scheme
    */
-  private toMeta(storeName: string, scheme: BoxScheme, options?: BoxOption): BoxModelMeta {
+  private toMeta(storeName: string, scheme: BoxScheme, options?: BoxOptions): BoxModelMeta {
     let primaryKeyPath = null;
     const indexList = [];
 
