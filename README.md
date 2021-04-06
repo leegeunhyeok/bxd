@@ -77,15 +77,15 @@ await User.clear(); // Delete all records
 
 ## 📃 Table of Contents
 
-- [Features](#features)
-- [Browser Support](#browser-support)
-- [Installation](#installation)
-- [Documentation](#documentation)
-- [Examples](#examples)
-- [Issue](#issue)
-- [Development](#development)
-- [Resources](#resources)
-- [License](#license)
+- [Features](#-features)
+- [Browser Support](#-browser-support)
+- [Installation](#-installation)
+- [Documentation](#-documentation)
+- [Examples](#-examples)
+- [Issue](#-issue)
+- [Development](#-development)
+- [Resources](#-resources)
+- [License](#-license)
 
 ## 🌟 Features
 
