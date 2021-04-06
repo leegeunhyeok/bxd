@@ -1,8 +1,14 @@
 # Change Log
 
-## [1.0.0-rc.1] 2021-04-05
+## [1.0.0-rc.2] 2021-04-07
 
-### BoxDB Version 1.0.0-rc.1
+- Now `Model.get()` returns added record's key
+- Update `BoxDBError` class
+- Remove unused codes
+- Update test cases
+  - Coverage improved (> 99.5%)
+
+## [1.0.0-rc.1] 2021-04-05
 
 - First published version!
   - Promise based and easy to use
