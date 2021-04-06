@@ -71,7 +71,8 @@ export default class BoxTransaction {
       tasks.length === 1 &&
       (firstTaskType === TransactionType.GET ||
         firstTaskType === TransactionType.$GET ||
-        firstTaskType === TransactionType.COUNT);
+        firstTaskType === TransactionType.COUNT ||
+        firstTaskType === TransactionType.ADD);
     let res = null;
 
     // Get store names from tasks

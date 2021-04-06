@@ -40,9 +40,13 @@ describe('Basic of object store transactions via model', () => {
   });
 
   test('add records', async () => {
+    let lastRecordId: IDBValidKey;
     for (const record of Dataset) {
-      await User.add(record);
+      lastRecordId = await User.add(record);
     }
+
+    // add() returns record's key
+    expect(lastRecordId).toEqual(Dataset[Dataset.length - 1]._id);
   });
 
   test('get records count', async () => {

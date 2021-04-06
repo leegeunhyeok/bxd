@@ -21,7 +21,7 @@ export interface BoxModel<S extends BoxScheme> extends BoxHandler<S>, BoxTask<S>
 export interface BoxHandler<S extends BoxScheme> {
   getName(): string;
   getVersion(): number;
-  add(value: BoxData<S>, key?: IDBValidKey): Promise<void>;
+  add(value: BoxData<S>, key?: IDBValidKey): Promise<IDBValidKey>;
   get(
     key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
   ): Promise<BoxData<S>>;
