@@ -89,6 +89,8 @@ const typeValidator = (type: BoxDataTypes, value: UncheckedData): boolean => {
       return targetPrototype === Number.prototype;
     case BoxDataTypes.STRING:
       return targetPrototype === String.prototype;
+    case BoxDataTypes.DATE:
+      return value instanceof Date;
     case BoxDataTypes.ARRAY:
       return targetPrototype === Array.prototype;
     case BoxDataTypes.OBJECT:
