@@ -1,7 +1,7 @@
 {
   "name": "bxd",
   "version": "1.0.0-rc.1",
-  "description": "Object relation mapping for IndexedDB",
+  "description": "Object relational mapping for IndexedDB",
   "main": "dist/bxd.esm.js",
   "types": "types/index.d.ts",
   "scripts": {
@@ -18,7 +18,8 @@
   "keywords": [
     "idb",
     "indexeddb",
-    "orm"
+    "orm",
+    "database"
   ],
   "author": "Geunhyeok LEE <dev.ghlee@gmail.com> (https://github.com/leegeunhyeok)",
   "license": "MIT",

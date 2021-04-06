@@ -9,6 +9,9 @@ Boxdb is a promise-based browser ORM for [IndexedDB](https://developer.mozilla.o
   <a href="https://github.com/leegeunhyeok/bxd/actions?query=workflow:build" alt="Github actions">
     <img src="https://github.com/leegeunhyeok/bxd/workflows/build/badge.svg">
   </a>
+  <a href="https://lgtm.com/projects/g/leegeunhyeok/bxd/context:javascript" alt="lgtm">
+    <img src="https://img.shields.io/lgtm/grade/javascript/g/leegeunhyeok/bxd.svg?logo=lgtm&logoWidth=18">
+  </a>
   <a href="https://codecov.io/gh/leegeunhyeok/bxd" alt="codecov">
     <img src="https://codecov.io/gh/leegeunhyeok/bxd/branch/dev/graph/badge.svg?token=I5YZWY8PGT">
   </a>
@@ -77,7 +80,6 @@ await User.clear(); // Delete all records
 - [Features](#features)
 - [Browser Support](#browser-support)
 - [Installation](#installation)
-- [Roadmap](#roadmap)
 - [Documentation](#documentation)
 - [Examples](#examples)
 - [Issue](#issue)
@@ -87,13 +89,13 @@ await User.clear(); // Delete all records
 
 ## 🌟 Features
 
-- [x] Promise based and easy to use
-- [x] Works on [Web Workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API)
-- [x] Zero dependencies
-- [x] Database and object store version management
-- [x] Transaction control and data validation via model
-- [x] ACID(Atomicity, Consistency, Isolation, Durability) guaranteed with transaction
-- [x] Supports TypeScript
+- Promise based and easy to use
+- Works on [Web Workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API)
+- Zero dependencies
+- Database and object store version management
+- Transaction control and data validation via model
+- ACID(Atomicity, Consistency, Isolation, Durability) guaranteed with transaction
+- Supports TypeScript
 
 ## 🌍 Browser Support
 
@@ -137,10 +139,6 @@ In browser (legacy):
 | `IE10`, `IE11` | es.promise                            |
 | `IE10`, `IE11` | es.string.iterator                    |
 | `IE10`, `IE11` | web.dom-collections.iterator          |
-
-## 🚗 Roadmap
-
-> WIP..
 
 ## 📖 Documentation
 
