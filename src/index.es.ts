@@ -8,7 +8,7 @@ export {
   BoxDataTypes,
   BoxCursorDirections,
   ConfiguredType,
-  BoxOption,
+  BoxOptions,
 } from './core/types';
 export { BoxModel } from './core/model';
 
