@@ -50,7 +50,7 @@ await box.open();
 // Basics
 await User.add({ id: 1, name: 'Tom', age: 10 });
 await User.get(1);
-await User.put({ id: 1, name: 'Tommy', age: 12 }); // Update values
+await User.put({ id: 1, name: 'Tommy', age: 12 }); // Update record
 await User.delete(1);
 
 // Using cursor
@@ -60,22 +60,22 @@ await User.find([
   (user) => user.age > 10,
   (user) => user.name.includes('y'),
 ]).get(BoxDB.Order.DESC, 10); // Filter/sort/limit
-await User.find([(user) => user.age !== 0]).update({ name: 'Timmy' }); // Update filtered data
-await User.find([(user) => user.age === 99]).delete(); // Delete filtered data
+await User.find([(user) => user.age !== 0]).update({ name: 'Timmy' }); // Update filtered records
+await User.find([(user) => user.age === 99]).delete(); // Delete filtered records
 
 // Using transaction tasks
 await box.transaction([
   User.$put({ id: 1, name: 'Tim', age: 20 }),
   User.$add({ id: 2, name: 'Jessica', age: 15 }),
   User.$add({ id: 3, name: 'Ellis', age: 13 }),
-  BoxDB.interrupt(); // You can stop this transaction!
+  BoxDB.interrupt(); // You can stop transaction like this!
   User.$delete(2),
   User.$find([(user) => user.age < 20]).put({ name: 'Young' }),
 ]);
 
 // And other IndexedDB API features!
-await User.count(); // Records count
-await User.clear(); // Delete all records
+await User.count(); // All records count of object store
+await User.clear(); // Delete all of records in object store
 ```
 
 ## 📃 Table of Contents
@@ -92,11 +92,12 @@ await User.clear(); // Delete all records
 
 ## 🌟 Features
 
-- Promise based and easy to use
+- Promise based ORM
+- User friendly and easy to use
 - Lightweight(< 10kb) IndexedDB wrapper
 - Zero dependencies
 - Database and object store version management
-- Transaction control and data validation via model
+- Data validation and transaction control via model
 - ACID(Atomicity, Consistency, Isolation, Durability) guaranteed with transaction
 - Supports TypeScript
 - Works on [Web Workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API)
@@ -108,7 +109,7 @@ await User.clear(); // Delete all records
 ## 🛠 Installation
 
 ```bash
-npm install --save bxd
+npm install bxd
 ```
 
 In browser:

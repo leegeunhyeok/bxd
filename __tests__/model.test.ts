@@ -9,12 +9,13 @@ const modelArgs = {
     f1: BoxDB.Types.BOOLEAN,
     f2: BoxDB.Types.NUMBER,
     f3: BoxDB.Types.STRING,
-    f4: BoxDB.Types.ARRAY,
-    f5: BoxDB.Types.OBJECT,
-    f6: BoxDB.Types.REGEXP,
-    f7: BoxDB.Types.FILE,
-    f8: BoxDB.Types.BLOB,
-    f9: BoxDB.Types.ANY,
+    f4: BoxDB.Types.DATE,
+    f5: BoxDB.Types.ARRAY,
+    f6: BoxDB.Types.OBJECT,
+    f7: BoxDB.Types.REGEXP,
+    f8: BoxDB.Types.FILE,
+    f9: BoxDB.Types.BLOB,
+    f0: BoxDB.Types.ANY,
   },
 };
 
@@ -28,12 +29,12 @@ describe('checking about model basic features', () => {
     expect(TestModel.getName()).toBe(modelArgs.storeName);
   });
 
-  test('model data validation', () => {
+  test('create data via model', () => {
     const TestModel = builder.build(modelArgs.targetVersion, modelArgs.storeName, modelArgs.scheme);
 
     expect(() => {
       new TestModel({
-        f1: 'wrong_value', // must be boolean
+        f1: null,
         f2: null,
         f3: null,
         f4: null,
@@ -42,6 +43,26 @@ describe('checking about model basic features', () => {
         f7: null,
         f8: null,
         f9: null,
+        f0: null,
+      });
+    }).not.toThrow();
+  });
+
+  test('model data validation', () => {
+    const TestModel = builder.build(modelArgs.targetVersion, modelArgs.storeName, modelArgs.scheme);
+
+    expect(() => {
+      new TestModel({
+        f1: null,
+        f2: '123', // must be number
+        f3: null,
+        f4: null,
+        f5: null,
+        f6: null,
+        f7: null,
+        f8: null,
+        f9: null,
+        f0: null,
       });
     }).toThrow();
 
@@ -50,12 +71,13 @@ describe('checking about model basic features', () => {
         f1: true,
         f2: 0,
         f3: 'string',
-        f4: [],
-        f5: {},
-        f6: /^test$/,
-        f7: null,
-        f8: null,
-        f9: 'any',
+        f4: new Date(),
+        f5: [],
+        f6: {},
+        f7: /^test$/,
+        f8: new File(['text'], 'sample.txt', { type: 'text/plain', lastModified: +new Date() }),
+        f9: new Blob(),
+        f0: 'any',
       });
     }).not.toThrow();
   });
