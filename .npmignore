@@ -107,3 +107,14 @@ typings/
 
 # Origin Source
 src/
+build/
+.github/
+__tests__/
+
+# Other configuration files
+.eslintrc
+.prettierrc
+CHANGELOG.md
+commitlint.config.js
+jest.config.js
+logo.png
