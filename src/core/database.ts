@@ -132,7 +132,7 @@ class BoxDB {
    * @param tasks Transaction tasks
    */
   transaction(tasks: TransactionTask[]): Promise<void> {
-    return this.tx.runAll(tasks);
+    return this.tx.run(tasks).then(() => void 0);
   }
 
   /**
