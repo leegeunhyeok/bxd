@@ -163,19 +163,11 @@ export const rangeBuilder = {
 };
 
 export default class BoxModelBuilder {
-  private static _: BoxModelBuilder = null;
-  private _proto: ModelPrototype;
-  private _handler: BoxHandler<IDBData>;
-  private _task: BoxTask<IDBData>;
+  private proto: ModelPrototype;
+  private handler: BoxHandler<IDBData>;
+  private task: BoxTask<IDBData>;
 
-  static get(tx: BoxTransaction): BoxModelBuilder {
-    if (!this._) {
-      this._ = new BoxModelBuilder(tx);
-    }
-    return this._;
-  }
-
-  private constructor(tx: BoxTransaction) {
+  constructor(tx: BoxTransaction) {
     /**
      * Convert model handler arguments to CursorOption
      * @param option
@@ -196,8 +188,8 @@ export default class BoxModelBuilder {
       value,
     });
 
-    this._proto = { tx, pass: schemeValidator, data: createBoxData };
-    this._handler = {
+    this.proto = { tx, pass: schemeValidator, data: createBoxData };
+    this.handler = {
       getName(this: ModelContext) {
         return this.store;
       },
@@ -250,7 +242,7 @@ export default class BoxModelBuilder {
       },
     };
 
-    this._task = {
+    this.task = {
       $add(this: ModelContext, value, key) {
         this.pass(value);
         return new TransactionTask(TransactionType.ADD, this.store, [value, key], null);
@@ -297,13 +289,13 @@ export default class BoxModelBuilder {
       return this.data(initalData);
     } as unknown) as BoxModel<S>;
 
-    const context = Object.create(this._proto) as ModelContext;
+    const context = Object.create(this.proto) as ModelContext;
     context.store = storeName;
     context.scheme = scheme;
     context.v = targetVersion;
 
     // Handlers
-    const handler = Object.assign(context, this._handler, this._task);
+    const handler = Object.assign(context, this.handler, this.task);
     Object.setPrototypeOf(Model, handler);
     Object.setPrototypeOf(Model.prototype, context);
 

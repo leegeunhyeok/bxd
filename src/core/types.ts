@@ -15,7 +15,7 @@ export enum BoxDataTypes {
   REGEXP = '7',
   FILE = '8',
   BLOB = '9',
-  ANY = '10',
+  ANY = '0',
 }
 
 export enum BoxCursorDirections {

@@ -43,7 +43,7 @@ class BoxDB {
     this.name = databaseName;
     this.version = version;
     this.tx = new BoxTransaction();
-    this.builder = BoxModelBuilder.get(this.tx);
+    this.builder = new BoxModelBuilder(this.tx);
   }
 
   getDB(): IDBDatabase {
