@@ -18,6 +18,9 @@ Boxdb is a promise-based browser ORM for [IndexedDB](https://developer.mozilla.o
   <a href="https://www.npmjs.com/package/bxd" alt="npm">
     <img src="https://img.shields.io/npm/v/bxd">
   </a>
+  <a href="https://www.npmjs.com/package/bxd">
+    <img alt="npm bundle size" src="https://img.shields.io/bundlephobia/min/bxd">
+  </a>
   <img src="https://img.shields.io/github/license/leegeunhyeok/bxd">
   <img src="https://badgen.net/badge/-/TypeScript/blue?icon=typescript&label" alt="typescript">
 
@@ -90,12 +93,13 @@ await User.clear(); // Delete all records
 ## 🌟 Features
 
 - Promise based and easy to use
-- Works on [Web Workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API)
+- Lightweight(< 10kb) IndexedDB wrapper
 - Zero dependencies
 - Database and object store version management
 - Transaction control and data validation via model
 - ACID(Atomicity, Consistency, Isolation, Durability) guaranteed with transaction
 - Supports TypeScript
+- Works on [Web Workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API)
 
 ## 🌍 Browser Support
 
