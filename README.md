@@ -154,7 +154,7 @@ Boxdb documentation is on [wiki](https://github.com/leegeunhyeok/bxd/wiki)!
 
 ## 🔥 Issue
 
-> WIP
+Opening an issue or feature request [here](https://github.com/leegeunhyeok/bxd/issues)
 
 ## 👨‍💻 Development
 
