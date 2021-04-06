@@ -34,7 +34,9 @@ export class TransactionTask {
     public cursor: CursorOptions<IDBData>,
   ) {
     this.mode =
-      this.action === TransactionType.GET || this.action === TransactionType.$GET
+      action === TransactionType.GET ||
+      action === TransactionType.$GET ||
+      action === TransactionType.COUNT
         ? TransactionMode.READ
         : TransactionMode.WRITE;
   }

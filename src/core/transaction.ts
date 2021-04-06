@@ -45,25 +45,17 @@ export default class BoxTransaction {
   }
 
   /**
-   * Do multiple transaction tasks
-   *
-   * @param tasks transacktion tasks
-   */
-  runAll(tasks: TransactionTask[]): Promise<void> {
-    if (!tasks.every((task) => task instanceof TransactionTask)) {
-      throw new BoxDBError('Invalid elements');
-    }
-    return this.run(tasks).then(() => void 0);
-  }
-
-  /**
    * Fulfill multiple tasks on transaction
    *
    * @param tasks Transaction tasks
    */
-  private run(tasks: TransactionTask[]): Promise<void | IDBData | IDBData[]> {
+  run(tasks: TransactionTask[]): Promise<void | IDBData | IDBData[]> {
     if (this.idb.value === null) {
       throw new BoxDBError('Database not ready');
+    }
+
+    if (!tasks.every((task) => task instanceof TransactionTask)) {
+      throw new BoxDBError('Invalid elements');
     }
 
     const firstTaskType = tasks[0].action;
