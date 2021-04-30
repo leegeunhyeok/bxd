@@ -1,6 +1,8 @@
 import BoxTransaction from './transaction';
 import BoxModelBuilder, { BoxModel, rangeBuilder } from './model';
 import { TransactionTask, TransactionType } from './task';
+import { BoxDBError } from './errors';
+
 import {
   BoxScheme,
   BoxDataTypes,
@@ -9,8 +11,7 @@ import {
   BoxIndexConfig,
   ConfiguredBoxScheme,
   BoxCursorDirections,
-} from './types';
-import { BoxDBError } from './errors';
+} from '../types';
 
 export interface BoxModelOption {
   autoIncrement?: boolean;

@@ -1,5 +1,7 @@
 import BoxTransaction from './transaction';
 import { TransactionTask, TransactionType } from './task';
+import { BoxDBError } from './errors';
+
 import {
   IDBData,
   BoxData,
@@ -9,8 +11,7 @@ import {
   CursorOptions,
   UncheckedData,
   OptionalBoxData,
-} from './types';
-import { BoxDBError } from './errors';
+} from '../types';
 
 // BoxModel
 export interface BoxModel<S extends BoxScheme> extends BoxHandler<S>, BoxTask<S> {
@@ -278,16 +279,13 @@ export default class BoxModelBuilder {
    * @param scheme Data scheme
    */
   build<S extends BoxScheme>(targetVersion: number, storeName: string, scheme: S): BoxModel<S> {
-    const Model = (function Model<S extends BoxScheme>(
-      this: ModelContext,
-      initalData?: BoxData<S>,
-    ) {
+    const Model = function Model<S extends BoxScheme>(this: ModelContext, initalData?: BoxData<S>) {
       // Check scheme if initial data provided
       initalData && this.pass(initalData);
 
       // Create empty(null) object or initalData based on scheme
       return this.data(initalData);
-    } as unknown) as BoxModel<S>;
+    } as unknown as BoxModel<S>;
 
     const context = Object.create(this.proto) as ModelContext;
     context.store = storeName;

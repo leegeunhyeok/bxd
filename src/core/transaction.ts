@@ -1,6 +1,7 @@
 import { TransactionTask, TransactionType, TransactionMode, TaskArguments } from './task';
-import { IDBData, CursorOptions, CursorCondition } from './types';
 import { BoxDBError } from './errors';
+
+import { IDBData, CursorOptions, CursorCondition } from '../types';
 
 interface IDBReference {
   value: IDBDatabase;
