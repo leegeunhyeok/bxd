@@ -50,7 +50,9 @@ export default class BoxTransaction {
    *
    * @param tasks Transaction tasks
    */
-  run<S extends BoxScheme, T extends TransactionTask>(...tasks: T[]): Promise<void | S | S[]> {
+  run<S extends BoxScheme, T extends TransactionTask>(
+    ...tasks: T[]
+  ): Promise<void | IDBData | IDBData[]> {
     if (this.idb.value === null) {
       throw new BoxDBError('Database not ready');
     }

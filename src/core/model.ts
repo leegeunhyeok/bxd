@@ -1,5 +1,6 @@
 import BoxTransaction from './transaction';
 import { TransactionTask, TransactionType } from './task';
+import { createTask } from '../utils';
 import { BoxDBError } from './errors';
 
 import {
@@ -7,10 +8,10 @@ import {
   BoxData,
   BoxScheme,
   BoxDataTypes,
-  CursorQuery,
-  CursorOptions,
   UncheckedData,
   OptionalBoxData,
+  BoxCursorDirections,
+  BoxFilterFunction,
 } from '../types';
 
 // BoxModel
@@ -30,7 +31,7 @@ export interface BoxHandler<S extends BoxScheme> {
   delete(
     key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
   ): Promise<void>;
-  find(filter?: CursorQuery<S>): BoxCursorHandler<S>;
+  find(filter?: BoxFilterFunction<S>[]): BoxCursorHandler<S>;
   clear(): Promise<void>;
   count(): Promise<number>;
 }
@@ -42,12 +43,12 @@ export interface BoxTask<S extends BoxScheme> {
   $delete(
     key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
   ): TransactionTask;
-  $find(filter?: CursorQuery<S>): BoxCursorTask<S>;
+  $find(filter?: BoxFilterFunction<S>[]): BoxCursorTask<S>;
 }
 
 // BoxModel.find = () => BoxCursorHandler
 export interface BoxCursorHandler<S extends BoxScheme> {
-  get(order?: IDBCursorDirection, limit?: number): Promise<BoxData<S>[]>;
+  get(order?: BoxCursorDirections, limit?: number): Promise<BoxData<S>[]>;
   update(value: OptionalBoxData<S>): Promise<void>;
   delete(): Promise<void>;
 }
@@ -169,26 +170,6 @@ export default class BoxModelBuilder {
   private task: BoxTask<IDBData>;
 
   constructor(tx: BoxTransaction) {
-    /**
-     * Convert model handler arguments to CursorOption
-     * @param option
-     * @param value
-     * @param direction
-     * @param limit
-     * @returns
-     */
-    const toCursorOption = (
-      option: CursorQuery<IDBData>,
-      value: IDBData = void 0,
-      direction: IDBCursorDirection = void 0,
-      limit: number = void 0,
-    ): CursorOptions<IDBData> => ({
-      direction,
-      filter: option,
-      limit,
-      value,
-    });
-
     this.proto = { tx, pass: schemeValidator, data: createBoxData };
     this.handler = {
       getName(this: ModelContext) {
@@ -199,47 +180,41 @@ export default class BoxModelBuilder {
       },
       add(this: ModelContext, value, key) {
         this.pass(value);
-        return this.tx.do(TransactionType.ADD, this.store, [value, key]);
+        return this.tx.run(createTask(TransactionType.ADD, this.store, [value, key]));
       },
       get(this: ModelContext, key) {
-        return this.tx.do(TransactionType.GET, this.store, [key]);
+        return this.tx.run(createTask(TransactionType.GET, this.store, [key]));
       },
       put(this: ModelContext, value, key) {
         this.pass(value);
-        return this.tx.do(TransactionType.PUT, this.store, [value, key]);
+        return this.tx.run(createTask(TransactionType.PUT, this.store, [value, key]));
       },
       delete(this: ModelContext, key) {
-        return this.tx.do(TransactionType.DELETE, this.store, [key]);
+        return this.tx.run(createTask(TransactionType.DELETE, this.store, [key]));
       },
       find(this: ModelContext, filter) {
         return {
           get: (order, limit) => {
-            return this.tx.do(
-              TransactionType.$GET,
-              this.store,
-              null,
-              toCursorOption(filter, null, order, limit),
+            return this.tx.run(
+              createTask(TransactionType.$GET, this.store, null, order, filter, null, limit),
             );
           },
           update: (value) => {
             this.pass(value, false);
-            return this.tx.do(
-              TransactionType.$UPDATE,
-              this.store,
-              null,
-              toCursorOption(filter, value),
+            return this.tx.run(
+              createTask(TransactionType.$UPDATE, this.store, null, null, filter, null),
             );
           },
           delete: () => {
-            return this.tx.do(TransactionType.$DELETE, this.store, null, toCursorOption(filter));
+            return this.tx.run(createTask(TransactionType.$DELETE, this.store, null, null, filter));
           },
         };
       },
       clear(this: ModelContext) {
-        return this.tx.do(TransactionType.CLEAR, this.store);
+        return this.tx.run(createTask(TransactionType.CLEAR, this.store));
       },
       count(this: ModelContext) {
-        return this.tx.do(TransactionType.COUNT, this.store);
+        return this.tx.run(createTask(TransactionType.COUNT, this.store));
       },
     };
 
