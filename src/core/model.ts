@@ -1,5 +1,4 @@
 import BoxTransaction from './transaction';
-import { TransactionTask, TransactionType } from './task';
 import { createTask } from '../utils';
 import { BoxDBError } from './errors';
 
@@ -12,6 +11,8 @@ import {
   OptionalBoxData,
   BoxCursorDirections,
   BoxFilterFunction,
+  TransactionTask,
+  TransactionType,
 } from '../types';
 
 // BoxModel
@@ -202,7 +203,7 @@ export default class BoxModelBuilder {
           update: (value) => {
             this.pass(value, false);
             return this.tx.run(
-              createTask(TransactionType.$UPDATE, this.store, null, null, filter, null),
+              createTask(TransactionType.$UPDATE, this.store, null, null, filter, null), // TODO: value
             );
           },
           delete: () => {
@@ -221,26 +222,23 @@ export default class BoxModelBuilder {
     this.task = {
       $add(this: ModelContext, value, key) {
         this.pass(value);
-        return new TransactionTask(TransactionType.ADD, this.store, [value, key], null);
+        return createTask(TransactionType.ADD, this.store, [value, key], null);
       },
       $put(this: ModelContext, value, key) {
         this.pass(value);
-        return new TransactionTask(TransactionType.PUT, this.store, [value, key], null);
+        return createTask(TransactionType.PUT, this.store, [value, key], null);
       },
       $delete(this: ModelContext, key) {
-        return new TransactionTask(TransactionType.DELETE, this.store, [key], null);
+        return createTask(TransactionType.DELETE, this.store, [key], null);
       },
       $find(this: ModelContext, filter) {
         return {
           update: (value) => {
             this.pass(value, false);
-            return new TransactionTask(TransactionType.$UPDATE, this.store, null, {
-              filter,
-              value,
-            });
+            return createTask(TransactionType.$UPDATE, this.store, null, null, filter); // TODO: value
           },
           delete: () => {
-            return new TransactionTask(TransactionType.$DELETE, this.store, null, { filter });
+            return createTask(TransactionType.$DELETE, this.store, null, null, filter);
           },
         };
       },

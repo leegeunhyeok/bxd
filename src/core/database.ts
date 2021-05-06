@@ -1,7 +1,7 @@
 import BoxTransaction from './transaction';
 import BoxModelBuilder, { BoxModel, rangeBuilder } from './model';
-import { TransactionTask, TransactionType } from './task';
 import { BoxDBError } from './errors';
+import { createTask } from '../utils';
 
 import {
   BoxScheme,
@@ -11,6 +11,8 @@ import {
   BoxIndexConfig,
   ConfiguredBoxScheme,
   BoxCursorDirections,
+  TransactionTask,
+  TransactionType,
 } from '../types';
 
 export interface BoxModelOption {
@@ -67,7 +69,7 @@ class BoxDB {
    * Returns interrupt transaction task
    */
   static interrupt(): TransactionTask {
-    return new TransactionTask(TransactionType.INTERRUPT, null, null, null);
+    return createTask(TransactionType.INTERRUPT, null);
   }
 
   /**
@@ -132,8 +134,8 @@ class BoxDB {
    *
    * @param tasks Transaction tasks
    */
-  transaction(tasks: TransactionTask[]): Promise<void> {
-    return this.tx.run(tasks).then(() => void 0);
+  transaction(...tasks: TransactionTask[]): Promise<void> {
+    return this.tx.run(...tasks).then(() => void 0);
   }
 
   /**
