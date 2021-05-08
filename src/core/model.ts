@@ -1,6 +1,8 @@
 import BoxTransaction from './transaction';
 import { createTask } from '../utils';
 import { BoxDBError } from './errors';
+import { TaskArguments } from '../utils/index';
+import { BoxRange } from '../types/index';
 
 import {
   IDBData,
@@ -32,6 +34,7 @@ export interface BoxHandler<S extends BoxScheme> {
   delete(
     key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
   ): Promise<void>;
+  query(range: BoxRange<S>, target?: IDBKeyPath): BoxCursorHandler<S>;
   find(filter?: BoxFilterFunction<S>[]): BoxCursorHandler<S>;
   clear(): Promise<void>;
   count(): Promise<number>;
@@ -192,6 +195,31 @@ export default class BoxModelBuilder {
       },
       delete(this: ModelContext, key) {
         return this.tx.run(createTask(TransactionType.DELETE, this.store, [key]));
+      },
+      query(this: ModelContext, range, target) {
+        return {
+          get: (order, limit) => {
+            return this.$(TransactionType.$GET, {
+              direction: order,
+              limit,
+              range,
+              target,
+            });
+          },
+          update: (value) => {
+            this.pass(value, false);
+            return this.$(TransactionType.$UPDATE, {
+              range,
+              target,
+            });
+          },
+          delete: () => {
+            return this.$(TransactionType.$DELETE, {
+              range,
+              target,
+            });
+          },
+        };
       },
       find(this: ModelContext, filter) {
         return {
