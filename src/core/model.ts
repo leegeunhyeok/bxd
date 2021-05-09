@@ -66,6 +66,7 @@ export interface BoxCursorTask<S extends BoxScheme> {
 // BoxModel Prototype
 export interface ModelPrototype {
   tx: BoxTransaction;
+  $(type: TransactionType, args?: TaskArguments<BoxScheme>): Promise<void | IDBData | IDBData[]>;
   pass(target: UncheckedData, strict?: boolean): void | never;
   data<T extends BoxScheme>(initalData?: BoxData<T>): BoxData<T>;
 }
@@ -158,6 +159,15 @@ function createBoxData<T extends BoxScheme>(
 }
 
 /**
+ * Create transaction task from model context
+ *
+ * @param type Transaction type
+ */
+function transactionExecuter(this: ModelContext, type: TransactionType, args?: TaskArguments<any>) {
+  return this.tx.run(createTask(type, this.store, args));
+}
+
+/**
  * Returns IDBKeyRange
  */
 const i = IDBKeyRange;
@@ -174,7 +184,7 @@ export default class BoxModelBuilder {
   private task: BoxTask<IDBData>;
 
   constructor(tx: BoxTransaction) {
-    this.proto = { tx, pass: schemeValidator, data: createBoxData };
+    this.proto = { tx, $: transactionExecuter, pass: schemeValidator, data: createBoxData };
     this.handler = {
       getName(this: ModelContext) {
         return this.store;
@@ -184,17 +194,25 @@ export default class BoxModelBuilder {
       },
       add(this: ModelContext, value, key) {
         this.pass(value);
-        return this.tx.run(createTask(TransactionType.ADD, this.store, [value, key]));
+        return this.$(TransactionType.ADD, {
+          args: [value, key],
+        });
       },
       get(this: ModelContext, key) {
-        return this.tx.run(createTask(TransactionType.GET, this.store, [key]));
+        return this.$(TransactionType.GET, {
+          args: [key],
+        });
       },
       put(this: ModelContext, value, key) {
         this.pass(value);
-        return this.tx.run(createTask(TransactionType.PUT, this.store, [value, key]));
+        return this.$(TransactionType.PUT, {
+          args: [value, key],
+        });
       },
       delete(this: ModelContext, key) {
-        return this.tx.run(createTask(TransactionType.DELETE, this.store, [key]));
+        return this.$(TransactionType.DELETE, {
+          args: [key],
+        });
       },
       query(this: ModelContext, range, target) {
         return {
@@ -224,49 +242,49 @@ export default class BoxModelBuilder {
       find(this: ModelContext, filter) {
         return {
           get: (order, limit) => {
-            return this.tx.run(
-              createTask(TransactionType.$GET, this.store, null, order, filter, null, limit),
-            );
+            return this.$(TransactionType.$GET, {
+              direction: order,
+              filter,
+              limit,
+            });
           },
           update: (value) => {
             this.pass(value, false);
-            return this.tx.run(
-              createTask(TransactionType.$UPDATE, this.store, null, null, filter, null), // TODO: value
-            );
+            return this.$(TransactionType.$UPDATE, { filter });
           },
           delete: () => {
-            return this.tx.run(createTask(TransactionType.$DELETE, this.store, null, null, filter));
+            return this.$(TransactionType.$DELETE, { filter });
           },
         };
       },
       clear(this: ModelContext) {
-        return this.tx.run(createTask(TransactionType.CLEAR, this.store));
+        return this.$(TransactionType.CLEAR);
       },
       count(this: ModelContext) {
-        return this.tx.run(createTask(TransactionType.COUNT, this.store));
+        return this.$(TransactionType.COUNT);
       },
     };
 
     this.task = {
       $add(this: ModelContext, value, key) {
         this.pass(value);
-        return createTask(TransactionType.ADD, this.store, [value, key], null);
+        return createTask(TransactionType.ADD, this.store, { args: [value, key] });
       },
       $put(this: ModelContext, value, key) {
         this.pass(value);
-        return createTask(TransactionType.PUT, this.store, [value, key], null);
+        return createTask(TransactionType.PUT, this.store, { args: [value, key] });
       },
       $delete(this: ModelContext, key) {
-        return createTask(TransactionType.DELETE, this.store, [key], null);
+        return createTask(TransactionType.DELETE, this.store, { args: [key] });
       },
       $find(this: ModelContext, filter) {
         return {
           update: (value) => {
             this.pass(value, false);
-            return createTask(TransactionType.$UPDATE, this.store, null, null, filter); // TODO: value
+            return createTask(TransactionType.$UPDATE, this.store, { filter, updateValue: value });
           },
           delete: () => {
-            return createTask(TransactionType.$DELETE, this.store, null, null, filter);
+            return createTask(TransactionType.$DELETE, this.store, { filter });
           },
         };
       },
