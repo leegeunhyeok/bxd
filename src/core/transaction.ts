@@ -126,11 +126,11 @@ export default class BoxTransaction {
     objectStore: IDBObjectStore,
     task: CursorTransactionTask<S>,
   ): Promise<void | IDBData | IDBData[]> {
-    const filter = task.filter || null;
-    const range = task.range || null;
-    const value = task.args ? task.args[0] : null;
-    const limit = task.limit ?? null;
+    const filter = task.filter;
+    const range = task.range;
+    const limit = task.limit;
     const direction = task.direction || 'next';
+    const updateValue = task.updateValue || null;
     const res = [];
 
     // Filter function
@@ -173,7 +173,7 @@ export default class BoxTransaction {
                 cursorTaskRequestHandler(
                   cursor.update({
                     ...record,
-                    ...value,
+                    ...updateValue,
                   }),
                 );
               break;
