@@ -14,7 +14,6 @@ export type TaskArguments<S extends BoxScheme> = {
   direction?: BoxCursorDirections;
   filter?: BoxFilterFunction<S>[];
   range?: BoxRange<S>;
-  target?: IDBKeyPath;
   limit?: number;
   updateValue?: IDBValue;
 };
@@ -24,7 +23,7 @@ export const createTask = <S extends BoxScheme>(
   name: string,
   taskArgs?: TaskArguments<S>,
 ): CursorTransactionTask<S> => {
-  const { args, direction, filter, range, target, limit, updateValue } = taskArgs;
+  const { args, direction, filter, range, limit, updateValue } = taskArgs;
   return {
     type,
     name,
@@ -32,7 +31,6 @@ export const createTask = <S extends BoxScheme>(
     direction,
     filter,
     range,
-    target,
     limit,
     updateValue,
   };

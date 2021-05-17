@@ -214,28 +214,21 @@ export default class BoxModelBuilder {
           args: [key],
         });
       },
-      query(this: ModelContext, range, target) {
+      query(this: ModelContext, range: BoxRange<BoxScheme>) {
         return {
           get: (order, limit) => {
             return this.$(TransactionType.$GET, {
               direction: order,
               limit,
               range,
-              target,
             });
           },
           update: (value) => {
             this.pass(value, false);
-            return this.$(TransactionType.$UPDATE, {
-              range,
-              target,
-            });
+            return this.$(TransactionType.$UPDATE, { range });
           },
           delete: () => {
-            return this.$(TransactionType.$DELETE, {
-              range,
-              target,
-            });
+            return this.$(TransactionType.$DELETE, { range });
           },
         };
       },
