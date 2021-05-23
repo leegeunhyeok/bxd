@@ -21,9 +21,9 @@ export type TaskArguments<S extends BoxScheme> = {
 export const createTask = <S extends BoxScheme>(
   type: TransactionType,
   name: string,
-  taskArgs?: TaskArguments<S>,
+  taskArgs: TaskArguments<S>,
 ): CursorTransactionTask<S> => {
-  const { args, direction, filter, range, limit, updateValue } = taskArgs;
+  const { args, direction, filter, range, limit, updateValue } = taskArgs || {};
   return {
     type,
     name,

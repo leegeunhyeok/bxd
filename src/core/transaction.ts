@@ -99,7 +99,7 @@ export default class BoxTransaction {
           // get, add, put, delete, clear
           const objectStore = tx.objectStore(task.name);
           // Dodge ts type checking
-          const request = objectStore[action].call(objectStore, ...task.args) as IDBRequest;
+          const request = objectStore[action].call(objectStore, ...(task.args || [])) as IDBRequest;
           request.onsuccess = () => (res = request.result);
         }
       }
@@ -139,14 +139,14 @@ export default class BoxTransaction {
     })();
 
     // Using IDBKeyRange + IDBCursorDirection
-    const index = range.target;
+    const index = range && range.target;
     if (index && !objectStore.indexNames.contains(index)) {
       throw new BoxDBError(index + ' field is not an index');
     }
 
     const request: IDBRequest<IDBCursorWithValue> = (
       index ? objectStore.index(index) : objectStore
-    ).openCursor(range.value, direction);
+    ).openCursor(range ? range.value : null, direction);
 
     return new Promise((resolve, reject) => {
       // Counting for limit
