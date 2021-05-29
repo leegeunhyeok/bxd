@@ -1,5 +1,9 @@
 # Change Log
 
+## [1.0.0-rc.4] 2021-05-30
+
+- chore: Re-build package
+
 ## [1.0.0-rc.3] 2021-05-30
 
 - Rename `Model` to `Box`

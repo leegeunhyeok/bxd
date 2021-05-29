@@ -33,7 +33,7 @@ import BoxDB from 'bxd';
 const db = new BoxDB('application-db', 1);
 
 // Define your box
-const User = box.box('user', {
+const User = db.box('user', {
   id: {
     type: BoxDB.Types.NUMBER,
     key: true,
