@@ -163,7 +163,11 @@ function createBoxData<T extends BoxScheme>(
  *
  * @param type Transaction type
  */
-function transactionExecuter(this: ModelContext, type: TransactionType, args?: TaskArguments<any>) {
+function transactionExecuter(
+  this: ModelContext,
+  type: TransactionType,
+  args?: TaskArguments<BoxScheme>,
+) {
   return this.tx.run(createTask(type, this.store, args));
 }
 
