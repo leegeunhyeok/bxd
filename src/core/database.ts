@@ -15,7 +15,7 @@ import {
   TransactionType,
 } from '../types';
 
-export interface BoxModelOption {
+export interface BoxOption {
   autoIncrement?: boolean;
   force?: boolean;
 }
@@ -110,19 +110,19 @@ class BoxDB {
   }
 
   /**
-   * Define box model
+   * Define box
    *
    * @param storeName
    * @param scheme
    * @param options
    */
-  box<S extends BoxScheme>(storeName: string, scheme: S, options?: BoxModelOption): Box<S> {
+  box<S extends BoxScheme>(storeName: string, scheme: S, options?: BoxOption): Box<S> {
     if (this.ready) {
-      throw new BoxDBError('Cannot define model after database opened');
+      throw new BoxDBError('Cannot define box after database opened');
     }
 
     if (!options?.force && this.metas[storeName]) {
-      throw new BoxDBError(storeName + ' model already defined');
+      throw new BoxDBError(storeName + ' box already defined');
     }
 
     this.metas[storeName] = this.toMeta(storeName, scheme, options);
@@ -192,10 +192,10 @@ class BoxDB {
   }
 
   /**
-   * Model scheme object to BoxMeta
+   * Box scheme object to BoxMeta
    *
    * @param storeName object store name
-   * @param scheme model scheme
+   * @param scheme box scheme
    */
   private toMeta(storeName: string, scheme: BoxScheme, options?: BoxOptions): BoxMeta {
     let primaryKeyPath = null;
@@ -249,14 +249,14 @@ class BoxDB {
     const tx = openRequest.transaction;
     // Object store names in IDB
     const objectStoreNames = Array.from(db.objectStoreNames);
-    // defined model(object store) names
-    const modelStoreNames = Object.keys(this.metas);
-    // Helper function that get metadata of defined model
+    // defined box(object store) names
+    const boxStoreNames = Object.keys(this.metas);
+    // Helper function that get metadata of defined box
     const getBoxMeta = (name: string) => this.metas[name];
 
     objectStoreNames.forEach((name, idx) => {
       // Update exist object store
-      if (modelStoreNames.includes(name)) {
+      if (boxStoreNames.includes(name)) {
         const { inKey, outKey, index, force } = getBoxMeta(name);
         const objectStore = tx.objectStore(name);
         const objectStoreMeta = this.convert(objectStore);
@@ -279,15 +279,15 @@ class BoxDB {
         // Update indexes
         const getKeyPath = (indexConfig) => indexConfig.keyPath;
         const idbKeyPaths = objectStoreMeta.index.map(getKeyPath);
-        const modelKeyPaths = index.map(getKeyPath);
+        const boxKeyPaths = index.map(getKeyPath);
 
         // (1/3) Update unique option of index
         objectStoreMeta.index.forEach((objectStoreIndex) => {
-          const modelIndex = index.find(({ keyPath }) => keyPath === objectStoreIndex.keyPath);
+          const boxIndex = index.find(({ keyPath }) => keyPath === objectStoreIndex.keyPath);
           const originKeyPath = objectStoreIndex.keyPath;
 
           // Index option updated
-          if (modelIndex && objectStoreIndex.unique !== modelIndex.unique) {
+          if (boxIndex && objectStoreIndex.unique !== boxIndex.unique) {
             // Change unique option true -> false is available
             if (objectStoreIndex.unique === true) {
               // Delete exist index and re-create
@@ -299,9 +299,9 @@ class BoxDB {
           }
         });
 
-        // (2/3) Delete index if index not found in scheme of target model
+        // (2/3) Delete index if index not found in scheme of target box
         idbKeyPaths.forEach((keyPath) => {
-          !modelKeyPaths.includes(keyPath) && objectStore.deleteIndex(keyPath);
+          !boxKeyPaths.includes(keyPath) && objectStore.deleteIndex(keyPath);
         });
 
         // (3/3) Create new index if index not exist in object store
@@ -309,13 +309,13 @@ class BoxDB {
           !idbKeyPaths.includes(keyPath) && objectStore.createIndex(keyPath, keyPath, { unique });
         });
       } else {
-        // Delete object store (model not defined)
+        // Delete object store (box not defined)
         db.deleteObjectStore(name);
       }
     });
 
     // Create new object stores
-    modelStoreNames
+    boxStoreNames
       .filter((name) => !objectStoreNames.includes(name))
       .forEach((name) => {
         const { inKey, outKey, index } = getBoxMeta(name);
