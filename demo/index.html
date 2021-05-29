@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>bxd@latest</title>
+    <style>
+      .yes {
+        color: dodgerblue;
+      }
+      .no {
+        color: tomato;
+      }
+      .hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Test - bxd@latest</h1>
+    <div id="error"><!-- Value --></div>
+    <div>
+      <h2 id="idb-support-heading">IDB Support</h2>
+      <p id="agent"><!-- Value --></p>
+      <p id="idb_support"><!-- Value --></p>
+    </div>
+    <div style="margin-bottom: 5px">
+      <label>
+        Database name
+        <input id="db_name" type="text" placeholder="database name" value="test" />
+      </label>
+      <br />
+    </div>
+    <div style="margin-bottom: 5px">
+      <label>
+        Database version
+        <input id="db_version" type="number" placeholder="database version" value="1" />
+      </label>
+    </div>
+    <div>
+      <button id="button_run">run</button>
+      <button id="button_reset">reset</button>
+    </div>
+    <hr />
+    <div id="main">
+      <div>
+        <h2 id="bxd-instance">Create bxd instance</h2>
+        <a href="https://github.com/leegeunhyeok/bxd/wiki#boxdb">BoxDB</a>
+        <p id="bxd_instance"><!-- Value --></p>
+        <p id="bxd_name"><!-- Value --></p>
+        <p id="bxd_version"><!-- Value --></p>
+      </div>
+      <div>
+        <h2 id="bxd-box">Create Box</h2>
+        <a href="https://github.com/leegeunhyeok/bxd/wiki#boxdbbox">BoxDb.box</a>
+        <p id="bxd_box"><!-- Value --></p>
+      </div>
+      <div>
+        <h2 id="bxd-open">Box open</h2>
+        <a href="https://github.com/leegeunhyeok/bxd/wiki#boxdbopen">BoxDb.open</a>
+        <p id="bxd_open"><!-- Value --></p>
+      </div>
+      <div>
+        <h2 id="bxd-add">Add records</h2>
+        <a href="https://github.com/leegeunhyeok/bxd/wiki#boxadd">Box.add</a>
+        <p id="bxd_add"><!-- Value --></p>
+      </div>
+      <div>
+        <h2 id="bxd-add">Record count</h2>
+        <a href="https://github.com/leegeunhyeok/bxd/wiki#boxcount">Box.count</a>
+        <p id="bxd_count"><!-- Value --></p>
+      </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bxd@1.0.0-rc.4/dist/bxd.min.js"></script>
+    <script>
+      // utilities
+      function inBrowser(name) {
+        return eval('typeof ' + name) !== 'undefined';
+      }
+
+      function bool(value) {
+        return value ? 'true' : 'false';
+      }
+
+      function text(el) {
+        var text = '';
+        for (var i = 1; i < arguments.length; i++) {
+          text += arguments[i] + ' ';
+        }
+        el.text(text);
+      }
+
+      function status(el, yes) {
+        el.text(bool(yes));
+        el.removeClass();
+        el.addClass(yes ? 'yes' : 'no');
+      }
+
+      function error(err) {
+        console.error(err);
+        $('#error').append($('<p>' + err + '</p>').addClass('no'));
+      }
+
+      function safe(callback) {
+        try {
+          var res = callback();
+          if (res && res.then) {
+            return res.catch(error);
+          } else {
+            return res || true;
+          }
+        } catch (err) {
+          error(err);
+          return false;
+        }
+      }
+
+      function done(key) {
+        taskTracker[key] = true;
+      }
+
+      function before(key) {
+        if (!taskTracker[key]) {
+          throw new Error(key);
+        }
+      }
+    </script>
+    <script>
+      // TODO 1: Remove trailing comma
+      // TODO 2: Add polyfills
+
+      // Global
+      var idbSupport = inBrowser('indexedDB');
+      var taskTracker = {};
+      var db = null;
+      var box = null;
+      var boxScheme = {
+        id: {
+          type: BoxDB.Types.NUMBER,
+          key: true,
+        },
+        name: {
+          type: BoxDB.Types.STRING,
+          index: true,
+        },
+        number: {
+          type: BoxDB.Types.STRING,
+          index: true,
+          unique: true,
+        },
+        age: BoxDB.Types.NUMBER,
+        other: BoxDB.Types.ANY,
+      };
+
+      var users = [
+        { id: 1, name: 'Tammy Cacciotti', age: 20, number: '843-475-8425', other: null },
+        { id: 2, name: 'Keiko Breslin', age: 75, number: '507-233-7988', other: null },
+        { id: 3, name: 'Howard Rodriguez', age: 13, number: '507-415-0167', other: null },
+        { id: 4, name: 'Cheryl Stabler', age: 69, number: '920-684-4795', other: null },
+        { id: 5, name: 'Catherine Collins', age: 17, number: '415-691-5959', other: null },
+        { id: 6, name: 'Jacklyn Bates', age: 11, number: '812-729-3831', other: null },
+        { id: 7, name: 'Mae Skeels', age: 42, number: '281-756-6133', other: null },
+        { id: 8, name: 'Carol Bousquet', age: 75, number: '646-215-1642', other: null },
+        { id: 9, name: 'Jonathan Cline', age: 10, number: '509-794-6711', other: null },
+        { id: 10, name: 'Dallas Garoutte', age: 58, number: '773-682-5207', other: null },
+      ];
+
+      // main
+      $(function () {
+        $('#agent').text(navigator.userAgent);
+        status($('#idb_support'), idbSupport);
+
+        function bxdInstance() {
+          safe(function () {
+            db = new BoxDB($('#db_name').val(), +$('#db_version').val());
+          });
+          status($('#bxd_instance'), db !== null);
+          text($('#bxd_name'), 'getName():', db.getName());
+          text($('#bxd_version'), 'getVersion():', db.getVersion());
+          done('bxdInstance');
+        }
+
+        function bxdBox() {
+          before('bxdInstance');
+          safe(function () {
+            box = db.box('user', boxScheme);
+          });
+          status($('#bxd_box'), box !== null);
+          done('bxdBox');
+        }
+
+        function bxdOpen() {
+          return safe(function () {
+            return db.open();
+          }).then(function () {
+            status($('#bxd_open'), box !== null);
+            done('bxdOpen');
+          });
+        }
+
+        function addRecord() {
+          before('bxdBox');
+          return safe(function () {
+            var done = false;
+            return users
+              .reduce(function (prev, curr) {
+                return prev.then(function () {
+                  return box.add(curr);
+                });
+              }, Promise.resolve())
+              .then(function () {
+                done = true;
+              })
+              .finally(function () {
+                status($('#bxd_add'), done);
+              });
+          });
+        }
+
+        function getCount() {
+          return safe(function () {
+            return box.count().then(function (count) {
+              $('#bxd_count').text(count);
+            });
+          });
+        }
+
+        function getRecord() {
+          return safe(function () {
+            var done = false;
+            return box
+              .get()
+              .then(function (count) {
+                done = true;
+              })
+              .finally(function () {
+                status($('#bxd_add'), done);
+              });
+          });
+        }
+
+        function run() {
+          bxdInstance();
+          bxdBox();
+          bxdOpen()
+            .then(addRecord)
+            .then(getCount)
+            .then(function () {
+              console.log('before getCount');
+            });
+        }
+
+        $('#main').addClass(idbSupport ? '' : 'hidden');
+        $('#button_run').attr('disabled', !idbSupport);
+        $('#button_run').click(function () {
+          $(this).attr('disabled', true);
+          $('#db_name').attr('disabled', true);
+          $('#db_version').attr('disabled', true);
+          run();
+        });
+
+        $('#button_reset').click(function () {
+          if (db) {
+            db.close();
+          }
+          // Drop database
+          var request = indexedDB.deleteDatabase($('#db_name').val());
+          request.onsuccess = function () {
+            setTimeout(function () {
+              location.reload();
+            }, 50);
+          };
+          request.onerror = error;
+        });
+
+        run();
+      });
+    </script>
+  </body>
+</html>
