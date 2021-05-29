@@ -1,5 +1,5 @@
 import BoxTransaction from './transaction';
-import BoxModelBuilder, { BoxModel, rangeBuilder } from './model';
+import BoxBuilder, { Box, rangeBuilder } from './box';
 import { BoxDBError } from './errors';
 import { createTask } from '../utils';
 
@@ -7,7 +7,7 @@ import {
   BoxScheme,
   BoxDataTypes,
   BoxOptions,
-  BoxModelMeta,
+  BoxMeta,
   BoxIndexConfig,
   ConfiguredBoxScheme,
   BoxCursorDirections,
@@ -21,7 +21,7 @@ export interface BoxModelOption {
 }
 
 interface BoxMetaMap {
-  [storeName: string]: BoxModelMeta;
+  [storeName: string]: BoxMeta;
 }
 
 export type BoxDBType = typeof BoxDB;
@@ -33,7 +33,7 @@ class BoxDB {
   private version: number;
   private metas: BoxMetaMap = {};
   private tx: BoxTransaction;
-  private builder: BoxModelBuilder;
+  private builder: BoxBuilder;
   private idb: IDBDatabase = null;
   private ready = false;
 
@@ -46,7 +46,7 @@ class BoxDB {
     this.name = databaseName;
     this.version = version;
     this.tx = new BoxTransaction();
-    this.builder = new BoxModelBuilder(this.tx);
+    this.builder = new BoxBuilder(this.tx);
   }
 
   getDB(): IDBDatabase {
@@ -116,7 +116,7 @@ class BoxDB {
    * @param scheme
    * @param options
    */
-  model<S extends BoxScheme>(storeName: string, scheme: S, options?: BoxModelOption): BoxModel<S> {
+  box<S extends BoxScheme>(storeName: string, scheme: S, options?: BoxModelOption): Box<S> {
     if (this.ready) {
       throw new BoxDBError('Cannot define model after database opened');
     }
@@ -151,7 +151,7 @@ class BoxDB {
   }
 
   /**
-   * Create BoxModelMeta object
+   * Create BoxMeta object
    *
    * @param name
    * @param scheme
@@ -168,16 +168,16 @@ class BoxDB {
     outKey: boolean,
     index: BoxIndexConfig[],
     force: boolean,
-  ): BoxModelMeta {
+  ): BoxMeta {
     return { name, scheme, inKey, outKey, index, force };
   }
 
   /**
-   * IDBObjectStore to BoxModelMeta
+   * IDBObjectStore to BoxMeta
    *
    * @param objectStore target object store
    */
-  private convert(objectStore: IDBObjectStore): BoxModelMeta {
+  private convert(objectStore: IDBObjectStore): BoxMeta {
     return this.meta(
       objectStore.name,
       null,
@@ -192,12 +192,12 @@ class BoxDB {
   }
 
   /**
-   * Model scheme object to BoxModelMeta
+   * Model scheme object to BoxMeta
    *
    * @param storeName object store name
    * @param scheme model scheme
    */
-  private toMeta(storeName: string, scheme: BoxScheme, options?: BoxOptions): BoxModelMeta {
+  private toMeta(storeName: string, scheme: BoxScheme, options?: BoxOptions): BoxMeta {
     let primaryKeyPath = null;
     const indexList = [];
 

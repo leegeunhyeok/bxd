@@ -34,7 +34,7 @@ export interface BoxOptions {
   force?: boolean;
 }
 
-// BoxModel scheme
+// Box scheme
 export interface BoxScheme {
   [field: string]: ConfiguredType | BoxDataTypes;
 }
@@ -54,8 +54,8 @@ export type UncheckedData = {
   [field: string]: IDBValue;
 };
 
-// BoxModel
-export interface BoxModelMeta {
+// Box
+export interface BoxMeta {
   name: string;
   scheme: ConfiguredBoxScheme;
   inKey: string;

@@ -24,28 +24,28 @@ const testScheme = {
 describe('Basic of BoxDB', () => {
   describe('1 of 4', () => {
     // global variable for test
-    let box: BoxDB = null;
+    let db: BoxDB = null;
     let User = null;
 
     test('create instance', () => {
-      box = new BoxDB(name, ++version);
+      db = new BoxDB(name, ++version);
 
       // check basic information
-      expect(box.getName()).toBe(name);
-      expect(box.getVersion()).toBe(version);
+      expect(db.getName()).toBe(name);
+      expect(db.getVersion()).toBe(version);
     });
 
     test('create new model', () => {
       // Register new model
-      User = box.model('user', testScheme);
-      box.model('user2', testScheme); // unused
-      box.model('temp', { data: BoxDB.Types.ANY }); // unused
+      User = db.box('user', testScheme);
+      db.box('user2', testScheme); // unused
+      db.box('temp', { data: BoxDB.Types.ANY }); // unused
     });
 
     test('create new model with multiple key', () => {
       expect(() => {
         // has 2 keys
-        box.model('test', {
+        db.box('test', {
           field_1: {
             type: BoxDB.Types.NUMBER,
             key: true,
@@ -109,13 +109,13 @@ describe('Basic of BoxDB', () => {
     test('trying to register same model', () => {
       // trying to register same model name
       expect(() => {
-        box.model('user', testScheme);
+        db.box('user', testScheme);
       }).toThrow();
     });
 
     test('trying to unique option without index', () => {
       expect(() => {
-        box.model('user_test', {
+        db.box('user_test', {
           ...testScheme,
           age: {
             type: BoxDB.Types.NUMBER,
@@ -127,62 +127,62 @@ describe('Basic of BoxDB', () => {
 
     test('close before database open', () => {
       expect(() => {
-        box.close();
+        db.close();
       }).toThrow();
     });
 
     test('check ready status', async () => {
-      expect(box.isReady()).toBe(false);
-      await box.open();
-      expect(box.isReady()).toBe(true);
+      expect(db.isReady()).toBe(false);
+      await db.open();
+      expect(db.isReady()).toBe(true);
     });
 
     test('check idb instance', async () => {
-      expect(box.getDB()).not.toBeNull();
+      expect(db.getDB()).not.toBeNull();
     });
 
     test('register new model after database open', () => {
       expect(() => {
-        box.model('test', testScheme);
+        db.box('test', testScheme);
       }).toThrow();
     });
 
-    test('close', () => box.close());
+    test('close', () => db.close());
   });
 
   describe('2 of 4', () => {
     // global variable for test
 
     test('tying to change in-line key', async () => {
-      const box = new BoxDB(name, ++version);
+      const db = new BoxDB(name, ++version);
 
       // At version 1: User, User2
       // current: User (User2 not define -> will be deleted)
-      box.model('user', {
+      db.box('user', {
         ...testScheme,
         id: BoxDB.Types.ANY, // id at version 1 -> key: true
       });
 
       await expect(async () => {
-        await box.open();
+        await db.open();
       }).rejects.toThrow();
     });
 
     test('tying to change out-of-line key option', async () => {
-      const box = new BoxDB(name, ++version);
+      const db = new BoxDB(name, ++version);
 
       // user object store at version 1 -> autoIncrement: false
-      box.model('user', testScheme, { autoIncrement: true });
+      db.box('user', testScheme, { autoIncrement: true });
 
       await expect(async () => {
-        await box.open();
+        await db.open();
       }).rejects.toThrow();
     });
 
     test('tying to change unique option (false to true)', async () => {
-      const box = new BoxDB(name, ++version);
+      const db = new BoxDB(name, ++version);
 
-      box.model('user', {
+      db.box('user', {
         ...testScheme,
         name: {
           type: BoxDB.Types.STRING,
@@ -192,14 +192,14 @@ describe('Basic of BoxDB', () => {
       });
 
       await expect(async () => {
-        await box.open();
+        await db.open();
       }).rejects.toThrow();
     });
 
     test('tying to change unique option (true to false)', async () => {
-      const box = new BoxDB(name, ++version);
+      const db = new BoxDB(name, ++version);
 
-      box.model('user', {
+      db.box('user', {
         ...testScheme,
         number: {
           type: BoxDB.Types.STRING,
@@ -208,15 +208,15 @@ describe('Basic of BoxDB', () => {
         },
       });
 
-      await box.open();
-      box.close();
+      await db.open();
+      db.close();
     });
 
     test('tying to change index', async () => {
-      const box = new BoxDB(name, ++version);
+      const db = new BoxDB(name, ++version);
 
       // user object store at version 1 -> autoIncrement: false
-      box.model('user', {
+      db.box('user', {
         id: {
           type: BoxDB.Types.NUMBER,
           key: true,
@@ -235,19 +235,19 @@ describe('Basic of BoxDB', () => {
         },
       });
 
-      await box.open();
-      box.close();
+      await db.open();
+      db.close();
     });
   });
 
   describe('3 of 4', () => {
     test('trying to register same model with force option', async () => {
-      const box = new BoxDB(name, ++version);
+      const db = new BoxDB(name, ++version);
 
       // trying to register same model name
-      box.model('user', testScheme, { force: true });
-      await box.open();
-      box.close();
+      db.box('user', testScheme, { force: true });
+      await db.open();
+      db.close();
     });
   });
 

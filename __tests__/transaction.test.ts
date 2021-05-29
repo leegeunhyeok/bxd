@@ -11,8 +11,8 @@ interface Data {
 }
 
 describe('Basic of object store transactions via model', () => {
-  const box = new BoxDB('transaction-db', 1);
-  const User = box.model('user', {
+  const db = new BoxDB('transaction-db', 1);
+  const User = db.box('user', {
     _id: {
       type: BoxDB.Types.NUMBER,
       key: true,
@@ -35,7 +35,7 @@ describe('Basic of object store transactions via model', () => {
   });
 
   test('prepare boxdb', async () => {
-    await box.open();
+    await db.open();
   });
 
   test('add records', async () => {
@@ -159,7 +159,7 @@ describe('Basic of object store transactions via model', () => {
   });
 
   test('do multiple tasks with transaction', async () => {
-    await box.transaction(
+    await db.transaction(
       User.$add({ _id: 101, name: 'New User 1', age: -99 }),
       User.$add({ _id: 102, name: 'New User 2', age: -1 }),
       User.$delete(5),
@@ -174,7 +174,7 @@ describe('Basic of object store transactions via model', () => {
 
   test('do cursor task with transaction', async () => {
     const updateValue = { name: 'UPDATED' };
-    await box.transaction(
+    await db.transaction(
       User.$find((user) => user._id === 10).update(updateValue),
       User.$find((user) => user._id === 11).delete(),
     );
@@ -188,7 +188,7 @@ describe('Basic of object store transactions via model', () => {
 
   test('handling errors in transaction', async () => {
     try {
-      await box.transaction(
+      await db.transaction(
         User.$put({ _id: 101, name: 'New User 1 updated', age: -999 }), // before age: -99
         User.$put({ _id: 102, name: 'New User 2 updated', age: -111 }), // before age: -1
         User.$add({ _id: 103, name: 'Duplicated', age: 0 }),
@@ -207,7 +207,7 @@ describe('Basic of object store transactions via model', () => {
 
   test('interrupt transaction', async () => {
     try {
-      await box.transaction(
+      await db.transaction(
         User.$put({ _id: 101, name: 'User 1', age: 0 }), // before age: -99
         BoxDB.interrupt(),
         User.$add({ _id: 102, name: 'User 2', age: 0 }), // before age: -1

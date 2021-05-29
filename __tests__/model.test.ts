@@ -1,6 +1,6 @@
 import 'fake-indexeddb/auto';
 import BoxDB from '../src/index.es';
-import BoxModelBuilder from '../src/core/model';
+import BoxBuilder from '../src/core/box';
 
 const modelArgs = {
   targetVersion: 1,
@@ -19,7 +19,7 @@ const modelArgs = {
   },
 };
 
-const builder = new BoxModelBuilder(null);
+const builder = new BoxBuilder(null);
 
 describe('checking about model basic features', () => {
   const TestModel = builder.build(modelArgs.targetVersion, modelArgs.storeName, modelArgs.scheme);
