@@ -1,6 +1,5 @@
 import 'fake-indexeddb/auto';
 import BoxDB from '../src/index.es';
-import { TransactionTask } from '../src/core/task';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Dataset: Data[] = require('./__mocks__/users.json');
@@ -65,7 +64,7 @@ describe('Basic of object store transactions via model', () => {
 
   test('get records by cursor', async () => {
     const evalFunctions = [(value) => value.age > 70, (value) => !value.name.includes('er')];
-    const users = await User.find(evalFunctions).get();
+    const users = await User.find(...evalFunctions).get();
     expect(users.every((user) => evalFunctions.every((f) => f(user)))).toBeTruthy();
   });
 
@@ -106,7 +105,7 @@ describe('Basic of object store transactions via model', () => {
     };
 
     await expect(async () => {
-      await User.find(query).get();
+      await User.query(query).get();
     }).rejects.toThrow();
   });
 
@@ -136,7 +135,7 @@ describe('Basic of object store transactions via model', () => {
 
   test('update records by cursor', async () => {
     const newName = 'User';
-    await User.find([(value) => value._id === 1]).update({
+    await User.find((data) => data._id === 1).update({
       name: newName,
     });
 
@@ -152,9 +151,9 @@ describe('Basic of object store transactions via model', () => {
 
   test('delete records by cursor', async () => {
     const filter = (value) => value.age < 10;
-    const beforeCount = (await User.find([filter]).get()).length;
-    await User.find([filter]).delete();
-    const afterCount = (await User.find([filter]).get()).length;
+    const beforeCount = (await User.find(filter).get()).length;
+    await User.find(filter).delete();
+    const afterCount = (await User.find(filter).get()).length;
 
     expect(beforeCount > afterCount).toBeTruthy();
   });
@@ -176,8 +175,8 @@ describe('Basic of object store transactions via model', () => {
   test('do cursor task with transaction', async () => {
     const updateValue = { name: 'UPDATED' };
     await box.transaction(
-      User.$find([(user) => user._id === 10]).update(updateValue),
-      User.$find([(user) => user._id === 11]).delete(),
+      User.$find((user) => user._id === 10).update(updateValue),
+      User.$find((user) => user._id === 11).delete(),
     );
 
     const record1 = await User.get(10);

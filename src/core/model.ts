@@ -35,7 +35,7 @@ export interface BoxHandler<S extends BoxScheme> {
     key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
   ): Promise<void>;
   query(range: BoxRange<S>, target?: IDBKeyPath): BoxCursorHandler<S>;
-  find(filter?: BoxFilterFunction<S>[]): BoxCursorHandler<S>;
+  find(...filter: BoxFilterFunction<S>[]): BoxCursorHandler<S>;
   clear(): Promise<void>;
   count(): Promise<number>;
 }
@@ -47,7 +47,7 @@ export interface BoxTask<S extends BoxScheme> {
   $delete(
     key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
   ): TransactionTask;
-  $find(filter?: BoxFilterFunction<S>[]): BoxCursorTask<S>;
+  $find(...filter: BoxFilterFunction<S>[]): BoxCursorTask<S>;
 }
 
 // BoxModel.find = () => BoxCursorHandler
@@ -225,14 +225,14 @@ export default class BoxModelBuilder {
           },
           update: (value) => {
             this.pass(value, false);
-            return this.$(TransactionType.$UPDATE, { range });
+            return this.$(TransactionType.$UPDATE, { range, updateValue: value });
           },
           delete: () => {
             return this.$(TransactionType.$DELETE, { range });
           },
         };
       },
-      find(this: ModelContext, filter) {
+      find(this: ModelContext, ...filter) {
         return {
           get: (order, limit) => {
             return this.$(TransactionType.$GET, {
@@ -243,7 +243,7 @@ export default class BoxModelBuilder {
           },
           update: (value) => {
             this.pass(value, false);
-            return this.$(TransactionType.$UPDATE, { filter });
+            return this.$(TransactionType.$UPDATE, { filter, updateValue: value });
           },
           delete: () => {
             return this.$(TransactionType.$DELETE, { filter });
@@ -270,7 +270,7 @@ export default class BoxModelBuilder {
       $delete(this: ModelContext, key) {
         return createTask(TransactionType.DELETE, this.store, { args: [key] });
       },
-      $find(this: ModelContext, filter) {
+      $find(this: ModelContext, ...filter) {
         return {
           update: (value) => {
             this.pass(value, false);

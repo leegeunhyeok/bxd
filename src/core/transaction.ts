@@ -94,7 +94,9 @@ export default class BoxTransaction {
         ) {
           // using cursor
           const objectStore = tx.objectStore(task.name);
-          this.cursor<S>(objectStore, task).then((records) => (res = records));
+          this.cursor<S>(objectStore, task as CursorTransactionTask<S>).then(
+            (records) => (res = records),
+          );
         } else {
           // get, add, put, delete, clear
           const objectStore = tx.objectStore(task.name);
@@ -128,25 +130,19 @@ export default class BoxTransaction {
   ): Promise<void | IDBData | IDBData[]> {
     const filter = task.filter;
     const range = task.range;
-    const limit = task.limit;
+    const limit = task.limit || null;
     const direction = task.direction || 'next';
     const updateValue = task.updateValue || null;
     const res = [];
 
     // Filter function
-    const pass = (() => {
-      return Array.isArray(filter) ? (value) => filter.every((f) => f(value)) : () => true;
-    })();
+    const pass = filter && filter.length ? (value) => filter.every((f) => f(value)) : () => true;
 
     // Using IDBKeyRange + IDBCursorDirection
     const index = range && range.target;
     if (index && !objectStore.indexNames.contains(index)) {
       throw new BoxDBError(index + ' field is not an index');
     }
-
-    const request: IDBRequest<IDBCursorWithValue> = (
-      index ? objectStore.index(index) : objectStore
-    ).openCursor(range ? range.value : null, direction);
 
     return new Promise((resolve, reject) => {
       // Counting for limit
@@ -156,6 +152,10 @@ export default class BoxTransaction {
       const cursorTaskRequestHandler = (request: IDBRequest) => {
         request.onerror = (event) => (running = void reject(event));
       };
+
+      const request: IDBRequest<IDBCursorWithValue> = (
+        index ? objectStore.index(index) : objectStore
+      ).openCursor(range ? range.value : null, direction);
 
       request.onsuccess = () => {
         const cursor = request.result;
