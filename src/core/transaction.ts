@@ -150,6 +150,7 @@ export default class BoxTransaction {
       let running = true;
       const limitHandler = () => limit === null || limit > rows;
       const cursorTaskRequestHandler = (request: IDBRequest) => {
+        /* istanbul ignore next */
         request.onerror = (event) => (running = void reject(event));
       };
 
