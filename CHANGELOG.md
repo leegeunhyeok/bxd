@@ -1,5 +1,16 @@
 # Change Log
 
+## [1.0.0-rc.3] 2021-05-30
+
+- Rename `Model` to `Box`
+  - model() name to box()
+- Add `box.query()` method
+  - For using IDBIndex, IDBRange
+- Update `box.find()` parameter
+  - Now recive only filter functions
+  - Follows rest parameter
+- Refactor model/transaction methods
+
 ## [1.0.0-rc.2] 2021-04-07
 
 - Now `Model.get()` returns added record's key

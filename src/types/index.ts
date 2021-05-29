@@ -1,8 +1,12 @@
+export * from './task';
+
 // Follows defined IDB APIs types
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type IDBData = any;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type IDBValue = any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type IDBArgument = [any, any?];
 
 // Available types
 export enum BoxDataTypes {
@@ -15,7 +19,7 @@ export enum BoxDataTypes {
   REGEXP = '7',
   FILE = '8',
   BLOB = '9',
-  ANY = '10',
+  ANY = '0',
 }
 
 export enum BoxCursorDirections {
@@ -25,12 +29,12 @@ export enum BoxCursorDirections {
   DESC_UNIQUE = 'prevunique',
 }
 
-export interface BoxOption {
+export interface BoxOptions {
   autoIncrement?: boolean;
   force?: boolean;
 }
 
-// BoxModel scheme
+// Box scheme
 export interface BoxScheme {
   [field: string]: ConfiguredType | BoxDataTypes;
 }
@@ -50,8 +54,8 @@ export type UncheckedData = {
   [field: string]: IDBValue;
 };
 
-// BoxModel
-export interface BoxModelMeta {
+// Box
+export interface BoxMeta {
   name: string;
   scheme: ConfiguredBoxScheme;
   inKey: string;
@@ -65,15 +69,15 @@ export interface BoxIndexConfig {
   unique: boolean;
 }
 // CursorQuery (using IDBKeyRange)
-export interface CursorCondition<S extends BoxScheme> {
+export interface BoxRange<S extends BoxScheme> {
   target?: Extract<keyof S, string>;
-  value: IDBKeyRange;
+  value: IDBKeyRange | IDBValue;
 }
 
 // Filter function
-export type EvalFunction<S extends BoxScheme> = (value: BoxData<S>) => boolean;
+export type BoxFilterFunction<S extends BoxScheme> = (value: BoxData<S>) => boolean;
 
-export type CursorQuery<S extends BoxScheme> = CursorCondition<S> | EvalFunction<S>[];
+export type CursorQuery<S extends BoxScheme> = BoxRange<S> | BoxFilterFunction<S>[];
 export interface CursorOptions<S extends BoxScheme> {
   // IDBKeyRange or filter functions
   filter?: CursorQuery<S>;

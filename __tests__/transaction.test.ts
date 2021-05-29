@@ -1,6 +1,5 @@
 import 'fake-indexeddb/auto';
 import BoxDB from '../src/index.es';
-import { TransactionTask } from '../src/core/task';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Dataset: Data[] = require('./__mocks__/users.json');
@@ -12,8 +11,8 @@ interface Data {
 }
 
 describe('Basic of object store transactions via model', () => {
-  const box = new BoxDB('transaction-db', 1);
-  const User = box.model('user', {
+  const db = new BoxDB('transaction-db', 1);
+  const User = db.box('user', {
     _id: {
       type: BoxDB.Types.NUMBER,
       key: true,
@@ -36,7 +35,7 @@ describe('Basic of object store transactions via model', () => {
   });
 
   test('prepare boxdb', async () => {
-    await box.open();
+    await db.open();
   });
 
   test('add records', async () => {
@@ -65,7 +64,7 @@ describe('Basic of object store transactions via model', () => {
 
   test('get records by cursor', async () => {
     const evalFunctions = [(value) => value.age > 70, (value) => !value.name.includes('er')];
-    const users = await User.find(evalFunctions).get();
+    const users = await User.find(...evalFunctions).get();
     expect(users.every((user) => evalFunctions.every((f) => f(user)))).toBeTruthy();
   });
 
@@ -77,7 +76,7 @@ describe('Basic of object store transactions via model', () => {
 
   test('get in-line-key based filtered records by cursor', async () => {
     const targetId = 30;
-    const users = await User.find({
+    const users = await User.query({
       value: BoxDB.Range.equal(targetId),
       // no target: based on in-line-key
     }).get();
@@ -88,7 +87,7 @@ describe('Basic of object store transactions via model', () => {
 
   test('get index based filtered records by cursor', async () => {
     const targetName = Dataset[0].name;
-    const users = await User.find({
+    const users = await User.query({
       value: BoxDB.Range.equal(targetName),
       target: 'name', // search from name index
     }).get();
@@ -101,12 +100,12 @@ describe('Basic of object store transactions via model', () => {
   test('trying to filtering based on undefined index', async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const query: any = {
-      value: BoxDB.Range.equal('value'),
+      range: BoxDB.Range.equal('value'),
       target: 'undefined_field',
     };
 
     await expect(async () => {
-      await User.find(query).get();
+      await User.query(query).get();
     }).rejects.toThrow();
   });
 
@@ -136,7 +135,7 @@ describe('Basic of object store transactions via model', () => {
 
   test('update records by cursor', async () => {
     const newName = 'User';
-    await User.find([(value) => value._id === 1]).update({
+    await User.find((data) => data._id === 1).update({
       name: newName,
     });
 
@@ -152,31 +151,19 @@ describe('Basic of object store transactions via model', () => {
 
   test('delete records by cursor', async () => {
     const filter = (value) => value.age < 10;
-    const beforeCount = (await User.find([filter]).get()).length;
-    await User.find([filter]).delete();
-    const afterCount = (await User.find([filter]).get()).length;
+    const beforeCount = (await User.find(filter).get()).length;
+    await User.find(filter).delete();
+    const afterCount = (await User.find(filter).get()).length;
 
     expect(beforeCount > afterCount).toBeTruthy();
   });
 
-  test('transaction elements type checking', async () => {
-    await expect(async () => {
-      await box.transaction([
-        User.$delete(5),
-        // Not TransactionTask instance
-        {} as TransactionTask,
-        {} as TransactionTask,
-        {} as TransactionTask,
-      ]);
-    }).rejects.toThrow();
-  });
-
   test('do multiple tasks with transaction', async () => {
-    await box.transaction([
+    await db.transaction(
       User.$add({ _id: 101, name: 'New User 1', age: -99 }),
       User.$add({ _id: 102, name: 'New User 2', age: -1 }),
       User.$delete(5),
-    ]);
+    );
 
     const record1 = await User.get(101);
     const record2 = await User.get(5);
@@ -187,10 +174,10 @@ describe('Basic of object store transactions via model', () => {
 
   test('do cursor task with transaction', async () => {
     const updateValue = { name: 'UPDATED' };
-    await box.transaction([
-      User.$find([(user) => user._id === 10]).update(updateValue),
-      User.$find([(user) => user._id === 11]).delete(),
-    ]);
+    await db.transaction(
+      User.$find((user) => user._id === 10).update(updateValue),
+      User.$find((user) => user._id === 11).delete(),
+    );
 
     const record1 = await User.get(10);
     const record2 = await User.get(11);
@@ -201,12 +188,12 @@ describe('Basic of object store transactions via model', () => {
 
   test('handling errors in transaction', async () => {
     try {
-      await box.transaction([
+      await db.transaction(
         User.$put({ _id: 101, name: 'New User 1 updated', age: -999 }), // before age: -99
         User.$put({ _id: 102, name: 'New User 2 updated', age: -111 }), // before age: -1
         User.$add({ _id: 103, name: 'Duplicated', age: 0 }),
         User.$add({ _id: 103, name: 'New name', age: 1 }), // ConstraintError: _id 103 already exist
-      ]);
+      );
     } catch (e) {
       // Empty
     }
@@ -220,11 +207,11 @@ describe('Basic of object store transactions via model', () => {
 
   test('interrupt transaction', async () => {
     try {
-      await box.transaction([
+      await db.transaction(
         User.$put({ _id: 101, name: 'User 1', age: 0 }), // before age: -99
         BoxDB.interrupt(),
         User.$add({ _id: 102, name: 'User 2', age: 0 }), // before age: -1
-      ]);
+      );
     } catch (e) {
       // empty
     }
@@ -240,5 +227,36 @@ describe('Basic of object store transactions via model', () => {
     await User.clear();
     const records = await User.find().get();
     expect(records.length).toEqual(0);
+  });
+
+  describe('model.query', () => {
+    beforeAll(async () => {
+      await User.add({
+        _id: 100000,
+        name: 'Name',
+        age: 20,
+      });
+    });
+
+    test('get records by cursor', async () => {
+      const userList = await User.query().get();
+      expect(userList.length).toBeTruthy();
+    });
+
+    test('update record by cursor', async () => {
+      const newName = 'User';
+      await User.query({ value: 100000 }).update({
+        name: newName,
+      });
+
+      const user = await User.get(100000);
+      expect(user.name).toEqual(newName);
+    });
+
+    test('delete record by cursor', async () => {
+      await User.query({ value: 100 }).delete();
+      const record = await User.get(100);
+      expect(record).toBeNull();
+    });
   });
 });

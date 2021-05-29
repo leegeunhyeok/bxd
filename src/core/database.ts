@@ -1,16 +1,19 @@
 import BoxTransaction from './transaction';
-import BoxModelBuilder, { BoxModel, rangeBuilder } from './model';
-import { TransactionTask, TransactionType } from './task';
+import BoxBuilder, { Box, rangeBuilder } from './box';
+import { BoxDBError } from './errors';
+import { createTask } from '../utils';
+
 import {
   BoxScheme,
   BoxDataTypes,
-  BoxOption,
-  BoxModelMeta,
+  BoxOptions,
+  BoxMeta,
   BoxIndexConfig,
   ConfiguredBoxScheme,
   BoxCursorDirections,
-} from './types';
-import { BoxDBError } from './errors';
+  TransactionTask,
+  TransactionType,
+} from '../types';
 
 export interface BoxModelOption {
   autoIncrement?: boolean;
@@ -18,7 +21,7 @@ export interface BoxModelOption {
 }
 
 interface BoxMetaMap {
-  [storeName: string]: BoxModelMeta;
+  [storeName: string]: BoxMeta;
 }
 
 export type BoxDBType = typeof BoxDB;
@@ -30,7 +33,7 @@ class BoxDB {
   private version: number;
   private metas: BoxMetaMap = {};
   private tx: BoxTransaction;
-  private builder: BoxModelBuilder;
+  private builder: BoxBuilder;
   private idb: IDBDatabase = null;
   private ready = false;
 
@@ -43,7 +46,7 @@ class BoxDB {
     this.name = databaseName;
     this.version = version;
     this.tx = new BoxTransaction();
-    this.builder = BoxModelBuilder.get(this.tx);
+    this.builder = new BoxBuilder(this.tx);
   }
 
   getDB(): IDBDatabase {
@@ -66,7 +69,7 @@ class BoxDB {
    * Returns interrupt transaction task
    */
   static interrupt(): TransactionTask {
-    return new TransactionTask(TransactionType.INTERRUPT, null, null, null);
+    return createTask(TransactionType.INTERRUPT, null);
   }
 
   /**
@@ -113,7 +116,7 @@ class BoxDB {
    * @param scheme
    * @param options
    */
-  model<S extends BoxScheme>(storeName: string, scheme: S, options?: BoxModelOption): BoxModel<S> {
+  box<S extends BoxScheme>(storeName: string, scheme: S, options?: BoxModelOption): Box<S> {
     if (this.ready) {
       throw new BoxDBError('Cannot define model after database opened');
     }
@@ -131,8 +134,8 @@ class BoxDB {
    *
    * @param tasks Transaction tasks
    */
-  transaction(tasks: TransactionTask[]): Promise<void> {
-    return this.tx.runAll(tasks);
+  transaction(...tasks: TransactionTask[]): Promise<void> {
+    return this.tx.run(...tasks).then(() => void 0);
   }
 
   /**
@@ -148,7 +151,7 @@ class BoxDB {
   }
 
   /**
-   * Create BoxModelMeta object
+   * Create BoxMeta object
    *
    * @param name
    * @param scheme
@@ -165,16 +168,16 @@ class BoxDB {
     outKey: boolean,
     index: BoxIndexConfig[],
     force: boolean,
-  ): BoxModelMeta {
+  ): BoxMeta {
     return { name, scheme, inKey, outKey, index, force };
   }
 
   /**
-   * IDBObjectStore to BoxModelMeta
+   * IDBObjectStore to BoxMeta
    *
    * @param objectStore target object store
    */
-  private convert(objectStore: IDBObjectStore): BoxModelMeta {
+  private convert(objectStore: IDBObjectStore): BoxMeta {
     return this.meta(
       objectStore.name,
       null,
@@ -189,12 +192,12 @@ class BoxDB {
   }
 
   /**
-   * Model scheme object to BoxModelMeta
+   * Model scheme object to BoxMeta
    *
    * @param storeName object store name
    * @param scheme model scheme
    */
-  private toMeta(storeName: string, scheme: BoxScheme, options?: BoxOption): BoxModelMeta {
+  private toMeta(storeName: string, scheme: BoxScheme, options?: BoxOptions): BoxMeta {
     let primaryKeyPath = null;
     const indexList = [];
 

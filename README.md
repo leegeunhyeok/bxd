@@ -30,10 +30,10 @@ Boxdb is a promise-based browser ORM for [IndexedDB](https://developer.mozilla.o
 import BoxDB from 'bxd';
 
 // Auto version managing
-const box = new BoxDB('application-db', 1);
+const db = new BoxDB('application-db', 1);
 
-// Define your data models
-const User = box.model('user', {
+// Define your box
+const User = box.box('user', {
   id: {
     type: BoxDB.Types.NUMBER,
     key: true,
@@ -45,7 +45,7 @@ const User = box.model('user', {
   age: BoxDB.Types.NUMBER,
 });
 
-await box.open();
+await db.open();
 
 // Basics
 await User.add({ id: 1, name: 'Tom', age: 10 });
@@ -97,7 +97,7 @@ await User.clear(); // Delete all of records in object store
 - Lightweight(< 10kb) IndexedDB wrapper
 - Zero dependencies
 - Database and object store version management
-- Data validation and transaction control via model
+- Data validation and transaction control via model (box)
 - ACID(Atomicity, Consistency, Isolation, Durability) guaranteed with transaction
 - Supports TypeScript
 - Works on [Web Workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API)

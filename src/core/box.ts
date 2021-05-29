@@ -1,23 +1,28 @@
 import BoxTransaction from './transaction';
-import { TransactionTask, TransactionType } from './task';
+import { createTask } from '../utils';
+import { BoxDBError } from './errors';
+import { TaskArguments } from '../utils/index';
+import { BoxRange } from '../types/index';
+
 import {
   IDBData,
   BoxData,
   BoxScheme,
   BoxDataTypes,
-  CursorQuery,
-  CursorOptions,
   UncheckedData,
   OptionalBoxData,
-} from './types';
-import { BoxDBError } from './errors';
+  BoxCursorDirections,
+  BoxFilterFunction,
+  TransactionTask,
+  TransactionType,
+} from '../types';
 
-// BoxModel
-export interface BoxModel<S extends BoxScheme> extends BoxHandler<S>, BoxTask<S> {
+// Box
+export interface Box<S extends BoxScheme> extends BoxHandler<S>, BoxTask<S> {
   new (initalData?: BoxData<S>): BoxData<S>;
 }
 
-// Transaction handlers of BoxModel
+// Transaction handlers of Box
 export interface BoxHandler<S extends BoxScheme> {
   getName(): string;
   getVersion(): number;
@@ -29,48 +34,50 @@ export interface BoxHandler<S extends BoxScheme> {
   delete(
     key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
   ): Promise<void>;
-  find(filter?: CursorQuery<S>): BoxCursorHandler<S>;
+  query(range?: BoxRange<S>): BoxCursorHandler<S>;
+  find(...filter: BoxFilterFunction<S>[]): BoxCursorHandler<S>;
   clear(): Promise<void>;
   count(): Promise<number>;
 }
 
-// BoxModel.task = BoxTask
+// Box.task = BoxTask
 export interface BoxTask<S extends BoxScheme> {
   $add(value: BoxData<S>, key?: IDBValidKey): TransactionTask;
   $put(value: BoxData<S>, key?: IDBValidKey): TransactionTask;
   $delete(
     key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
   ): TransactionTask;
-  $find(filter?: CursorQuery<S>): BoxCursorTask<S>;
+  $find(...filter: BoxFilterFunction<S>[]): BoxCursorTask<S>;
 }
 
-// BoxModel.find = () => BoxCursorHandler
+// Box.find = () => BoxCursorHandler
 export interface BoxCursorHandler<S extends BoxScheme> {
-  get(order?: IDBCursorDirection, limit?: number): Promise<BoxData<S>[]>;
+  get(order?: BoxCursorDirections, limit?: number): Promise<BoxData<S>[]>;
   update(value: OptionalBoxData<S>): Promise<void>;
   delete(): Promise<void>;
 }
 
-// BoxModel.task.find = () => BoxCursorTask
+// Box.task.find = () => BoxCursorTask
 export interface BoxCursorTask<S extends BoxScheme> {
   update(value: OptionalBoxData<S>): TransactionTask;
   delete(): TransactionTask;
 }
 
-// BoxModel Prototype
-export interface ModelPrototype {
+// Box Prototype
+export interface BoxPrototype {
   tx: BoxTransaction;
+  $(type: TransactionType, args?: TaskArguments<BoxScheme>): Promise<void | IDBData | IDBData[]>;
   pass(target: UncheckedData, strict?: boolean): void | never;
   data<T extends BoxScheme>(initalData?: BoxData<T>): BoxData<T>;
 }
 
-export interface ModelProperty {
+export interface BoxProperty {
   store: string;
   scheme: BoxScheme;
   v: number;
 }
 
-export type ModelContext = ModelPrototype & ModelProperty;
+export type BoxContext = BoxPrototype & BoxProperty;
 
 /**
  * Check about target value has same type with type identifier
@@ -109,15 +116,15 @@ const typeValidator = (type: BoxDataTypes, value: UncheckedData): boolean => {
 /**
  * Check object keys matching and data types
  *
- * 1. Target's key length is same with model scheme's key length
+ * 1. Target's key length is same with box scheme's key length
  * 2. Check target's keys in scheme
  * 3. Target's value types are correct with scheme
  *
- * @param this Model
+ * @param this Box
  * @param target Target data
  * @param strict Enable strict mode (disabled: check properties(like optinal) / enabled: +types)
  */
-function schemeValidator(this: ModelContext, target: UncheckedData, strict = true): void | never {
+function schemeValidator(this: BoxContext, target: UncheckedData, strict = true): void | never {
   const schemeKeys = Object.keys(this.scheme);
   const targetKeys = Object.keys(target);
 
@@ -140,15 +147,25 @@ function schemeValidator(this: ModelContext, target: UncheckedData, strict = tru
  * @param baseObject
  * @param targetObject
  */
-function createBoxData<T extends BoxScheme>(
-  this: ModelContext,
-  initalData?: BoxData<T>,
-): BoxData<T> {
+function createBoxData<T extends BoxScheme>(this: BoxContext, initalData?: BoxData<T>): BoxData<T> {
   const boxData = {} as BoxData<T>;
   Object.keys(this.scheme).forEach(
     (k) => (boxData[k as keyof T] = (initalData && initalData[k]) ?? null),
   );
   return boxData;
+}
+
+/**
+ * Create transaction task from box context
+ *
+ * @param type Transaction type
+ */
+function transactionExecuter(
+  this: BoxContext,
+  type: TransactionType,
+  args?: TaskArguments<BoxScheme>,
+) {
+  return this.tx.run(createTask(type, this.store, args));
 }
 
 /**
@@ -162,117 +179,106 @@ export const rangeBuilder = {
   bound: i.bound,
 };
 
-export default class BoxModelBuilder {
-  private static _: BoxModelBuilder = null;
-  private _proto: ModelPrototype;
-  private _handler: BoxHandler<IDBData>;
-  private _task: BoxTask<IDBData>;
+export default class BoxBuilder {
+  private proto: BoxPrototype;
+  private handler: BoxHandler<IDBData>;
+  private task: BoxTask<IDBData>;
 
-  static get(tx: BoxTransaction): BoxModelBuilder {
-    if (!this._) {
-      this._ = new BoxModelBuilder(tx);
-    }
-    return this._;
-  }
-
-  private constructor(tx: BoxTransaction) {
-    /**
-     * Convert model handler arguments to CursorOption
-     * @param option
-     * @param value
-     * @param direction
-     * @param limit
-     * @returns
-     */
-    const toCursorOption = (
-      option: CursorQuery<IDBData>,
-      value: IDBData = void 0,
-      direction: IDBCursorDirection = void 0,
-      limit: number = void 0,
-    ): CursorOptions<IDBData> => ({
-      direction,
-      filter: option,
-      limit,
-      value,
-    });
-
-    this._proto = { tx, pass: schemeValidator, data: createBoxData };
-    this._handler = {
-      getName(this: ModelContext) {
+  constructor(tx: BoxTransaction) {
+    this.proto = { tx, $: transactionExecuter, pass: schemeValidator, data: createBoxData };
+    this.handler = {
+      getName(this: BoxContext) {
         return this.store;
       },
-      getVersion(this: ModelContext) {
+      getVersion(this: BoxContext) {
         return this.v;
       },
-      add(this: ModelContext, value, key) {
+      add(this: BoxContext, value, key) {
         this.pass(value);
-        return this.tx.do(TransactionType.ADD, this.store, [value, key]);
+        return this.$(TransactionType.ADD, {
+          args: [value, key],
+        });
       },
-      get(this: ModelContext, key) {
-        return this.tx.do(TransactionType.GET, this.store, [key]);
+      get(this: BoxContext, key) {
+        return this.$(TransactionType.GET, {
+          args: [key],
+        });
       },
-      put(this: ModelContext, value, key) {
+      put(this: BoxContext, value, key) {
         this.pass(value);
-        return this.tx.do(TransactionType.PUT, this.store, [value, key]);
+        return this.$(TransactionType.PUT, {
+          args: [value, key],
+        });
       },
-      delete(this: ModelContext, key) {
-        return this.tx.do(TransactionType.DELETE, this.store, [key]);
+      delete(this: BoxContext, key) {
+        return this.$(TransactionType.DELETE, {
+          args: [key],
+        });
       },
-      find(this: ModelContext, filter) {
+      query(this: BoxContext, range: BoxRange<BoxScheme>) {
         return {
           get: (order, limit) => {
-            return this.tx.do(
-              TransactionType.$GET,
-              this.store,
-              null,
-              toCursorOption(filter, null, order, limit),
-            );
+            return this.$(TransactionType.$GET, {
+              direction: order,
+              limit,
+              range,
+            });
           },
           update: (value) => {
             this.pass(value, false);
-            return this.tx.do(
-              TransactionType.$UPDATE,
-              this.store,
-              null,
-              toCursorOption(filter, value),
-            );
+            return this.$(TransactionType.$UPDATE, { range, updateValue: value });
           },
           delete: () => {
-            return this.tx.do(TransactionType.$DELETE, this.store, null, toCursorOption(filter));
+            return this.$(TransactionType.$DELETE, { range });
           },
         };
       },
-      clear(this: ModelContext) {
-        return this.tx.do(TransactionType.CLEAR, this.store);
+      find(this: BoxContext, ...filter) {
+        return {
+          get: (order, limit) => {
+            return this.$(TransactionType.$GET, {
+              direction: order,
+              filter,
+              limit,
+            });
+          },
+          update: (value) => {
+            this.pass(value, false);
+            return this.$(TransactionType.$UPDATE, { filter, updateValue: value });
+          },
+          delete: () => {
+            return this.$(TransactionType.$DELETE, { filter });
+          },
+        };
       },
-      count(this: ModelContext) {
-        return this.tx.do(TransactionType.COUNT, this.store);
+      clear(this: BoxContext) {
+        return this.$(TransactionType.CLEAR);
+      },
+      count(this: BoxContext) {
+        return this.$(TransactionType.COUNT);
       },
     };
 
-    this._task = {
-      $add(this: ModelContext, value, key) {
+    this.task = {
+      $add(this: BoxContext, value, key) {
         this.pass(value);
-        return new TransactionTask(TransactionType.ADD, this.store, [value, key], null);
+        return createTask(TransactionType.ADD, this.store, { args: [value, key] });
       },
-      $put(this: ModelContext, value, key) {
+      $put(this: BoxContext, value, key) {
         this.pass(value);
-        return new TransactionTask(TransactionType.PUT, this.store, [value, key], null);
+        return createTask(TransactionType.PUT, this.store, { args: [value, key] });
       },
-      $delete(this: ModelContext, key) {
-        return new TransactionTask(TransactionType.DELETE, this.store, [key], null);
+      $delete(this: BoxContext, key) {
+        return createTask(TransactionType.DELETE, this.store, { args: [key] });
       },
-      $find(this: ModelContext, filter) {
+      $find(this: BoxContext, ...filter) {
         return {
           update: (value) => {
             this.pass(value, false);
-            return new TransactionTask(TransactionType.$UPDATE, this.store, null, {
-              filter,
-              value,
-            });
+            return createTask(TransactionType.$UPDATE, this.store, { filter, updateValue: value });
           },
           delete: () => {
-            return new TransactionTask(TransactionType.$DELETE, this.store, null, { filter });
+            return createTask(TransactionType.$DELETE, this.store, { filter });
           },
         };
       },
@@ -280,33 +286,30 @@ export default class BoxModelBuilder {
   }
 
   /**
-   * Create new model
+   * Create new box
    *
    * @param storeName Object store name
    * @param scheme Data scheme
    */
-  build<S extends BoxScheme>(targetVersion: number, storeName: string, scheme: S): BoxModel<S> {
-    const Model = (function Model<S extends BoxScheme>(
-      this: ModelContext,
-      initalData?: BoxData<S>,
-    ) {
+  build<S extends BoxScheme>(targetVersion: number, storeName: string, scheme: S): Box<S> {
+    const Box = function Box<S extends BoxScheme>(this: BoxContext, initalData?: BoxData<S>) {
       // Check scheme if initial data provided
       initalData && this.pass(initalData);
 
       // Create empty(null) object or initalData based on scheme
       return this.data(initalData);
-    } as unknown) as BoxModel<S>;
+    } as unknown as Box<S>;
 
-    const context = Object.create(this._proto) as ModelContext;
+    const context = Object.create(this.proto) as BoxContext;
     context.store = storeName;
     context.scheme = scheme;
     context.v = targetVersion;
 
     // Handlers
-    const handler = Object.assign(context, this._handler, this._task);
-    Object.setPrototypeOf(Model, handler);
-    Object.setPrototypeOf(Model.prototype, context);
+    const handler = Object.assign(context, this.handler, this.task);
+    Object.setPrototypeOf(Box, handler);
+    Object.setPrototypeOf(Box.prototype, context);
 
-    return Model;
+    return Box;
   }
 }

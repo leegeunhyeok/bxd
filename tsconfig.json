@@ -5,7 +5,6 @@
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "allowJs": false,
-    "sourceMap": false,
     "resolveJsonModule": true
   },
   "exclude": ["node_modules", "__tests__"]
