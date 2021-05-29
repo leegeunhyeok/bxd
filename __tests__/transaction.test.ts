@@ -228,4 +228,35 @@ describe('Basic of object store transactions via model', () => {
     const records = await User.find().get();
     expect(records.length).toEqual(0);
   });
+
+  describe('model.query', () => {
+    beforeAll(async () => {
+      await User.add({
+        _id: 100000,
+        name: 'Name',
+        age: 20,
+      });
+    });
+
+    test('get records by cursor', async () => {
+      const userList = await User.query().get();
+      expect(userList.length).toBeTruthy();
+    });
+
+    test('update record by cursor', async () => {
+      const newName = 'User';
+      await User.query({ value: 100000 }).update({
+        name: newName,
+      });
+
+      const user = await User.get(100000);
+      expect(user.name).toEqual(newName);
+    });
+
+    test('delete record by cursor', async () => {
+      await User.query({ value: 100 }).delete();
+      const record = await User.get(100);
+      expect(record).toBeNull();
+    });
+  });
 });

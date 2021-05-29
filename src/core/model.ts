@@ -34,7 +34,7 @@ export interface BoxHandler<S extends BoxScheme> {
   delete(
     key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
   ): Promise<void>;
-  query(range: BoxRange<S>, target?: IDBKeyPath): BoxCursorHandler<S>;
+  query(range?: BoxRange<S>): BoxCursorHandler<S>;
   find(...filter: BoxFilterFunction<S>[]): BoxCursorHandler<S>;
   clear(): Promise<void>;
   count(): Promise<number>;
