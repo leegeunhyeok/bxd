@@ -118,3 +118,6 @@ CHANGELOG.md
 commitlint.config.js
 jest.config.js
 logo.png
+
+# demo
+demo/

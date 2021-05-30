@@ -1,5 +1,11 @@
 # Change Log
 
+## [1.0.0-rc.5] 2021-05-31
+
+- Fix update features (put, update)
+- Add demo page (for testing)
+- Update polyfills information
+
 ## [1.0.0-rc.4] 2021-05-30
 
 - chore: Re-build package

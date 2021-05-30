@@ -1,6 +1,6 @@
 {
   "name": "bxd",
-  "version": "1.0.0-rc.4",
+  "version": "1.0.0-rc.5",
   "description": "Object relational mapping for IndexedDB",
   "main": "dist/bxd.esm.js",
   "types": "types/index.d.ts",
@@ -9,7 +9,8 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "lint": "eslint src",
-    "build": "npm run lint && rollup --config build/rollup.config.ts"
+    "build": "npm run lint && rollup --config build/rollup.config.ts",
+    "publish": "npm build && npm publish"
   },
   "repository": {
     "type": "git",

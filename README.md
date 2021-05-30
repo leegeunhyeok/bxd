@@ -64,7 +64,7 @@ await User.find([(user) => user.age !== 0]).update({ name: 'Timmy' }); // Update
 await User.find([(user) => user.age === 99]).delete(); // Delete filtered records
 
 // Using transaction tasks
-await box.transaction([
+await db.transaction([
   User.$put({ id: 1, name: 'Tim', age: 20 }),
   User.$add({ id: 2, name: 'Jessica', age: 15 }),
   User.$add({ id: 3, name: 'Ellis', age: 13 }),
@@ -124,7 +124,7 @@ In browser (legacy):
 
 ```html
 <!-- Polyfills required -->
-<script src="https://polyfill.io/v3/polyfill.min.js?features=Symbol%2CSymbol.asyncIterator%2CSymbol.prototype.description%2CSymbol.iterator%2CArray.prototype.indexOf%2CArray.prototype.%40%40iterator%2CObject.assign%2CObject.getOwnPropertyDescriptor%2CObject.setPrototypeOf%2CPromise%2CString.prototype.%40%40iterator"></script>
+<script src="https://polyfill.io/v3/polyfill.min.js?features=Symbol%2CSymbol.asyncIterator%2CSymbol.prototype.description%2CSymbol.iterator%2CArray.prototype.%40%40iterator%2CObject.assign%2CObject.getOwnPropertyDescriptor%2CObject.setPrototypeOf%2CPromise%2CString.prototype.%40%40iterator"></script>
 <script src="/path/to/bxd.js">
 ```
 
@@ -135,14 +135,13 @@ In browser (legacy):
 | `IE10`, `IE11` | es.symbol.async-iterator              |
 | `IE10`, `IE11` | es.symbol.iterator                    |
 | `IE10`, `IE11` | es.array.concat                       |
-| `IE10`, `IE11` | es.array.index-of                     |
 | `IE10`, `IE11` | es.array.iterator                     |
+| `IE10`, `IE11` | es.string.iterator                    |
 | `IE10`, `IE11` | es.object.assign                      |
 | `IE10`, `IE11` | es.object.get-own-property-descriptor |
 |     `IE10`     | es.object.set-prototype-of            |
 | `IE10`, `IE11` | es.object.to-string                   |
 | `IE10`, `IE11` | es.promise                            |
-| `IE10`, `IE11` | es.string.iterator                    |
 | `IE10`, `IE11` | web.dom-collections.iterator          |
 
 ## 📖 Documentation
