@@ -224,21 +224,21 @@
       var boxScheme = {
         id: {
           type: BoxDB.Types.NUMBER,
-          key: true,
+          key: true
         },
         name: {
           type: BoxDB.Types.STRING,
-          index: true,
+          index: true
         },
         number: {
           type: BoxDB.Types.STRING,
           index: true,
-          unique: true,
+          unique: true
         },
         age: {
           type: BoxDB.Types.NUMBER,
-          index: true,
-        },
+          index: true
+        }
       };
 
       var users = [
@@ -251,7 +251,7 @@
         { id: 7, name: 'Mae Skeels', age: 42, number: '281-756-6133' },
         { id: 8, name: 'Carol Bousquet', age: 75, number: '646-215-1642' },
         { id: 9, name: 'Jonathan Cline', age: 13, number: '509-794-6711' },
-        { id: 10, name: 'Dallas Garoutte', age: 58, number: '773-682-5207' },
+        { id: 10, name: 'Dallas Garoutte', age: 58, number: '773-682-5207' }
       ];
 
       // main
@@ -451,7 +451,7 @@
               .transaction(
                 box.$add({ id: 99, name: 'UNKNOWN', age: 99999, number: null }),
                 box.$put({ id: 7, name: 'CHNAGED' }),
-                box.$delete(8),
+                box.$delete(8)
               )
               .then(function () {
                 done = true;
@@ -495,7 +495,7 @@
           deleteRecordsByFind,
           deleteRecordsByQuery,
           transitions,
-          final,
+          final
         ];
 
         function run() {
