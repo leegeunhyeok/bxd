@@ -29,18 +29,17 @@ Boxdb is a promise-based browser ORM for [IndexedDB](https://developer.mozilla.o
 ```typescript
 import BoxDB from 'bxd';
 
-// Auto version managing
-const db = new BoxDB('application-db', 1);
+const db = new BoxDB('my-datebase', 1);
 
-// Define your box
+// Define your box (Object store)
 const User = db.box('user', {
   id: {
     type: BoxDB.Types.NUMBER,
-    key: true,
+    key: true, // This property is in-line-key
   },
   name: {
     type: BoxDB.Types.STRING,
-    index: true,
+    index: true, // This property is index
   },
   age: BoxDB.Types.NUMBER,
 });
@@ -50,32 +49,45 @@ await db.open();
 // Basics
 await User.add({ id: 1, name: 'Tom', age: 10 });
 await User.get(1);
-await User.put({ id: 1, name: 'Tommy', age: 12 }); // Update record
+await User.put({ id: 1, name: 'Tommy', age: 12 });
 await User.delete(1);
 
-// Using cursor
-await User.find().get(); // Get all records
-await User.find([
+// find() & query() using IDBCursor
+// Get all records
+const records = await User.find().get();
+
+// filter & sort & limit
+await User.find(
   (user) => user.id % 2 !== 0,
   (user) => user.age > 10,
   (user) => user.name.includes('y'),
-]).get(BoxDB.Order.DESC, 10); // Filter/sort/limit
-await User.find([(user) => user.age !== 0]).update({ name: 'Timmy' }); // Update filtered records
-await User.find([(user) => user.age === 99]).delete(); // Delete filtered records
+).get(BoxDB.Order.DESC, 10);
 
-// Using transaction tasks
-await db.transaction([
+// Update filtered records
+await User
+  .find((user) => user.age !== 0)
+  .update({ name: 'Timmy' });
+
+// Delete filtered records
+await User
+  .query({ value: 'Timmy', target: 'name' })
+  .delete();
+
+// Multiple task in one transaction
+await db.transaction(
   User.$put({ id: 1, name: 'Tim', age: 20 }),
   User.$add({ id: 2, name: 'Jessica', age: 15 }),
   User.$add({ id: 3, name: 'Ellis', age: 13 }),
   BoxDB.interrupt(); // You can stop transaction like this!
   User.$delete(2),
-  User.$find([(user) => user.age < 20]).put({ name: 'Young' }),
-]);
+  User
+    .$find((user) => user.age < 20)
+    .put({ name: 'Young' }),
+);
 
 // And other IndexedDB API features!
-await User.count(); // All records count of object store
-await User.clear(); // Delete all of records in object store
+await User.count(); // Get all records count
+await User.clear(); // Clear all records
 ```
 
 ## 📃 Table of Contents
