@@ -265,7 +265,7 @@ export default class BoxBuilder {
         return createTask(TransactionType.ADD, this.store, { args: [value, key] });
       },
       $put(this: BoxContext, value, key) {
-        this.pass(value);
+        this.pass(value, false);
         return createTask(TransactionType.PUT, this.store, { args: [value, key] });
       },
       $delete(this: BoxContext, key) {
