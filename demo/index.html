@@ -10,6 +10,9 @@
       .no {
         color: tomato;
       }
+      .wait {
+        color: lightgray;
+      }
       .hidden {
         display: none;
       }
@@ -17,9 +20,9 @@
   </head>
   <body>
     <h1>Test - bxd@latest</h1>
-    <div id="error"><!-- Value --></div>
+    <div id="error" class="wait"><!-- Value --></div>
     <div>
-      <h2 id="idb-support-heading">IDB Support</h2>
+      <h3 id="idb-support-heading">IDB Support</h3>
       <p id="agent"><!-- Value --></p>
       <p id="idb_support"><!-- Value --></p>
     </div>
@@ -43,31 +46,116 @@
     <hr />
     <div id="main">
       <div>
-        <h2 id="bxd-instance">Create bxd instance</h2>
+        <h2 id="result" class="wait">wait<!-- Value --></h2>
+      </div>
+      <hr />
+      <div>
+        <h3 id="bxd-instance">Create bxd instance</h3>
         <a href="https://github.com/leegeunhyeok/bxd/wiki#boxdb">BoxDB</a>
-        <p id="bxd_instance"><!-- Value --></p>
-        <p id="bxd_name"><!-- Value --></p>
-        <p id="bxd_version"><!-- Value --></p>
+        <p id="bxd_instance" class="wait">wait<!-- Value --></p>
+        <p id="bxd_name" class="wait">wait<!-- Value --></p>
+        <p id="bxd_version" class="wait">wait<!-- Value --></p>
       </div>
       <div>
-        <h2 id="bxd-box">Create Box</h2>
-        <a href="https://github.com/leegeunhyeok/bxd/wiki#boxdbbox">BoxDb.box</a>
-        <p id="bxd_box"><!-- Value --></p>
+        <h3 id="bxd-box">Create Box</h3>
+        <a href="https://github.com/leegeunhyeok/bxd/wiki#boxdbbox">BoxDB.box</a>
+        <p id="bxd_box" class="wait">wait<!-- Value --></p>
       </div>
       <div>
-        <h2 id="bxd-open">Box open</h2>
-        <a href="https://github.com/leegeunhyeok/bxd/wiki#boxdbopen">BoxDb.open</a>
-        <p id="bxd_open"><!-- Value --></p>
+        <h3 id="bxd-open">Box open</h3>
+        <a href="https://github.com/leegeunhyeok/bxd/wiki#boxdbopen">BoxDB.open</a>
+        <p id="bxd_open" class="wait">wait<!-- Value --></p>
       </div>
       <div>
-        <h2 id="bxd-add">Add records</h2>
+        <h3 id="bxd-add">Add records</h3>
         <a href="https://github.com/leegeunhyeok/bxd/wiki#boxadd">Box.add</a>
-        <p id="bxd_add"><!-- Value --></p>
+        <p id="bxd_add" class="wait">wait<!-- Value --></p>
       </div>
       <div>
-        <h2 id="bxd-add">Record count</h2>
+        <h3 id="bxd-count">Record count</h3>
         <a href="https://github.com/leegeunhyeok/bxd/wiki#boxcount">Box.count</a>
-        <p id="bxd_count"><!-- Value --></p>
+        <p id="bxd_count" class="wait">wait<!-- Value --></p>
+      </div>
+      <div>
+        <h3 id="bxd-get">Get record</h3>
+        <br />
+        <u>get in-inle-key(id) = 10</u>
+        <a href="https://github.com/leegeunhyeok/bxd/wiki#boxget">Box.get</a>
+        <p id="bxd_get" class="wait">wait<!-- Value --></p>
+      </div>
+      <div>
+        <h3 id="bxd-find-all">Get all records (find)</h3>
+        <a href="https://github.com/leegeunhyeok/bxd/wiki#boxfind">Box.find().get()</a>
+        <p id="bxd_find" class="wait">wait<!-- Value --></p>
+        <code id="bxd_find_records" class="wait">wait<!-- Value --></code>
+      </div>
+      <div>
+        <h3 id="bxd-query-all">Get all records (query)</h3>
+        <a href="https://github.com/leegeunhyeok/bxd/wiki#boxquery">Box.query().get()</a>
+        <br />
+        <u>find age = 13</u>
+        <p id="bxd_query" class="wait">wait<!-- Value --></p>
+        <code id="bxd_query_records" class="wait">wait<!-- Value --></code>
+      </div>
+      <div>
+        <h3 id="bxd-update">Update record</h3>
+        <a href="https://github.com/leegeunhyeok/bxd/wiki#boxquery">Box.put()</a>
+        <br />
+        <u>find id = 1 and put name to 'First Name'</u>
+        <p id="bxd_put" class="wait">wait<!-- Value --></p>
+      </div>
+      <div>
+        <h3 id="bxd-find-update">Update records (find)</h3>
+        <a href="https://github.com/leegeunhyeok/bxd/wiki#boxfind">Box.find().update()</a>
+        <br />
+        <u>update age = 13 to age = 10</u>
+        <p id="bxd_find_update" class="wait">wait<!-- Value --></p>
+      </div>
+      <div>
+        <h3 id="bxd-query-update">Update records (query)</h3>
+        <a href="https://github.com/leegeunhyeok/bxd/wiki#boxquery">Box.query().update()</a>
+        <br />
+        <u>update age = 10 to age = 20</u>
+        <p id="bxd_query_update" class="wait">wait<!-- Value --></p>
+      </div>
+      <div>
+        <h3 id="bxd-delete">Delete record</h3>
+        <a href="https://github.com/leegeunhyeok/bxd/wiki#boxdelete">Box.delete()</a>
+        <br />
+        <u>delete in-line-key(id) = 5</u>
+        <p id="bxd_delete" class="wait">wait<!-- Value --></p>
+      </div>
+      <div>
+        <h3 id="bxd-delete">Delete records (find)</h3>
+        <a href="https://github.com/leegeunhyeok/bxd/wiki#boxfind">Box.find().delete()</a>
+        <br />
+        <u>delete age > 70</u>
+        <p id="bxd_find_delete" class="wait">wait<!-- Value --></p>
+      </div>
+      <div>
+        <h3 id="bxd-delete">Delete records (query)</h3>
+        <a href="https://github.com/leegeunhyeok/bxd/wiki#boxquery">Box.query().delete()</a>
+        <br />
+        <u>delete number = '920-684-4795'</u>
+        <p id="bxd_query_delete" class="wait">wait<!-- Value --></p>
+      </div>
+      <div>
+        <h3 id="bxd-delete">Run multiple tasks</h3>
+        <a href="https://github.com/leegeunhyeok/bxd/wiki#boxdbtransition">BoxDB.transition()</a>
+        <br />
+        <u>add record { id: 99, name: 'UNKNOWN', age: 99999, number: null }</u>
+        <br />
+        <u>update record id = 7 to name = 'CHANGED'</u>
+        <br />
+        <u>delete record in-line-key(id) = 8</u>
+        <p id="bxd_transaction" class="wait">wait<!-- Value --></p>
+      </div>
+      <hr />
+      <div>
+        <h3 id="bxd-final">Final state</h3>
+        <code id="bxd_final_records" class="wait">wait<!-- Value --></code>
+        <p id="bxd_final" class="wait">wait<!-- Value --></p>
+        <p id="bxd_final_count" class="wait">wait<!-- Value --></p>
       </div>
     </div>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -87,6 +175,7 @@
         for (var i = 1; i < arguments.length; i++) {
           text += arguments[i] + ' ';
         }
+        el.removeClass();
         el.text(text);
       }
 
@@ -101,17 +190,17 @@
         $('#error').append($('<p>' + err + '</p>').addClass('no'));
       }
 
-      function safe(callback) {
+      function runner(callback) {
         try {
           var res = callback();
-          if (res && res.then) {
+          if (res && typeof res.then === 'function') {
             return res.catch(error);
           } else {
-            return res || true;
+            return res;
           }
         } catch (err) {
           error(err);
-          return false;
+          throw err;
         }
       }
 
@@ -126,9 +215,6 @@
       }
     </script>
     <script>
-      // TODO 1: Remove trailing comma
-      // TODO 2: Add polyfills
-
       // Global
       var idbSupport = inBrowser('indexedDB');
       var taskTracker = {};
@@ -137,32 +223,34 @@
       var boxScheme = {
         id: {
           type: BoxDB.Types.NUMBER,
-          key: true,
+          key: true
         },
         name: {
           type: BoxDB.Types.STRING,
-          index: true,
+          index: true
         },
         number: {
           type: BoxDB.Types.STRING,
           index: true,
-          unique: true,
+          unique: true
         },
-        age: BoxDB.Types.NUMBER,
-        other: BoxDB.Types.ANY,
+        age: {
+          type: BoxDB.Types.NUMBER,
+          index: true
+        }
       };
 
       var users = [
-        { id: 1, name: 'Tammy Cacciotti', age: 20, number: '843-475-8425', other: null },
-        { id: 2, name: 'Keiko Breslin', age: 75, number: '507-233-7988', other: null },
-        { id: 3, name: 'Howard Rodriguez', age: 13, number: '507-415-0167', other: null },
-        { id: 4, name: 'Cheryl Stabler', age: 69, number: '920-684-4795', other: null },
-        { id: 5, name: 'Catherine Collins', age: 17, number: '415-691-5959', other: null },
-        { id: 6, name: 'Jacklyn Bates', age: 11, number: '812-729-3831', other: null },
-        { id: 7, name: 'Mae Skeels', age: 42, number: '281-756-6133', other: null },
-        { id: 8, name: 'Carol Bousquet', age: 75, number: '646-215-1642', other: null },
-        { id: 9, name: 'Jonathan Cline', age: 10, number: '509-794-6711', other: null },
-        { id: 10, name: 'Dallas Garoutte', age: 58, number: '773-682-5207', other: null },
+        { id: 1, name: 'Tammy Cacciotti', age: 20, number: '843-475-8425' },
+        { id: 2, name: 'Keiko Breslin', age: 75, number: '507-233-7988' },
+        { id: 3, name: 'Howard Rodriguez', age: 13, number: '507-415-0167' },
+        { id: 4, name: 'Cheryl Stabler', age: 69, number: '920-684-4795' },
+        { id: 5, name: 'Catherine Collins', age: 17, number: '415-691-5959' },
+        { id: 6, name: 'Jacklyn Bates', age: 11, number: '812-729-3831' },
+        { id: 7, name: 'Mae Skeels', age: 42, number: '281-756-6133' },
+        { id: 8, name: 'Carol Bousquet', age: 75, number: '646-215-1642' },
+        { id: 9, name: 'Jonathan Cline', age: 13, number: '509-794-6711' },
+        { id: 10, name: 'Dallas Garoutte', age: 58, number: '773-682-5207' }
       ];
 
       // main
@@ -171,7 +259,7 @@
         status($('#idb_support'), idbSupport);
 
         function bxdInstance() {
-          safe(function () {
+          runner(function () {
             db = new BoxDB($('#db_name').val(), +$('#db_version').val());
           });
           status($('#bxd_instance'), db !== null);
@@ -182,7 +270,7 @@
 
         function bxdBox() {
           before('bxdInstance');
-          safe(function () {
+          runner(function () {
             box = db.box('user', boxScheme);
           });
           status($('#bxd_box'), box !== null);
@@ -190,7 +278,7 @@
         }
 
         function bxdOpen() {
-          return safe(function () {
+          return runner(function () {
             return db.open();
           }).then(function () {
             status($('#bxd_open'), box !== null);
@@ -200,7 +288,7 @@
 
         function addRecord() {
           before('bxdBox');
-          return safe(function () {
+          return runner(function () {
             var done = false;
             return users
               .reduce(function (prev, curr) {
@@ -218,7 +306,7 @@
         }
 
         function getCount() {
-          return safe(function () {
+          return runner(function () {
             return box.count().then(function (count) {
               $('#bxd_count').text(count);
             });
@@ -226,27 +314,203 @@
         }
 
         function getRecord() {
-          return safe(function () {
+          return runner(function () {
+            return box.get(10).then(function (record) {
+              text($('#bxd_get'), JSON.stringify(record));
+            });
+          });
+        }
+
+        function getAllRecordsByFind() {
+          return runner(function () {
             var done = false;
             return box
+              .find()
               .get()
-              .then(function (count) {
+              .then(function (records) {
                 done = true;
+                text($('#bxd_find_records'), JSON.stringify(records));
               })
               .finally(function () {
-                status($('#bxd_add'), done);
+                status($('#bxd_find'), done);
               });
           });
         }
 
+        function getAllRecordsByQuery() {
+          return runner(function () {
+            var done = false;
+            return box
+              .query({ value: 13, target: 'age' })
+              .get()
+              .then(function (records) {
+                done = true;
+                text($('#bxd_query_records'), JSON.stringify(records, null, 2));
+              })
+              .finally(function () {
+                status($('#bxd_query'), done);
+              });
+          });
+        }
+
+        function updateRecord() {
+          var done = false;
+          return runner(function () {
+            return box
+              .put({ id: 1, name: 'First Name' })
+              .then(function () {
+                done = true;
+              })
+              .finally(function () {
+                status($('#bxd_put'), done);
+              });
+          });
+        }
+
+        function updateRecordsByFind() {
+          return runner(function () {
+            var done = false;
+            return box
+              .query({ value: 13, target: 'age' })
+              .update({ age: 10 })
+              .then(function (records) {
+                done = true;
+              })
+              .finally(function () {
+                status($('#bxd_find_update'), done);
+              });
+          });
+        }
+
+        function updateRecordsByQuery() {
+          return runner(function () {
+            var done = false;
+            return box
+              .query({ value: 10, target: 'age' })
+              .update({ age: 20 })
+              .then(function (records) {
+                done = true;
+              })
+              .finally(function () {
+                status($('#bxd_query_update'), done);
+              });
+          });
+        }
+
+        function deleteRecord() {
+          return runner(function () {
+            var done = false;
+            return box
+              .delete(5)
+              .then(function () {
+                done = true;
+              })
+              .finally(function () {
+                status($('#bxd_delete'), done);
+              });
+          });
+        }
+
+        function deleteRecordsByFind() {
+          return runner(function () {
+            var done = false;
+            return box
+              .find(function (data) {
+                return data.age > 70;
+              })
+              .delete()
+              .then(function () {
+                done = true;
+              })
+              .finally(function () {
+                status($('#bxd_find_delete'), done);
+              });
+          });
+        }
+
+        function deleteRecordsByQuery() {
+          return runner(function () {
+            var done = false;
+            return box
+              .query({ value: '920-684-4795', target: 'number' })
+              .delete()
+              .then(function () {
+                done = true;
+              })
+              .finally(function () {
+                status($('#bxd_query_delete'), done);
+              });
+          });
+        }
+
+        function transitions() {
+          return runner(function () {
+            var done = false;
+            return db
+              .transaction(
+                box.$add({ id: 99, name: 'UNKNOWN', age: 99999, number: null }),
+                box.$put({ id: 7, name: 'CHNAGED' }),
+                box.$delete(8)
+              )
+              .then(function () {
+                done = true;
+              })
+              .finally(function () {
+                status($('#bxd_transaction'), done);
+              });
+          });
+        }
+
+        function final() {
+          return runner(function () {
+            var done = false;
+            return box
+              .find()
+              .get()
+              .then(function (records) {
+                done = true;
+                text($('#bxd_final_records'), JSON.stringify(records));
+                return box.count();
+              })
+              .then(function (count) {
+                $('#bxd_final_count').text(count);
+              })
+              .finally(function () {
+                status($('#bxd_final'), done);
+              });
+          });
+        }
+
+        var tests = [
+          addRecord,
+          getCount,
+          getRecord,
+          getAllRecordsByFind,
+          getAllRecordsByQuery,
+          updateRecord,
+          updateRecordsByFind,
+          updateRecordsByQuery,
+          deleteRecord,
+          deleteRecordsByFind,
+          deleteRecordsByQuery,
+          transitions,
+          final
+        ];
+
         function run() {
+          var passed = 0;
           bxdInstance();
           bxdBox();
           bxdOpen()
-            .then(addRecord)
-            .then(getCount)
             .then(function () {
-              console.log('before getCount');
+              return tests.reduce(function (prev, curr) {
+                return prev.then(curr).then(function () {
+                  ++passed;
+                });
+              }, Promise.resolve());
+            })
+            .finally(function () {
+              text($('#result'), 'Passed:', passed + ' of ' + tests.length);
             });
         }
 
