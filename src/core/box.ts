@@ -205,7 +205,7 @@ export default class BoxBuilder {
         });
       },
       put(this: BoxContext, value, key) {
-        this.pass(value);
+        this.pass(value, false);
         return this.$(TransactionType.PUT, {
           args: [value, key],
         });
