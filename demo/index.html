@@ -84,10 +84,10 @@
         <p id="bxd_get" class="wait">wait<!-- Value --></p>
       </div>
       <div>
-        <h3 id="bxd-find-all">Get all records (find)</h3>
-        <a href="https://github.com/leegeunhyeok/bxd/wiki#boxfind">Box.find().get()</a>
-        <p id="bxd_find" class="wait">wait<!-- Value --></p>
-        <code id="bxd_find_records" class="wait">wait<!-- Value --></code>
+        <h3 id="bxd-filter-all">Get all records (filter)</h3>
+        <a href="https://github.com/leegeunhyeok/bxd/wiki#boxfilter">Box.filter().get()</a>
+        <p id="bxd_filter" class="wait">wait<!-- Value --></p>
+        <code id="bxd_filter_records" class="wait">wait<!-- Value --></code>
       </div>
       <div>
         <h3 id="bxd-query-all">Get all records (query)</h3>
@@ -105,11 +105,11 @@
         <p id="bxd_put" class="wait">wait<!-- Value --></p>
       </div>
       <div>
-        <h3 id="bxd-find-update">Update records (find)</h3>
-        <a href="https://github.com/leegeunhyeok/bxd/wiki#boxfind">Box.find().update()</a>
+        <h3 id="bxd-filter-update">Update records (filter)</h3>
+        <a href="https://github.com/leegeunhyeok/bxd/wiki#boxfilter">Box.filter().update()</a>
         <br />
         <u>update age = 13 to age = 10</u>
-        <p id="bxd_find_update" class="wait">wait<!-- Value --></p>
+        <p id="bxd_filter_update" class="wait">wait<!-- Value --></p>
       </div>
       <div>
         <h3 id="bxd-query-update">Update records (query)</h3>
@@ -126,11 +126,11 @@
         <p id="bxd_delete" class="wait">wait<!-- Value --></p>
       </div>
       <div>
-        <h3 id="bxd-delete">Delete records (find)</h3>
-        <a href="https://github.com/leegeunhyeok/bxd/wiki#boxfind">Box.find().delete()</a>
+        <h3 id="bxd-delete">Delete records (filter)</h3>
+        <a href="https://github.com/leegeunhyeok/bxd/wiki#boxfilter">Box.filter().delete()</a>
         <br />
         <u>delete age > 70</u>
-        <p id="bxd_find_delete" class="wait">wait<!-- Value --></p>
+        <p id="bxd_filter_delete" class="wait">wait<!-- Value --></p>
       </div>
       <div>
         <h3 id="bxd-delete">Delete records (query)</h3>
@@ -322,18 +322,18 @@
           });
         }
 
-        function getAllRecordsByFind() {
+        function getAllRecordsByFilter() {
           return runner(function () {
             var done = false;
             return box
-              .find()
+              .filter()
               .get()
               .then(function (records) {
                 done = true;
-                text($('#bxd_find_records'), JSON.stringify(records));
+                text($('#bxd_filter_records'), JSON.stringify(records));
               })
               .finally(function () {
-                status($('#bxd_find'), done);
+                status($('#bxd_filter'), done);
               });
           });
         }
@@ -368,7 +368,7 @@
           });
         }
 
-        function updateRecordsByFind() {
+        function updateRecordsByFilter() {
           return runner(function () {
             var done = false;
             return box
@@ -378,7 +378,7 @@
                 done = true;
               })
               .finally(function () {
-                status($('#bxd_find_update'), done);
+                status($('#bxd_filter_update'), done);
               });
           });
         }
@@ -412,11 +412,11 @@
           });
         }
 
-        function deleteRecordsByFind() {
+        function deleteRecordsByFilter() {
           return runner(function () {
             var done = false;
             return box
-              .find(function (data) {
+              .filter(function (data) {
                 return data.age > 70;
               })
               .delete()
@@ -424,7 +424,7 @@
                 done = true;
               })
               .finally(function () {
-                status($('#bxd_find_delete'), done);
+                status($('#bxd_filter_delete'), done);
               });
           });
         }
@@ -466,7 +466,7 @@
           return runner(function () {
             var done = false;
             return box
-              .find()
+              .filter()
               .get()
               .then(function (records) {
                 done = true;
@@ -486,13 +486,13 @@
           addRecord,
           getCount,
           getRecord,
-          getAllRecordsByFind,
+          getAllRecordsByFilter,
           getAllRecordsByQuery,
           updateRecord,
-          updateRecordsByFind,
+          updateRecordsByFilter,
           updateRecordsByQuery,
           deleteRecord,
-          deleteRecordsByFind,
+          deleteRecordsByFilter,
           deleteRecordsByQuery,
           transitions,
           final,
