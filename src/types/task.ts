@@ -1,5 +1,5 @@
 import { BoxFilterFunction, BoxRange, IDBArgument, IDBValue } from '.';
-import { BoxCursorDirections, BoxScheme } from './index';
+import { BoxCursorDirections, BoxSchema } from './index';
 
 export enum TransactionMode {
   READ = 'readonly',
@@ -26,7 +26,7 @@ export interface TransactionTask {
   args?: IDBArgument;
 }
 
-export interface CursorTransactionTask<S extends BoxScheme> extends TransactionTask {
+export interface CursorTransactionTask<S extends BoxSchema> extends TransactionTask {
   direction?: BoxCursorDirections;
   filter?: BoxFilterFunction<S>[];
   range?: BoxRange<S>;

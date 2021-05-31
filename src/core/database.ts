@@ -4,12 +4,12 @@ import { BoxDBError } from './errors';
 import { createTask } from '../utils';
 
 import {
-  BoxScheme,
+  BoxSchema,
   BoxDataTypes,
   BoxOptions,
   BoxMeta,
   BoxIndexConfig,
-  ConfiguredBoxScheme,
+  ConfiguredBoxSchema,
   BoxCursorDirections,
   TransactionTask,
   TransactionType,
@@ -113,10 +113,10 @@ class BoxDB {
    * Define box
    *
    * @param storeName
-   * @param scheme
+   * @param schema
    * @param options
    */
-  box<S extends BoxScheme>(storeName: string, scheme: S, options?: BoxOption): Box<S> {
+  box<S extends BoxSchema>(storeName: string, schema: S, options?: BoxOption): Box<S> {
     if (this.ready) {
       throw new BoxDBError('Cannot define box after database opened');
     }
@@ -125,8 +125,8 @@ class BoxDB {
       throw new BoxDBError(storeName + ' box already defined');
     }
 
-    this.metas[storeName] = this.toMeta(storeName, scheme, options);
-    return this.builder.build(this.version, storeName, scheme);
+    this.metas[storeName] = this.toMeta(storeName, schema, options);
+    return this.builder.build(this.version, storeName, schema);
   }
 
   /**
@@ -154,7 +154,7 @@ class BoxDB {
    * Create BoxMeta object
    *
    * @param name
-   * @param scheme
+   * @param schema
    * @param keyPath
    * @param autoIncrement
    * @param index
@@ -163,13 +163,13 @@ class BoxDB {
    */
   private meta(
     name: string,
-    scheme: ConfiguredBoxScheme,
+    schema: ConfiguredBoxSchema,
     inKey: string,
     outKey: boolean,
     index: BoxIndexConfig[],
     force: boolean,
   ): BoxMeta {
-    return { name, scheme, inKey, outKey, index, force };
+    return { name, schema, inKey, outKey, index, force };
   }
 
   /**
@@ -192,16 +192,16 @@ class BoxDB {
   }
 
   /**
-   * Box scheme object to BoxMeta
+   * Box schema object to BoxMeta
    *
    * @param storeName object store name
-   * @param scheme box scheme
+   * @param schema box schema
    */
-  private toMeta(storeName: string, scheme: BoxScheme, options?: BoxOptions): BoxMeta {
+  private toMeta(storeName: string, schema: BoxSchema, options?: BoxOptions): BoxMeta {
     let primaryKeyPath = null;
     const indexList = [];
 
-    const configuredScheme = Object.entries(scheme).reduce((prev, [field, type]) => {
+    const configuredSchema = Object.entries(schema).reduce((prev, [field, type]) => {
       // Is BoxDataTypes
       if (typeof type === 'string') {
         prev[field] = { type };
@@ -226,11 +226,11 @@ class BoxDB {
       }
 
       return prev;
-    }, {} as ConfiguredBoxScheme);
+    }, {} as ConfiguredBoxSchema);
 
     return this.meta(
       storeName,
-      configuredScheme,
+      configuredSchema,
       primaryKeyPath,
       !!options?.autoIncrement,
       indexList,
@@ -299,7 +299,7 @@ class BoxDB {
           }
         });
 
-        // (2/3) Delete index if index not found in scheme of target box
+        // (2/3) Delete index if index not found in schema of target box
         idbKeyPaths.forEach((keyPath) => {
           !boxKeyPaths.includes(keyPath) && objectStore.deleteIndex(keyPath);
         });

@@ -1,5 +1,10 @@
 # Change Log
 
+## [1.0.0-rc.6] 2021-06-01
+
+- Add `box.$query()` method
+- Rename `box.find`, `box.$find()` to `filter`
+
 ## [1.0.0-rc.5] 2021-05-31
 
 - Fix update features (put, update)
