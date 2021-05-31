@@ -47,8 +47,8 @@ export interface BoxTask<S extends BoxSchema> {
   $delete(
     key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
   ): TransactionTask;
-  $find(...filter: BoxFilterFunction<S>[]): BoxCursorTask<S>;
-  $query(range?: BoxRange<S>): BoxCursorTask<S>;
+  $query(range?: BoxRange<S>): TransactionCursorHandler<S>;
+  $find(...filter: BoxFilterFunction<S>[]): TransactionCursorHandler<S>;
 }
 
 // Box.find = () => BoxCursorHandler
@@ -58,8 +58,9 @@ export interface BoxCursorHandler<S extends BoxSchema> {
   delete(): Promise<void>;
 }
 
-// Box.task.find = () => BoxCursorTask
-export interface BoxCursorTask<S extends BoxSchema> {
+// Box.$find = () => TransactionCursorHandler
+// Box.$query = () => TransactionCursorHandler
+export interface TransactionCursorHandler<S extends BoxSchema> {
   update(value: OptionalBoxData<S>): TransactionTask;
   delete(): TransactionTask;
 }
