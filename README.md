@@ -52,12 +52,12 @@ await User.get(1);
 await User.put({ id: 1, name: 'Tommy', age: 12 });
 await User.delete(1);
 
-// find() & query() using IDBCursor
-// Get all records
-const records = await User.find().get();
+// filter() & query() using IDBCursor
+// Get records
+const records = await User.filter().get();
 
 // filter & sort & limit
-await User.find(
+await User.filter(
   (user) => user.id % 2 !== 0,
   (user) => user.age > 10,
   (user) => user.name.includes('y'),
@@ -65,7 +65,7 @@ await User.find(
 
 // Update filtered records
 await User
-  .find((user) => user.age !== 0)
+  .records((user) => user.age !== 0)
   .update({ name: 'Timmy' });
 
 // Delete filtered records
@@ -81,7 +81,7 @@ await db.transaction(
   BoxDB.interrupt(); // You can stop transaction like this!
   User.$delete(2),
   User
-    .$find((user) => user.age < 20)
+    .$filter((user) => user.age < 20)
     .put({ name: 'Young' }),
 );
 
