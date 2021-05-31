@@ -48,6 +48,7 @@ export interface BoxTask<S extends BoxScheme> {
     key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
   ): TransactionTask;
   $find(...filter: BoxFilterFunction<S>[]): BoxCursorTask<S>;
+  $query(range?: BoxRange<S>): BoxCursorTask<S>;
 }
 
 // Box.find = () => BoxCursorHandler
@@ -72,9 +73,9 @@ export interface BoxPrototype {
 }
 
 export interface BoxProperty {
-  store: string;
+  name: string;
   scheme: BoxScheme;
-  v: number;
+  version: number;
 }
 
 export type BoxContext = BoxPrototype & BoxProperty;
@@ -165,7 +166,7 @@ function transactionExecuter(
   type: TransactionType,
   args?: TaskArguments<BoxScheme>,
 ) {
-  return this.tx.run(createTask(type, this.store, args));
+  return this.tx.run(createTask(type, this.name, args));
 }
 
 /**
@@ -188,10 +189,10 @@ export default class BoxBuilder {
     this.proto = { tx, $: transactionExecuter, pass: schemeValidator, data: createBoxData };
     this.handler = {
       getName(this: BoxContext) {
-        return this.store;
+        return this.name;
       },
       getVersion(this: BoxContext) {
-        return this.v;
+        return this.version;
       },
       add(this: BoxContext, value, key) {
         this.pass(value);
@@ -262,23 +263,34 @@ export default class BoxBuilder {
     this.task = {
       $add(this: BoxContext, value, key) {
         this.pass(value);
-        return createTask(TransactionType.ADD, this.store, { args: [value, key] });
+        return createTask(TransactionType.ADD, this.name, { args: [value, key] });
       },
       $put(this: BoxContext, value, key) {
         this.pass(value, false);
-        return createTask(TransactionType.PUT, this.store, { args: [value, key] });
+        return createTask(TransactionType.PUT, this.name, { args: [value, key] });
       },
       $delete(this: BoxContext, key) {
-        return createTask(TransactionType.DELETE, this.store, { args: [key] });
+        return createTask(TransactionType.DELETE, this.name, { args: [key] });
+      },
+      $query(this: BoxContext, range) {
+        return {
+          update: (value) => {
+            this.pass(value, false);
+            return createTask(TransactionType.$UPDATE, this.name, { range, updateValue: value });
+          },
+          delete: () => {
+            return createTask(TransactionType.$DELETE, this.name, { range });
+          },
+        };
       },
       $find(this: BoxContext, ...filter) {
         return {
           update: (value) => {
             this.pass(value, false);
-            return createTask(TransactionType.$UPDATE, this.store, { filter, updateValue: value });
+            return createTask(TransactionType.$UPDATE, this.name, { filter, updateValue: value });
           },
           delete: () => {
-            return createTask(TransactionType.$DELETE, this.store, { filter });
+            return createTask(TransactionType.$DELETE, this.name, { filter });
           },
         };
       },
@@ -301,9 +313,9 @@ export default class BoxBuilder {
     } as unknown as Box<S>;
 
     const context = Object.create(this.proto) as BoxContext;
-    context.store = storeName;
+    context.name = storeName;
     context.scheme = scheme;
-    context.v = targetVersion;
+    context.version = targetVersion;
 
     // Handlers
     const handler = Object.assign(context, this.handler, this.task);
