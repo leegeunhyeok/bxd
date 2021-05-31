@@ -34,21 +34,21 @@ export interface BoxOptions {
   force?: boolean;
 }
 
-// Box scheme
-export interface BoxScheme {
+// Box schema
+export interface BoxSchema {
   [field: string]: ConfiguredType | BoxDataTypes;
 }
 
-export interface ConfiguredBoxScheme {
+export interface ConfiguredBoxSchema {
   [field: string]: ConfiguredType;
 }
 
-// BoxData based on BoxScheme
-export type BoxData<S extends BoxScheme> = {
+// BoxData based on BoxSchema
+export type BoxData<S extends BoxSchema> = {
   [field in keyof S]: AsType<PickType<S[field]>>;
 };
 
-export type OptionalBoxData<S extends BoxScheme> = Partial<BoxData<S>>;
+export type OptionalBoxData<S extends BoxSchema> = Partial<BoxData<S>>;
 
 export type UncheckedData = {
   [field: string]: IDBValue;
@@ -57,7 +57,7 @@ export type UncheckedData = {
 // Box
 export interface BoxMeta {
   name: string;
-  scheme: ConfiguredBoxScheme;
+  schema: ConfiguredBoxSchema;
   inKey: string;
   outKey: boolean;
   index: BoxIndexConfig[];
@@ -69,16 +69,16 @@ export interface BoxIndexConfig {
   unique: boolean;
 }
 // CursorQuery (using IDBKeyRange)
-export interface BoxRange<S extends BoxScheme> {
+export interface BoxRange<S extends BoxSchema> {
   target?: Extract<keyof S, string>;
   value: IDBKeyRange | IDBValue;
 }
 
 // Filter function
-export type BoxFilterFunction<S extends BoxScheme> = (value: BoxData<S>) => boolean;
+export type BoxFilterFunction<S extends BoxSchema> = (value: BoxData<S>) => boolean;
 
-export type CursorQuery<S extends BoxScheme> = BoxRange<S> | BoxFilterFunction<S>[];
-export interface CursorOptions<S extends BoxScheme> {
+export type CursorQuery<S extends BoxSchema> = BoxRange<S> | BoxFilterFunction<S>[];
+export interface CursorOptions<S extends BoxSchema> {
   // IDBKeyRange or filter functions
   filter?: CursorQuery<S>;
   // For update value

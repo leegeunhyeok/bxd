@@ -1,7 +1,7 @@
 import {
   IDBValue,
   IDBArgument,
-  BoxScheme,
+  BoxSchema,
   BoxRange,
   BoxCursorDirections,
   BoxFilterFunction,
@@ -9,7 +9,7 @@ import {
   TransactionType,
 } from '../types';
 
-export type TaskArguments<S extends BoxScheme> = {
+export type TaskArguments<S extends BoxSchema> = {
   args?: IDBArgument;
   direction?: BoxCursorDirections;
   filter?: BoxFilterFunction<S>[];
@@ -18,7 +18,7 @@ export type TaskArguments<S extends BoxScheme> = {
   updateValue?: IDBValue;
 };
 
-export const createTask = <S extends BoxScheme>(
+export const createTask = <S extends BoxSchema>(
   type: TransactionType,
   name: string,
   taskArgs?: TaskArguments<S>,

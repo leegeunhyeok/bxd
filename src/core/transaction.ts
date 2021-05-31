@@ -2,7 +2,7 @@ import { BoxDBError } from './errors';
 
 import {
   IDBData,
-  BoxScheme,
+  BoxSchema,
   TransactionTask,
   CursorTransactionTask,
   TransactionType,
@@ -50,7 +50,7 @@ export default class BoxTransaction {
    *
    * @param tasks Transaction tasks
    */
-  run<S extends BoxScheme, T extends TransactionTask>(
+  run<S extends BoxSchema, T extends TransactionTask>(
     ...tasks: T[]
   ): Promise<void | IDBData | IDBData[]> {
     if (this.idb.value === null) {
@@ -124,7 +124,7 @@ export default class BoxTransaction {
    * @param objectStore Target object store object
    * @param task Current task
    */
-  private cursor<S extends BoxScheme>(
+  private cursor<S extends BoxSchema>(
     objectStore: IDBObjectStore,
     task: CursorTransactionTask<S>,
   ): Promise<void | IDBData | IDBData[]> {
