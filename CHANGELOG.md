@@ -1,5 +1,12 @@
 # Change Log
 
+## [1.0.0-rc.7] 2021-06-03
+
+- Compose `query()` and `filter()` methods to `find()`
+  - `query()` and `filter()` methods replaced to `find()`
+  - Now can use both features in one method
+- Update BoxDBError
+
 ## [1.0.0-rc.6] 2021-06-01
 
 - Add `box.$query()` method
