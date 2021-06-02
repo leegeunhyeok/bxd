@@ -354,7 +354,7 @@
           return runner(function () {
             var done = false;
             return box
-              .find({ value: 10, target: 'age' })
+              .find({ value: 10, index: 'age' })
               .update({ age: 20 })
               .then(function (records) {
                 done = true;
@@ -400,7 +400,7 @@
           return runner(function () {
             var done = false;
             return box
-              .find({ value: '920-684-4795', target: 'number' })
+              .find({ value: '920-684-4795', index: 'number' })
               .delete()
               .then(function () {
                 done = true;

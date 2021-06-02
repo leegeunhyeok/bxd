@@ -78,7 +78,7 @@ describe('Basic of object store transactions via model', () => {
     const targetId = 30;
     const users = await User.find({
       value: BoxDB.Range.equal(targetId),
-      // no target: based on in-line-key
+      // no index: using default (in-line-key)
     }).get();
 
     const usersFromDS = Dataset.filter((user) => user._id === targetId);
@@ -89,7 +89,7 @@ describe('Basic of object store transactions via model', () => {
     const targetName = Dataset[0].name;
     const users = await User.find({
       value: BoxDB.Range.equal(targetName),
-      target: 'name', // search from name index
+      index: 'name', // search from name index
     }).get();
 
     const usersFromDS = Dataset.filter((user) => user.name === targetName);
@@ -101,7 +101,7 @@ describe('Basic of object store transactions via model', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const query: any = {
       range: BoxDB.Range.equal('value'),
-      target: 'undefined_field',
+      index: 'undefined_field',
     };
 
     await expect(async () => {

@@ -172,7 +172,7 @@ export interface BoxIndexConfig {
 }
 // CursorQuery (using IDBKeyRange)
 export interface BoxRange<S extends BoxSchema> {
-  target?: Extract<keyof S, string>;
+  index?: Extract<keyof S, string>;
   value: IDBKeyRange | IDBValue;
 }
 

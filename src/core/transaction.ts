@@ -139,7 +139,7 @@ export default class BoxTransaction {
     const pass = filter && filter.length ? (value) => filter.every((f) => f(value)) : () => true;
 
     // Using IDBKeyRange + IDBCursorDirection
-    const index = range && range.target;
+    const index = range && range.index;
     if (index && !objectStore.indexNames.contains(index)) {
       throw new BoxDBError(index + ' field is not an index');
     }
