@@ -96,8 +96,7 @@ export interface BoxHandler<S extends BoxSchema> {
   delete(
     key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
   ): Promise<void>;
-  query(range?: BoxRange<S>): BoxCursorHandler<S>;
-  filter(...predicate: BoxFilterFunction<S>[]): BoxCursorHandler<S>;
+  find(range?: BoxRange<S> | null, ...predicate: BoxFilterFunction<S>[]): BoxCursorHandler<S>;
   clear(): Promise<void>;
   count(): Promise<number>;
 }
@@ -109,8 +108,10 @@ export interface BoxTask<S extends BoxSchema> {
   $delete(
     key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
   ): TransactionTask;
-  $query(range?: BoxRange<S>): TransactionCursorHandler<S>;
-  $filter(...predicate: BoxFilterFunction<S>[]): TransactionCursorHandler<S>;
+  $find(
+    range?: BoxRange<S> | null,
+    ...predicate: BoxFilterFunction<S>[]
+  ): TransactionCursorHandler<S>;
 }
 
 // Box.query = () => BoxCursorHandler

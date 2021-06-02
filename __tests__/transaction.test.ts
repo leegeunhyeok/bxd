@@ -64,19 +64,19 @@ describe('Basic of object store transactions via model', () => {
 
   test('get records by cursor', async () => {
     const evalFunctions = [(value) => value.age > 70, (value) => !value.name.includes('er')];
-    const users = await User.filter(...evalFunctions).get();
+    const users = await User.find(null, ...evalFunctions).get();
     expect(users.every((user) => evalFunctions.every((f) => f(user)))).toBeTruthy();
   });
 
   test('get records by cursor with limit', async () => {
     const limit = 5;
-    const users = await User.filter().get(null, limit);
+    const users = await User.find().get(null, limit);
     expect(users.length).toEqual(limit);
   });
 
   test('get in-line-key based filtered records by cursor', async () => {
     const targetId = 30;
-    const users = await User.query({
+    const users = await User.find({
       value: BoxDB.Range.equal(targetId),
       // no target: based on in-line-key
     }).get();
@@ -87,7 +87,7 @@ describe('Basic of object store transactions via model', () => {
 
   test('get index based filtered records by cursor', async () => {
     const targetName = Dataset[0].name;
-    const users = await User.query({
+    const users = await User.find({
       value: BoxDB.Range.equal(targetName),
       target: 'name', // search from name index
     }).get();
@@ -105,13 +105,13 @@ describe('Basic of object store transactions via model', () => {
     };
 
     await expect(async () => {
-      await User.query(query).get();
+      await User.find(query).get();
     }).rejects.toThrow();
   });
 
   test('ordering records by cursor', async () => {
-    const forward = await User.filter().get(BoxDB.Order.ASC, 1); // default
-    const reverse = await User.filter().get(BoxDB.Order.DESC, 1);
+    const forward = await User.find().get(BoxDB.Order.ASC, 1); // default
+    const reverse = await User.find().get(BoxDB.Order.DESC, 1);
 
     const firstRecord = Dataset[0];
     const lastRecord = Dataset[Dataset.length - 1];
@@ -135,7 +135,7 @@ describe('Basic of object store transactions via model', () => {
 
   test('update records by cursor', async () => {
     const newName = 'User';
-    await User.filter((data) => data._id === 1).update({
+    await User.find(null, (data) => data._id === 1).update({
       name: newName,
     });
 
@@ -151,9 +151,9 @@ describe('Basic of object store transactions via model', () => {
 
   test('delete records by cursor', async () => {
     const filter = (value) => value.age < 10;
-    const beforeCount = (await User.filter(filter).get()).length;
-    await User.filter(filter).delete();
-    const afterCount = (await User.filter(filter).get()).length;
+    const beforeCount = (await User.find(null, filter).get()).length;
+    await User.find(null, filter).delete();
+    const afterCount = (await User.find(null, filter).get()).length;
 
     expect(beforeCount > afterCount).toBeTruthy();
   });
@@ -175,8 +175,8 @@ describe('Basic of object store transactions via model', () => {
   test('do cursor task with transaction', async () => {
     const updateValue = { name: 'UPDATED' };
     await db.transaction(
-      User.$filter((user) => user._id === 10).update(updateValue),
-      User.$filter((user) => user._id === 11).delete(),
+      User.$find(null, (user) => user._id === 10).update(updateValue),
+      User.$find(null, (user) => user._id === 11).delete(),
     );
 
     const record1 = await User.get(10);
@@ -225,66 +225,7 @@ describe('Basic of object store transactions via model', () => {
 
   test('clear all records', async () => {
     await User.clear();
-    const records = await User.filter().get();
+    const records = await User.find().get();
     expect(records.length).toEqual(0);
-  });
-
-  describe('model.query', () => {
-    beforeAll(async () => {
-      await User.add({
-        _id: 100000,
-        name: 'Name',
-        age: 20,
-      });
-    });
-
-    test('get records by cursor', async () => {
-      const userList = await User.query().get();
-      expect(userList.length).toBeTruthy();
-    });
-
-    test('update record by cursor', async () => {
-      const newName = 'User';
-      await User.query({ value: 100000 }).update({
-        name: newName,
-      });
-
-      const user = await User.get(100000);
-      expect(user.name).toEqual(newName);
-    });
-
-    test('delete record by cursor', async () => {
-      await User.query({ value: 100 }).delete();
-      const record = await User.get(100);
-      expect(record).toBeNull();
-    });
-  });
-
-  describe('model.$query', () => {
-    beforeAll(async () => {
-      await User.add({
-        _id: 200000,
-        name: 'Name2',
-        age: 30,
-      });
-    });
-
-    test('update record by cursor', async () => {
-      const newName = 'User';
-      await db.transaction(
-        User.$query({ value: 200000 }).update({
-          name: newName,
-        }),
-      );
-
-      const user = await User.get(200000);
-      expect(user.name).toEqual(newName);
-    });
-
-    test('delete record by cursor', async () => {
-      await db.transaction(User.$query({ value: 200000 }).delete());
-      const record = await User.get(200000);
-      expect(record).toBeNull();
-    });
   });
 });

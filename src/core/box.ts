@@ -1,5 +1,5 @@
 import BoxTransaction from './transaction';
-import { createTask } from '../utils';
+import { createTask, getCursorHandler, getTransactionCursorHandler } from '../utils';
 import { BoxDBError } from './errors';
 import { TaskArguments } from '../utils/index';
 import {
@@ -10,7 +10,6 @@ import {
   BoxContext,
   BoxHandler,
   BoxPrototype,
-  BoxRange,
   BoxTask,
   BoxData,
   UncheckedData,
@@ -153,41 +152,8 @@ export default class BoxBuilder {
           args: [key],
         });
       },
-      query(this: BoxContext, range: BoxRange<BoxSchema>) {
-        return {
-          get: (order, limit) => {
-            return this.$(TransactionType.$GET, {
-              direction: order,
-              limit,
-              range,
-            });
-          },
-          update: (value) => {
-            this.pass(value, false);
-            return this.$(TransactionType.$UPDATE, { range, updateValue: value });
-          },
-          delete: () => {
-            return this.$(TransactionType.$DELETE, { range });
-          },
-        };
-      },
-      filter(this: BoxContext, ...predicate) {
-        return {
-          get: (order, limit) => {
-            return this.$(TransactionType.$GET, {
-              direction: order,
-              filter: predicate,
-              limit,
-            });
-          },
-          update: (value) => {
-            this.pass(value, false);
-            return this.$(TransactionType.$UPDATE, { filter: predicate, updateValue: value });
-          },
-          delete: () => {
-            return this.$(TransactionType.$DELETE, { filter: predicate });
-          },
-        };
+      find(this: BoxContext, range, ...predicate) {
+        return getCursorHandler(this, range, predicate);
       },
       clear(this: BoxContext) {
         return this.$(TransactionType.CLEAR);
@@ -209,30 +175,8 @@ export default class BoxBuilder {
       $delete(this: BoxContext, key) {
         return createTask(TransactionType.DELETE, this.__name, { args: [key] });
       },
-      $query(this: BoxContext, range) {
-        return {
-          update: (value) => {
-            this.pass(value, false);
-            return createTask(TransactionType.$UPDATE, this.__name, { range, updateValue: value });
-          },
-          delete: () => {
-            return createTask(TransactionType.$DELETE, this.__name, { range });
-          },
-        };
-      },
-      $filter(this: BoxContext, ...predicate) {
-        return {
-          update: (value) => {
-            this.pass(value, false);
-            return createTask(TransactionType.$UPDATE, this.__name, {
-              filter: predicate,
-              updateValue: value,
-            });
-          },
-          delete: () => {
-            return createTask(TransactionType.$DELETE, this.__name, { filter: predicate });
-          },
-        };
+      $find(this: BoxContext, range, ...predicate) {
+        return getTransactionCursorHandler(this, range, predicate);
       },
     };
   }
