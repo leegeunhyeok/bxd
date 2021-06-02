@@ -1,86 +1,20 @@
 import BoxTransaction from './transaction';
-import { createTask } from '../utils';
+import { createTask, getCursorHandler, getTransactionCursorHandler } from '../utils';
 import { BoxDBError } from './errors';
 import { TaskArguments } from '../utils/index';
-import { BoxRange } from '../types/index';
-
 import {
   IDBData,
-  BoxData,
-  BoxSchema,
+  Box,
   BoxDataTypes,
+  BoxSchema,
+  BoxContext,
+  BoxHandler,
+  BoxPrototype,
+  BoxTask,
+  BoxData,
   UncheckedData,
-  OptionalBoxData,
-  BoxCursorDirections,
-  BoxFilterFunction,
-  TransactionTask,
   TransactionType,
 } from '../types';
-
-// Box
-export interface Box<S extends BoxSchema> extends BoxHandler<S>, BoxTask<S> {
-  new (initalData?: BoxData<S>): BoxData<S>;
-}
-
-// Transaction handlers of Box
-export interface BoxHandler<S extends BoxSchema> {
-  getName(): string;
-  getVersion(): number;
-  add(value: BoxData<S>, key?: IDBValidKey): Promise<IDBValidKey>;
-  get(
-    key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
-  ): Promise<BoxData<S>>;
-  put(value: BoxData<S>, key?: IDBValidKey): Promise<void>;
-  delete(
-    key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
-  ): Promise<void>;
-  query(range?: BoxRange<S>): BoxCursorHandler<S>;
-  filter(...predicate: BoxFilterFunction<S>[]): BoxCursorHandler<S>;
-  clear(): Promise<void>;
-  count(): Promise<number>;
-}
-
-// Box.task = BoxTask
-export interface BoxTask<S extends BoxSchema> {
-  $add(value: BoxData<S>, key?: IDBValidKey): TransactionTask;
-  $put(value: BoxData<S>, key?: IDBValidKey): TransactionTask;
-  $delete(
-    key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
-  ): TransactionTask;
-  $query(range?: BoxRange<S>): TransactionCursorHandler<S>;
-  $filter(...predicate: BoxFilterFunction<S>[]): TransactionCursorHandler<S>;
-}
-
-// Box.query = () => BoxCursorHandler
-// Box.filter = () => BoxCursorHandler
-export interface BoxCursorHandler<S extends BoxSchema> {
-  get(order?: BoxCursorDirections, limit?: number): Promise<BoxData<S>[]>;
-  update(value: OptionalBoxData<S>): Promise<void>;
-  delete(): Promise<void>;
-}
-
-// Box.$query = () => TransactionCursorHandler
-// Box.$filter = () => TransactionCursorHandler
-export interface TransactionCursorHandler<S extends BoxSchema> {
-  update(value: OptionalBoxData<S>): TransactionTask;
-  delete(): TransactionTask;
-}
-
-// Box Prototype
-export interface BoxPrototype {
-  tx: BoxTransaction;
-  $(type: TransactionType, args?: TaskArguments<BoxSchema>): Promise<void | IDBData | IDBData[]>;
-  pass(target: UncheckedData, strict?: boolean): void | never;
-  data<T extends BoxSchema>(initalData?: BoxData<T>): BoxData<T>;
-}
-
-export interface BoxProperty {
-  __name: string;
-  __schema: BoxSchema;
-  __version: number;
-}
-
-export type BoxContext = BoxPrototype & BoxProperty;
 
 /**
  * Check about target value has same type with type identifier
@@ -218,41 +152,8 @@ export default class BoxBuilder {
           args: [key],
         });
       },
-      query(this: BoxContext, range: BoxRange<BoxSchema>) {
-        return {
-          get: (order, limit) => {
-            return this.$(TransactionType.$GET, {
-              direction: order,
-              limit,
-              range,
-            });
-          },
-          update: (value) => {
-            this.pass(value, false);
-            return this.$(TransactionType.$UPDATE, { range, updateValue: value });
-          },
-          delete: () => {
-            return this.$(TransactionType.$DELETE, { range });
-          },
-        };
-      },
-      filter(this: BoxContext, ...predicate) {
-        return {
-          get: (order, limit) => {
-            return this.$(TransactionType.$GET, {
-              direction: order,
-              filter: predicate,
-              limit,
-            });
-          },
-          update: (value) => {
-            this.pass(value, false);
-            return this.$(TransactionType.$UPDATE, { filter: predicate, updateValue: value });
-          },
-          delete: () => {
-            return this.$(TransactionType.$DELETE, { filter: predicate });
-          },
-        };
+      find(this: BoxContext, range, ...predicate) {
+        return getCursorHandler(this, range, predicate);
       },
       clear(this: BoxContext) {
         return this.$(TransactionType.CLEAR);
@@ -274,30 +175,8 @@ export default class BoxBuilder {
       $delete(this: BoxContext, key) {
         return createTask(TransactionType.DELETE, this.__name, { args: [key] });
       },
-      $query(this: BoxContext, range) {
-        return {
-          update: (value) => {
-            this.pass(value, false);
-            return createTask(TransactionType.$UPDATE, this.__name, { range, updateValue: value });
-          },
-          delete: () => {
-            return createTask(TransactionType.$DELETE, this.__name, { range });
-          },
-        };
-      },
-      $filter(this: BoxContext, ...predicate) {
-        return {
-          update: (value) => {
-            this.pass(value, false);
-            return createTask(TransactionType.$UPDATE, this.__name, {
-              filter: predicate,
-              updateValue: value,
-            });
-          },
-          delete: () => {
-            return createTask(TransactionType.$DELETE, this.__name, { filter: predicate });
-          },
-        };
+      $find(this: BoxContext, range, ...predicate) {
+        return getTransactionCursorHandler(this, range, predicate);
       },
     };
   }
@@ -309,7 +188,7 @@ export default class BoxBuilder {
    * @param schema Data schema
    */
   build<S extends BoxSchema>(targetVersion: number, storeName: string, schema: S): Box<S> {
-    const Box = function Box<S extends BoxSchema>(this: BoxContext, initalData?: BoxData<S>) {
+    const Model = function Box<S extends BoxSchema>(this: BoxContext, initalData?: BoxData<S>) {
       // Check schema if initial data provided
       initalData && this.pass(initalData);
 
@@ -324,9 +203,9 @@ export default class BoxBuilder {
 
     // Handlers
     const handler = Object.assign(context, this.handler, this.task);
-    Object.setPrototypeOf(Box, handler);
-    Object.setPrototypeOf(Box.prototype, context);
+    Object.setPrototypeOf(Model, handler);
+    Object.setPrototypeOf(Model.prototype, context);
 
-    return Box;
+    return Model;
   }
 }

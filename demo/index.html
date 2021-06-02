@@ -84,39 +84,35 @@
         <p id="bxd_get" class="wait">wait<!-- Value --></p>
       </div>
       <div>
-        <h3 id="bxd-find-all">Get all records (find)</h3>
+        <h3 id="bxd-get-all">Get all records</h3>
         <a href="https://github.com/leegeunhyeok/bxd/wiki#boxfind">Box.find().get()</a>
-        <p id="bxd_find" class="wait">wait<!-- Value --></p>
-        <code id="bxd_find_records" class="wait">wait<!-- Value --></code>
-      </div>
-      <div>
-        <h3 id="bxd-query-all">Get all records (query)</h3>
-        <a href="https://github.com/leegeunhyeok/bxd/wiki#boxquery">Box.query().get()</a>
         <br />
         <u>find age = 13</u>
-        <p id="bxd_query" class="wait">wait<!-- Value --></p>
-        <code id="bxd_query_records" class="wait">wait<!-- Value --></code>
+        <p id="bxd_all" class="wait">wait<!-- Value --></p>
+        <code id="bxd_get_all" class="wait">wait<!-- Value --></code>
       </div>
       <div>
         <h3 id="bxd-update">Update record</h3>
-        <a href="https://github.com/leegeunhyeok/bxd/wiki#boxquery">Box.put()</a>
+        <a href="https://github.com/leegeunhyeok/bxd/wiki#boxfind">Box.put()</a>
         <br />
         <u>find id = 1 and put name to 'First Name'</u>
         <p id="bxd_put" class="wait">wait<!-- Value --></p>
       </div>
       <div>
-        <h3 id="bxd-find-update">Update records (find)</h3>
-        <a href="https://github.com/leegeunhyeok/bxd/wiki#boxfind">Box.find().update()</a>
-        <br />
-        <u>update age = 13 to age = 10</u>
-        <p id="bxd_find_update" class="wait">wait<!-- Value --></p>
-      </div>
-      <div>
-        <h3 id="bxd-query-update">Update records (query)</h3>
-        <a href="https://github.com/leegeunhyeok/bxd/wiki#boxquery">Box.query().update()</a>
+        <h3 id="bxd-update-range">Update records (range)</h3>
+        <a href="https://github.com/leegeunhyeok/bxd/wiki#boxfind">Box.find(range).update()</a>
         <br />
         <u>update age = 10 to age = 20</u>
-        <p id="bxd_query_update" class="wait">wait<!-- Value --></p>
+        <p id="bxd_update_range" class="wait">wait<!-- Value --></p>
+      </div>
+      <div>
+        <h3 id="bxd-update-filter">Update records (filter)</h3>
+        <a href="https://github.com/leegeunhyeok/bxd/wiki#boxfind"
+          >Box.find(null, ...filters).update()</a
+        >
+        <br />
+        <u>update age = 13 to age = 10</u>
+        <p id="bxd_update_filter" class="wait">wait<!-- Value --></p>
       </div>
       <div>
         <h3 id="bxd-delete">Delete record</h3>
@@ -126,21 +122,23 @@
         <p id="bxd_delete" class="wait">wait<!-- Value --></p>
       </div>
       <div>
-        <h3 id="bxd-delete">Delete records (find)</h3>
-        <a href="https://github.com/leegeunhyeok/bxd/wiki#boxfind">Box.find().delete()</a>
-        <br />
-        <u>delete age > 70</u>
-        <p id="bxd_find_delete" class="wait">wait<!-- Value --></p>
-      </div>
-      <div>
-        <h3 id="bxd-delete">Delete records (query)</h3>
-        <a href="https://github.com/leegeunhyeok/bxd/wiki#boxquery">Box.query().delete()</a>
+        <h3 id="bxd-delete-range">Delete records (range)</h3>
+        <a href="https://github.com/leegeunhyeok/bxd/wiki#boxfind">Box.find(range).delete()</a>
         <br />
         <u>delete number = '920-684-4795'</u>
-        <p id="bxd_query_delete" class="wait">wait<!-- Value --></p>
+        <p id="bxd_delete_range" class="wait">wait<!-- Value --></p>
       </div>
       <div>
-        <h3 id="bxd-delete">Run multiple tasks</h3>
+        <h3 id="bxd-delete-filter">Delete records (filter)</h3>
+        <a href="https://github.com/leegeunhyeok/bxd/wiki#boxfind"
+          >Box.find(null, ...filters).delete()</a
+        >
+        <br />
+        <u>delete age > 70</u>
+        <p id="bxd_delete_filter" class="wait">wait<!-- Value --></p>
+      </div>
+      <div>
+        <h3 id="bxd-transaction">Run multiple tasks</h3>
         <a href="https://github.com/leegeunhyeok/bxd/wiki#boxdbtransition">BoxDB.transition()</a>
         <br />
         <u>add record { id: 99, name: 'UNKNOWN', age: 99999, number: null }</u>
@@ -287,7 +285,7 @@
           });
         }
 
-        function addRecord() {
+        function addRecords() {
           before('bxdBox');
           return runner(function () {
             var done = false;
@@ -322,7 +320,7 @@
           });
         }
 
-        function getAllRecordsByFind() {
+        function getAllRecords() {
           return runner(function () {
             var done = false;
             return box
@@ -330,26 +328,10 @@
               .get()
               .then(function (records) {
                 done = true;
-                text($('#bxd_find_records'), JSON.stringify(records));
+                text($('#bxd_get_all'), JSON.stringify(records, null, 2));
               })
               .finally(function () {
-                status($('#bxd_find'), done);
-              });
-          });
-        }
-
-        function getAllRecordsByQuery() {
-          return runner(function () {
-            var done = false;
-            return box
-              .query({ value: 13, target: 'age' })
-              .get()
-              .then(function (records) {
-                done = true;
-                text($('#bxd_query_records'), JSON.stringify(records, null, 2));
-              })
-              .finally(function () {
-                status($('#bxd_query'), done);
+                status($('#bxd_all'), done);
               });
           });
         }
@@ -368,32 +350,34 @@
           });
         }
 
-        function updateRecordsByFind() {
+        function updateRecordsByRange() {
           return runner(function () {
             var done = false;
             return box
-              .query({ value: 13, target: 'age' })
-              .update({ age: 10 })
-              .then(function (records) {
-                done = true;
-              })
-              .finally(function () {
-                status($('#bxd_find_update'), done);
-              });
-          });
-        }
-
-        function updateRecordsByQuery() {
-          return runner(function () {
-            var done = false;
-            return box
-              .query({ value: 10, target: 'age' })
+              .find({ value: 10, target: 'age' })
               .update({ age: 20 })
               .then(function (records) {
                 done = true;
               })
               .finally(function () {
-                status($('#bxd_query_update'), done);
+                status($('#bxd_update_range'), done);
+              });
+          });
+        }
+
+        function updateRecordsByFilter() {
+          return runner(function () {
+            var done = false;
+            return box
+              .find(null, function (data) {
+                return data.age === 13;
+              })
+              .update({ age: 10 })
+              .then(function (records) {
+                done = true;
+              })
+              .finally(function () {
+                status($('#bxd_update_filter'), done);
               });
           });
         }
@@ -412,11 +396,26 @@
           });
         }
 
-        function deleteRecordsByFind() {
+        function deleteRecordsByRange() {
           return runner(function () {
             var done = false;
             return box
-              .find(function (data) {
+              .find({ value: '920-684-4795', target: 'number' })
+              .delete()
+              .then(function () {
+                done = true;
+              })
+              .finally(function () {
+                status($('#bxd_delete_range'), done);
+              });
+          });
+        }
+
+        function deleteRecordsByFilter() {
+          return runner(function () {
+            var done = false;
+            return box
+              .find(null, function (data) {
                 return data.age > 70;
               })
               .delete()
@@ -424,22 +423,7 @@
                 done = true;
               })
               .finally(function () {
-                status($('#bxd_find_delete'), done);
-              });
-          });
-        }
-
-        function deleteRecordsByQuery() {
-          return runner(function () {
-            var done = false;
-            return box
-              .query({ value: '920-684-4795', target: 'number' })
-              .delete()
-              .then(function () {
-                done = true;
-              })
-              .finally(function () {
-                status($('#bxd_query_delete'), done);
+                status($('#bxd_delete_filter'), done);
               });
           });
         }
@@ -483,17 +467,16 @@
         }
 
         var tests = [
-          addRecord,
+          addRecords,
           getCount,
           getRecord,
-          getAllRecordsByFind,
-          getAllRecordsByQuery,
+          getAllRecords,
           updateRecord,
-          updateRecordsByFind,
-          updateRecordsByQuery,
+          updateRecordsByRange,
+          updateRecordsByFilter,
           deleteRecord,
-          deleteRecordsByFind,
-          deleteRecordsByQuery,
+          deleteRecordsByRange,
+          deleteRecordsByFilter,
           transitions,
           final,
         ];
