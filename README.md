@@ -52,25 +52,29 @@ await User.get(1);
 await User.put({ id: 1, name: 'Tommy', age: 12 });
 await User.delete(1);
 
-// filter() & query() using IDBCursor
+// find(range, ...filters) method using IDBCursor
 // Get records
-const records = await User.filter().get();
+const records = await User.find().get();
 
 // filter & sort & limit
-await User.filter(
+await User.find(
+  null,
   (user) => user.id % 2 !== 0,
   (user) => user.age > 10,
   (user) => user.name.includes('y'),
 ).get(BoxDB.Order.DESC, 10);
 
-// Update filtered records
+// Update records (with filter)
 await User
-  .records((user) => user.age !== 0)
+  .find(null, (user) => user.age !== 0)
   .update({ name: 'Timmy' });
 
-// Delete filtered records
+// Delete records (with IDBValidKey & IDBRange + IDBIndex)
 await User
-  .query({ value: 'Timmy', target: 'name' })
+  .find({
+    value: BoxDB.Range.equal('Timmy'),
+    target: 'name'
+  })
   .delete();
 
 // Multiple task in one transaction
@@ -78,10 +82,13 @@ await db.transaction(
   User.$put({ id: 1, name: 'Tim', age: 20 }),
   User.$add({ id: 2, name: 'Jessica', age: 15 }),
   User.$add({ id: 3, name: 'Ellis', age: 13 }),
+  User
+    .$find({ value: 3 })
+    .put({ name: 'Tina' }),
   BoxDB.interrupt(); // You can stop transaction like this!
   User.$delete(2),
   User
-    .$filter((user) => user.age < 20)
+    .$find(null, (user) => user.age < 20)
     .put({ name: 'Young' }),
 );
 
