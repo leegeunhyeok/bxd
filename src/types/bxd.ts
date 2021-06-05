@@ -83,7 +83,7 @@ export type UncheckedData = {
  * @description Box Types
  */
 export interface Box<S extends BoxSchema> extends BoxHandler<S>, BoxTask<S> {
-  new (initalData?: BoxData<S>): BoxData<S>;
+  new (initalData?: OptionalBoxData<S>): BoxData<S>;
 }
 
 export interface BoxPrototype {
@@ -102,7 +102,7 @@ export interface BoxProperty {
 export type BoxContext = BoxPrototype & BoxProperty;
 
 export interface BoxSchema {
-  [field: string]: ConfiguredType | BoxDataTypes;
+  readonly [field: string]: ConfiguredType | BoxDataTypes;
 }
 
 export interface ConfiguredBoxSchema {
@@ -124,14 +124,14 @@ export interface BoxOptions {
 /**
  * @description Box handler Types
  */
- export interface BoxHandler<S extends BoxSchema> {
+export interface BoxHandler<S extends BoxSchema> {
   getName(): string;
   getVersion(): number;
   add(value: BoxData<S>, key?: IDBValidKey): Promise<IDBValidKey>;
   get(
     key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
   ): Promise<BoxData<S>>;
-  put(value: BoxData<S>, key?: IDBValidKey): Promise<void>;
+  put(value: OptionalBoxData<S>, key?: IDBValidKey): Promise<void>;
   delete(
     key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
   ): Promise<void>;
@@ -183,7 +183,6 @@ export interface CursorTransactionTask<S extends BoxSchema> extends TransactionT
   limit?: number;
   updateValue?: IDBValue;
 }
-
 
 export interface BoxMeta {
   name: string;
