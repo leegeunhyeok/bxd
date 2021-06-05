@@ -4,7 +4,7 @@
 
 <img src="https://user-images.githubusercontent.com/26512984/113550066-6b21bd00-962d-11eb-8e27-835d543199fe.png" width="250">
 
-Boxdb is a promise-based browser ORM for [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API)
+BoxDB is a promise-based browser ORM for [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API)
 
   <a href="https://github.com/leegeunhyeok/bxd/actions?query=workflow:build" alt="Github actions">
     <img src="https://github.com/leegeunhyeok/bxd/workflows/build/badge.svg">
@@ -52,36 +52,43 @@ await User.get(1);
 await User.put({ id: 1, name: 'Tommy', age: 12 });
 await User.delete(1);
 
-// filter() & query() using IDBCursor
+// find(range, ...filters) method using IDBCursor
 // Get records
-const records = await User.filter().get();
+const records = await User.find().get();
 
 // filter & sort & limit
-await User.filter(
+await User.find(
+  null,
   (user) => user.id % 2 !== 0,
   (user) => user.age > 10,
   (user) => user.name.includes('y'),
 ).get(BoxDB.Order.DESC, 10);
 
-// Update filtered records
+// Update records (with filter)
 await User
-  .records((user) => user.age !== 0)
+  .find(null, (user) => user.age !== 0)
   .update({ name: 'Timmy' });
 
-// Delete filtered records
+// Delete records (with IDBValidKey & IDBRange + IDBIndex)
 await User
-  .query({ value: 'Timmy', target: 'name' })
+  .find({
+    value: BoxDB.Range.equal('Timmy'),
+    index: 'name'
+  })
   .delete();
 
-// Multiple task in one transaction
+// Do multiple tasks in one transaction
 await db.transaction(
   User.$put({ id: 1, name: 'Tim', age: 20 }),
   User.$add({ id: 2, name: 'Jessica', age: 15 }),
   User.$add({ id: 3, name: 'Ellis', age: 13 }),
+  User
+    .$find({ value: 3 })
+    .put({ name: 'Tina' }),
   BoxDB.interrupt(); // You can stop transaction like this!
   User.$delete(2),
   User
-    .$filter((user) => user.age < 20)
+    .$find(null, (user) => user.age < 20)
     .put({ name: 'Young' }),
 );
 
@@ -158,7 +165,7 @@ In browser (legacy):
 
 ## 📖 Documentation
 
-Boxdb documentation is on [wiki](https://github.com/leegeunhyeok/bxd/wiki)!
+BoxDB documentation is on [wiki](https://github.com/leegeunhyeok/bxd/wiki)!
 
 ## 🌱 Examples
 

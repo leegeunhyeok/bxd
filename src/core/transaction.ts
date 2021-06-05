@@ -24,13 +24,12 @@ const HAS_VALUE_TYPES = [
 ];
 
 export default class BoxTransaction {
-  // Keep idb reference
   private idb: {
     value: IDBDatabase;
   } = { value: null };
 
   /**
-   * Recive reference of idb instance
+   * Store reference of idb instance
    *
    * @param idb IDBDatabase
    */
@@ -39,14 +38,14 @@ export default class BoxTransaction {
   }
 
   /**
-   * Reset idb instance
+   * Clear IDB instance
    */
   close(): void {
     this.idb.value = null;
   }
 
   /**
-   * Fulfill multiple tasks on transaction
+   * Execute all tasks
    *
    * @param tasks Transaction tasks
    */
@@ -61,7 +60,7 @@ export default class BoxTransaction {
     const needResponse = tasks.length === 1 && HAS_VALUE_TYPES.includes(firstTaskType);
     let res = null;
 
-    // Get store names from tasks
+    // Get object store names from tasks
     const storeNamesInTasks = Object.keys(
       tasks.reduce((set, curr) => {
         // Add object key as store name
@@ -70,13 +69,13 @@ export default class BoxTransaction {
       }, {}),
     );
 
-    // Get transaction mode
+    // Select transaction mode
     const mode = tasks.some((task) => !READONLY_TYPES.includes(task.type))
       ? TransactionMode.WRITE
       : TransactionMode.READ;
 
     return new Promise((resolve, reject) => {
-      // Open transaction
+      // Open new transaction
       const tx = this.idb.value.transaction(storeNamesInTasks, mode);
 
       // Do each tasks
@@ -98,22 +97,23 @@ export default class BoxTransaction {
             (records) => (res = records),
           );
         } else {
-          // get, add, put, delete, clear
+          // get, add, put, delete, count, clear
           const objectStore = tx.objectStore(task.name);
-          // Dodge ts type checking
+          // Skip ts type checking
           const request = objectStore[action].call(objectStore, ...(task.args || [])) as IDBRequest;
           request.onsuccess = () => (res = request.result);
         }
       }
 
       const errorHandler = (event: Event) => {
+        // Error event will bubbled up to IDB
         reject(tx.error || (event.target as IDBRequest).error);
       };
 
       // On complete
       tx.oncomplete = () => resolve(needResponse ? res ?? null : void 0);
 
-      // On error/abort event will bubbled to idb
+      // On error/abort
       tx.onerror = errorHandler;
     });
   }
@@ -121,7 +121,7 @@ export default class BoxTransaction {
   /**
    * Handling cursor task with helpers
    *
-   * @param objectStore Target object store object
+   * @param objectStore Object store object
    * @param task Current task
    */
   private cursor<S extends BoxSchema>(
@@ -135,17 +135,17 @@ export default class BoxTransaction {
     const updateValue = task.updateValue || null;
     const res = [];
 
-    // Filter function
+    // Bundle of filter functions
     const pass = filter && filter.length ? (value) => filter.every((f) => f(value)) : () => true;
 
     // Using IDBKeyRange + IDBCursorDirection
-    const index = range && range.target;
+    const index = range && range.index;
     if (index && !objectStore.indexNames.contains(index)) {
       throw new BoxDBError(index + ' field is not an index');
     }
 
     return new Promise((resolve, reject) => {
-      // Counting for limit
+      // Counting variable for limit records
       let rows = 0;
       let running = true;
       const limitHandler = () => limit === null || limit > rows;

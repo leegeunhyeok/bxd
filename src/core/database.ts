@@ -25,6 +25,7 @@ interface BoxMetaMap {
 }
 
 export type BoxDBType = typeof BoxDB;
+
 class BoxDB {
   public static Types = BoxDataTypes;
   public static Order = BoxCursorDirections;
@@ -39,8 +40,8 @@ class BoxDB {
 
   /**
    * @constructor
-   * @param databaseName idb name
-   * @param version idb version
+   * @param databaseName IDB name
+   * @param version IDB version
    */
   constructor(databaseName: string, version: number) {
     this.name = databaseName;
@@ -66,14 +67,14 @@ class BoxDB {
   }
 
   /**
-   * Returns interrupt transaction task
+   * Returns interrupt task for abort transaction
    */
   static interrupt(): TransactionTask {
     return createTask(TransactionType.INTERRUPT, null);
   }
 
   /**
-   * Create/update object stores and open idb
+   * Create/update object stores and open IDB
    */
   open(): Promise<Event> {
     return new Promise((resolve, reject) => {
@@ -82,7 +83,6 @@ class BoxDB {
         openRequest.result && openRequest.result.close();
       };
 
-      // IDB Open successfully
       openRequest.onsuccess = (event) => {
         this.ready = true;
         this.idb = openRequest.result;
@@ -110,11 +110,11 @@ class BoxDB {
   }
 
   /**
-   * Define box
+   * Create new box (model)
    *
-   * @param storeName
-   * @param schema
-   * @param options
+   * @param storeName object store name
+   * @param schema model schema
+   * @param options box options
    */
   box<S extends BoxSchema>(storeName: string, schema: S, options?: BoxOption): Box<S> {
     if (this.ready) {
@@ -130,7 +130,7 @@ class BoxDB {
   }
 
   /**
-   * Tasks are performed as transactions
+   * Execute mutiple tasks in single transaction
    *
    * @param tasks Transaction tasks
    */
@@ -173,9 +173,9 @@ class BoxDB {
   }
 
   /**
-   * IDBObjectStore to BoxMeta
+   * Extract metadata from IDBObjectStore
    *
-   * @param objectStore target object store
+   * @param objectStore object store
    */
   private convert(objectStore: IDBObjectStore): BoxMeta {
     return this.meta(
@@ -192,10 +192,11 @@ class BoxDB {
   }
 
   /**
-   * Box schema object to BoxMeta
+   * Box schema object convert to BoxMeta
    *
    * @param storeName object store name
    * @param schema box schema
+   * @param options box option
    */
   private toMeta(storeName: string, schema: BoxSchema, options?: BoxOptions): BoxMeta {
     let primaryKeyPath = null;
@@ -239,10 +240,9 @@ class BoxDB {
   }
 
   /**
-   * Update defined object stores
+   * Update object stores
    *
    * @param openRequest IDBOpenRequest
-   * @param event Event from onupgradeneeded event
    */
   private update(openRequest: IDBOpenDBRequest) {
     const db = openRequest.result;
@@ -290,16 +290,16 @@ class BoxDB {
           if (boxIndex && objectStoreIndex.unique !== boxIndex.unique) {
             // Change unique option true -> false is available
             if (objectStoreIndex.unique === true) {
-              // Delete exist index and re-create
+              // Delete exist index and re-create without unique option
               objectStore.deleteIndex(originKeyPath);
-              objectStore.createIndex(originKeyPath, originKeyPath); // unique: false
+              objectStore.createIndex(originKeyPath, originKeyPath);
             } else {
               throw new BoxDBError('unique option cannot be changed to true: ' + originKeyPath);
             }
           }
         });
 
-        // (2/3) Delete index if index not found in schema of target box
+        // (2/3) Delete index if index not found in schema
         idbKeyPaths.forEach((keyPath) => {
           !boxKeyPaths.includes(keyPath) && objectStore.deleteIndex(keyPath);
         });
