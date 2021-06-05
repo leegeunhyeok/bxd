@@ -1,7 +1,6 @@
 import BoxTransaction from './transaction';
-import { createTask, getCursorHandler, getTransactionCursorHandler } from '../utils';
+import { TaskArguments, createTask, getCursorHandler, getTransactionCursorHandler } from '../utils';
 import { BoxDBError } from './errors';
-import { TaskArguments } from '../utils/index';
 import {
   IDBData,
   Box,
