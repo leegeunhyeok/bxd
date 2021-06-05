@@ -2,7 +2,6 @@ import BoxTransaction from './transaction';
 import { TaskArguments, createTask, getCursorHandler, getTransactionCursorHandler } from '../utils';
 import { BoxDBError } from './errors';
 import {
-  IDBData,
   Box,
   BoxDataTypes,
   BoxSchema,
@@ -13,15 +12,16 @@ import {
   BoxData,
   UncheckedData,
   TransactionType,
+  IDBData,
 } from '../types';
 
 /**
- * Check about target value has same type with type identifier
+ * Validate with configured type
  *
  * @param type Type identifier
  * @param value Value for check
  */
-const typeValidator = (type: BoxDataTypes, value: UncheckedData): boolean => {
+const typeValidator = (type: BoxDataTypes, value: UncheckedData[string]): boolean => {
   if (value === null) return true;
   const targetPrototype = Object.getPrototypeOf(value);
 
@@ -50,11 +50,11 @@ const typeValidator = (type: BoxDataTypes, value: UncheckedData): boolean => {
 };
 
 /**
- * Check object keys matching and data types
+ * Check data based on schema
  *
- * 1. Target's key length is same with box schema's key length
- * 2. Check target's keys in schema
- * 3. Target's value types are correct with schema
+ * 1. Compare target field / schema field count
+ * 2. Check target fields name in schema
+ * 3. Check fields value type
  *
  * @param this Box
  * @param target Target data
@@ -78,7 +78,7 @@ function schemaValidator(this: BoxContext, target: UncheckedData, strict = true)
 }
 
 /**
- * Create new object and merge object
+ * Create new box data
  *
  * @param baseObject
  * @param targetObject
@@ -92,9 +92,10 @@ function createBoxData<T extends BoxSchema>(this: BoxContext, initalData?: BoxDa
 }
 
 /**
- * Create transaction task from box context
+ * Execute task and returns tasked Promise
  *
  * @param type Transaction type
+ * @param args Arguments
  */
 function transactionExecuter(
   this: BoxContext,
@@ -163,9 +164,6 @@ const boxTask: BoxTask<IDBData> = {
   },
 };
 
-/**
- * Returns IDBKeyRange
- */
 const i = IDBKeyRange;
 export const rangeBuilder = {
   equal: i.only,
@@ -189,10 +187,10 @@ export default class BoxBuilder {
    */
   build<S extends BoxSchema>(targetVersion: number, storeName: string, schema: S): Box<S> {
     const Model = function Box<S extends BoxSchema>(this: BoxContext, initalData?: BoxData<S>) {
-      // Check schema if initial data provided
+      // Data validate if initial data is provided
       initalData && this.pass(initalData);
 
-      // Create empty(null) object or initalData based on schema
+      // Create empty(null) object or box data based on initialData
       return this.data(initalData);
     } as unknown as Box<S>;
 
