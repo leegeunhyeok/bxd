@@ -143,7 +143,7 @@ export interface BoxHandler<S extends BoxSchema> {
 // Box.$* = BoxTask
 export interface BoxTask<S extends BoxSchema> {
   $add(value: BoxData<S>, key?: IDBValidKey): TransactionTask;
-  $put(value: BoxData<S>, key?: IDBValidKey): TransactionTask;
+  $put(value: OptionalBoxData<S>, key?: IDBValidKey): TransactionTask;
   $delete(
     key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
   ): TransactionTask;
