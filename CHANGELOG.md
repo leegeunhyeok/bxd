@@ -1,5 +1,11 @@
 # Change Log
 
+## [1.0.0-rc.8] 2021-06-00
+
+- Change `BoxRange` type (Raname `target` to `index`)
+- Fix model handlers parameter type
+- Improve unit tests
+
 ## [1.0.0-rc.7] 2021-06-03
 
 - Compose `query()` and `filter()` methods to `find()`

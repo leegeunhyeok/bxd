@@ -4,7 +4,7 @@
 
 <img src="https://user-images.githubusercontent.com/26512984/113550066-6b21bd00-962d-11eb-8e27-835d543199fe.png" width="250">
 
-Boxdb is a promise-based browser ORM for [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API)
+BoxDB is a promise-based browser ORM for [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API)
 
   <a href="https://github.com/leegeunhyeok/bxd/actions?query=workflow:build" alt="Github actions">
     <img src="https://github.com/leegeunhyeok/bxd/workflows/build/badge.svg">
@@ -73,11 +73,11 @@ await User
 await User
   .find({
     value: BoxDB.Range.equal('Timmy'),
-    target: 'name'
+    index: 'name'
   })
   .delete();
 
-// Multiple task in one transaction
+// Do multiple tasks in one transaction
 await db.transaction(
   User.$put({ id: 1, name: 'Tim', age: 20 }),
   User.$add({ id: 2, name: 'Jessica', age: 15 }),
@@ -165,7 +165,7 @@ In browser (legacy):
 
 ## 📖 Documentation
 
-Boxdb documentation is on [wiki](https://github.com/leegeunhyeok/bxd/wiki)!
+BoxDB documentation is on [wiki](https://github.com/leegeunhyeok/bxd/wiki)!
 
 ## 🌱 Examples
 
