@@ -105,6 +105,65 @@ function transactionExecuter(
   return this.tx.run(createTask(type, this.__name, args));
 }
 
+// BoxHandler
+const boxHandler: BoxHandler<IDBData> = {
+  getName(this: BoxContext) {
+    return this.__name;
+  },
+  getVersion(this: BoxContext) {
+    return this.__version;
+  },
+  add(this: BoxContext, value, key) {
+    this.pass(value);
+    return this.$(TransactionType.ADD, {
+      args: [value, key],
+    });
+  },
+  get(this: BoxContext, key) {
+    return this.$(TransactionType.GET, {
+      args: [key],
+    });
+  },
+  put(this: BoxContext, value, key) {
+    this.pass(value, false);
+    return this.$(TransactionType.PUT, {
+      args: [value, key],
+    });
+  },
+  delete(this: BoxContext, key) {
+    return this.$(TransactionType.DELETE, {
+      args: [key],
+    });
+  },
+  find(this: BoxContext, range, ...predicate) {
+    return getCursorHandler(this, range, predicate);
+  },
+  clear(this: BoxContext) {
+    return this.$(TransactionType.CLEAR);
+  },
+  count(this: BoxContext) {
+    return this.$(TransactionType.COUNT);
+  },
+};
+
+// BoxTask
+const boxTask: BoxTask<IDBData> = {
+  $add(this: BoxContext, value, key) {
+    this.pass(value);
+    return createTask(TransactionType.ADD, this.__name, { args: [value, key] });
+  },
+  $put(this: BoxContext, value, key) {
+    this.pass(value, false);
+    return createTask(TransactionType.PUT, this.__name, { args: [value, key] });
+  },
+  $delete(this: BoxContext, key) {
+    return createTask(TransactionType.DELETE, this.__name, { args: [key] });
+  },
+  $find(this: BoxContext, range, ...predicate) {
+    return getTransactionCursorHandler(this, range, predicate);
+  },
+};
+
 /**
  * Returns IDBKeyRange
  */
@@ -118,67 +177,9 @@ export const rangeBuilder = {
 
 export default class BoxBuilder {
   private proto: BoxPrototype;
-  private handler: BoxHandler<IDBData>;
-  private task: BoxTask<IDBData>;
 
   constructor(tx: BoxTransaction) {
     this.proto = { tx, $: transactionExecuter, pass: schemaValidator, data: createBoxData };
-    this.handler = {
-      getName(this: BoxContext) {
-        return this.__name;
-      },
-      getVersion(this: BoxContext) {
-        return this.__version;
-      },
-      add(this: BoxContext, value, key) {
-        this.pass(value);
-        return this.$(TransactionType.ADD, {
-          args: [value, key],
-        });
-      },
-      get(this: BoxContext, key) {
-        return this.$(TransactionType.GET, {
-          args: [key],
-        });
-      },
-      put(this: BoxContext, value, key) {
-        this.pass(value, false);
-        return this.$(TransactionType.PUT, {
-          args: [value, key],
-        });
-      },
-      delete(this: BoxContext, key) {
-        return this.$(TransactionType.DELETE, {
-          args: [key],
-        });
-      },
-      find(this: BoxContext, range, ...predicate) {
-        return getCursorHandler(this, range, predicate);
-      },
-      clear(this: BoxContext) {
-        return this.$(TransactionType.CLEAR);
-      },
-      count(this: BoxContext) {
-        return this.$(TransactionType.COUNT);
-      },
-    };
-
-    this.task = {
-      $add(this: BoxContext, value, key) {
-        this.pass(value);
-        return createTask(TransactionType.ADD, this.__name, { args: [value, key] });
-      },
-      $put(this: BoxContext, value, key) {
-        this.pass(value, false);
-        return createTask(TransactionType.PUT, this.__name, { args: [value, key] });
-      },
-      $delete(this: BoxContext, key) {
-        return createTask(TransactionType.DELETE, this.__name, { args: [key] });
-      },
-      $find(this: BoxContext, range, ...predicate) {
-        return getTransactionCursorHandler(this, range, predicate);
-      },
-    };
   }
 
   /**
@@ -202,7 +203,7 @@ export default class BoxBuilder {
     context.__version = targetVersion;
 
     // Handlers
-    const handler = Object.assign(context, this.handler, this.task);
+    const handler = Object.assign(context, boxHandler, boxTask);
     Object.setPrototypeOf(Model, handler);
     Object.setPrototypeOf(Model.prototype, context);
 
