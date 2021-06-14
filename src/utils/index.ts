@@ -14,16 +14,16 @@ import {
 
 export type TaskArguments<S extends BoxSchema> = {
   args?: IDBArgument;
-  direction?: BoxCursorDirections;
+  direction?: BoxCursorDirections | null;
   filter?: BoxFilterFunction<S>[];
-  range?: BoxRange<S>;
+  range?: BoxRange<S> | null;
   limit?: number;
   updateValue?: IDBValue;
 };
 
 export const getCursorHandler = (
   context: BoxContext,
-  range?: BoxRange<BoxSchema>,
+  range?: BoxRange<BoxSchema> | null,
   filter?: BoxFilterFunction<BoxSchema>[],
 ): BoxCursorHandler<BoxSchema> => {
   return {
@@ -47,7 +47,7 @@ export const getCursorHandler = (
 
 export const getTransactionCursorHandler = (
   context: BoxContext,
-  range?: BoxRange<BoxSchema>,
+  range?: BoxRange<BoxSchema> | null,
   filter?: BoxFilterFunction<BoxSchema>[],
 ): TransactionCursorHandler<BoxSchema> => {
   return {
