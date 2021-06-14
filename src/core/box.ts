@@ -23,27 +23,26 @@ import {
  */
 const typeValidator = (type: BoxDataTypes, value: UncheckedData[string]): boolean => {
   if (value === null) return true;
-  const targetPrototype = Object.getPrototypeOf(value);
 
   switch (type) {
     case BoxDataTypes.BOOLEAN:
-      return targetPrototype === Boolean.prototype;
+      return typeof value === 'boolean';
     case BoxDataTypes.NUMBER:
-      return targetPrototype === Number.prototype;
+      return typeof value === 'number';
     case BoxDataTypes.STRING:
-      return targetPrototype === String.prototype;
+      return typeof value === 'string';
     case BoxDataTypes.DATE:
       return value instanceof Date;
     case BoxDataTypes.ARRAY:
-      return targetPrototype === Array.prototype;
+      return Array.isArray(value);
     case BoxDataTypes.OBJECT:
-      return targetPrototype === Object.prototype;
+      return typeof value === 'object';
     case BoxDataTypes.REGEXP:
-      return targetPrototype === RegExp.prototype;
+      return value instanceof RegExp;
     case BoxDataTypes.FILE:
-      return targetPrototype === File.prototype;
+      return value instanceof File;
     case BoxDataTypes.BLOB:
-      return targetPrototype === Blob.prototype;
+      return value instanceof Blob;
     case BoxDataTypes.ANY:
       return true; // any
   }
