@@ -73,7 +73,7 @@ await User
 await User
   .find({
     value: BoxDB.Range.equal('Timmy'),
-    index: 'name'
+    index: 'name',
   })
   .delete();
 
@@ -100,7 +100,7 @@ await User.clear(); // Clear all records
 ## 📃 Table of Contents
 
 - [Features](#-features)
-- [Browser Support](#-browser-support)
+- [Browsers Support](#-browsers-support)
 - [Installation](#-installation)
 - [Documentation](#-documentation)
 - [Examples](#-examples)
@@ -121,9 +121,13 @@ await User.clear(); // Clear all records
 - Supports TypeScript
 - Works on [Web Workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API)
 
-## 🌍 Browser Support
+## 🌍 Browsers Support
 
-> WIP..
+| <img src="https://user-images.githubusercontent.com/26512984/121935549-8292ca00-cd83-11eb-885c-9497bc78b104.png" alt="Edge" width="24px" height="24px" /></br>IE | <img src="https://user-images.githubusercontent.com/26512984/121934559-64789a00-cd82-11eb-9238-4fc21eb835e2.png" alt="Edge" width="24px" height="24px" /></br>Edge | <img src="https://user-images.githubusercontent.com/26512984/121934551-62aed680-cd82-11eb-8a33-593af8b5fdbd.png" alt="Firefox" width="24px" height="24px" /></br>Firefox | <img src="https://user-images.githubusercontent.com/26512984/121934545-604c7c80-cd82-11eb-884d-d9d8dad26e01.png" alt="Chrome" width="24px" height="24px" /></br>Chrome | <img src="https://user-images.githubusercontent.com/26512984/121934539-5dea2280-cd82-11eb-96ed-fbef553ec0e6.png" alt="Safari" width="24px" height="24px" /></br>Safari | <img src="https://user-images.githubusercontent.com/26512984/121934534-5c205f00-cd82-11eb-846b-cac169df47c7.png" alt="iOS Safari" width="24px" height="24px" /></br>iOS Safari | <img src="https://user-images.githubusercontent.com/26512984/121934526-5aef3200-cd82-11eb-981d-835490f7b1b2.png" alt="Samsung" width="24px" height="24px" /></br>Samsung | <img src="https://user-images.githubusercontent.com/26512984/121934519-59256e80-cd82-11eb-9b11-4805c7dd0ba1.png" alt="Opera" width="24px" height="24px" /></br>Opera |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 11                                                                                                                                                               | 12~                                                                                                                                                                | 10~                                                                                                                                                                      | 23~                                                                                                                                                                    | 10~                                                                                                                                                                    | 10~                                                                                                                                                                            | 4~                                                                                                                                                                       | 15~                                                                                                                                                                  |
+
+- Checkout `IE11` test [here](IE.md)
 
 ## 🛠 Installation
 
@@ -131,37 +135,45 @@ await User.clear(); // Clear all records
 npm install bxd
 ```
 
-In browser:
-
-> Maybe polyfills required if load BoxDB via script tag
+In script tag:
 
 ```html
 <script src="/path/to/bxd.js"></script>
 ```
 
-In browser (legacy):
+In script tag (legacy - like an IE11):
 
 ```html
 <!-- Polyfills required -->
-<script src="https://polyfill.io/v3/polyfill.min.js?features=Symbol%2CSymbol.asyncIterator%2CSymbol.prototype.description%2CSymbol.iterator%2CArray.prototype.%40%40iterator%2CObject.assign%2CObject.getOwnPropertyDescriptor%2CObject.setPrototypeOf%2CPromise%2CString.prototype.%40%40iterator"></script>
+<script src="https://polyfill.io/v3/polyfill.min.js?features=Array.from%2CSymbol%2CSymbol.asyncIterator%2CSymbol.prototype.description%2CSymbol.iterator%2CArray.prototype.some%2CArray.prototype.includes%2CArray.prototype.every%2CArray.prototype.find%2CArray.isArray%2CArray.prototype.%40%40iterator%2CString.prototype.%40%40iterator%2CObject.assign%2CObject.entries%2CObject.getOwnPropertyDescriptor%2CObject.getPrototypeOf%2CObject.setPrototypeOf%2CPromise
+"></script>
 <script src="/path/to/bxd.js">
 ```
 
-|     Target     | Polyfill (Based on core-js 3)         |
-| :------------: | :------------------------------------ |
-| `IE10`, `IE11` | es.symbol                             |
-| `IE10`, `IE11` | es.symbol.description                 |
-| `IE10`, `IE11` | es.symbol.async-iterator              |
-| `IE10`, `IE11` | es.symbol.iterator                    |
-| `IE10`, `IE11` | es.array.concat                       |
-| `IE10`, `IE11` | es.array.iterator                     |
-| `IE10`, `IE11` | es.string.iterator                    |
-| `IE10`, `IE11` | es.object.assign                      |
-| `IE10`, `IE11` | es.object.get-own-property-descriptor |
-|     `IE10`     | es.object.set-prototype-of            |
-| `IE10`, `IE11` | es.object.to-string                   |
-| `IE10`, `IE11` | es.promise                            |
-| `IE10`, `IE11` | web.dom-collections.iterator          |
+🔽 `IE11` targeted polyfills (Based on core-js 3)
+
+| Polyfill                              |
+| :------------------------------------ |
+| es.symbol                             |
+| es.symbol.description                 |
+| es.symbol.async-iterator              |
+| es.symbol.iterator                    |
+| es.array.concat                       |
+| es.array.every                        |
+| es.array.find                         |
+| es.array.from                         |
+| es.array.is-array                     |
+| es.array.iterator                     |
+| es.array.some                         |
+| es.string.iterator                    |
+| es.object.assign                      |
+| es.object.entries                     |
+| es.object.get-own-property-descriptor |
+| es.object.get-prototype-of            |
+| es.object.set-prototype-of            |
+| es.object.to-string                   |
+| es.promise                            |
+| web.dom-collections.iterator          |
 
 ## 📖 Documentation
 
