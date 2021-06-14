@@ -25,7 +25,7 @@ const HAS_VALUE_TYPES = [
 
 export default class BoxTransaction {
   private idb: {
-    value: IDBDatabase;
+    value: IDBDatabase | null;
   } = { value: null };
 
   /**
@@ -52,7 +52,8 @@ export default class BoxTransaction {
   run<S extends BoxSchema, T extends TransactionTask>(
     ...tasks: T[]
   ): Promise<void | IDBData | IDBData[]> {
-    if (this.idb.value === null) {
+    const db = this.idb.value;
+    if (db === null) {
       throw new BoxDBError('Database not ready');
     }
 
@@ -76,38 +77,40 @@ export default class BoxTransaction {
 
     return new Promise((resolve, reject) => {
       // Open new transaction
-      const tx = this.idb.value.transaction(storeNamesInTasks, mode);
+      const tx = db.transaction(storeNamesInTasks, mode);
 
       // Do each tasks
       // abort transaction if error occurs during task
       for (const task of tasks) {
         const action = task.type;
+        const args = (task.args || []).filter((x) => x !== undefined);
 
         if (action === TransactionType.INTERRUPT) {
           // interrupt manually
           tx.abort();
-        } else if (
-          action === TransactionType.$GET ||
-          action === TransactionType.$UPDATE ||
-          action === TransactionType.$DELETE
-        ) {
-          // using cursor
-          const objectStore = tx.objectStore(task.name);
-          this.cursor<S>(objectStore, task as CursorTransactionTask<S>).then(
-            (records) => (res = records),
-          );
         } else {
-          // get, add, put, delete, count, clear
           const objectStore = tx.objectStore(task.name);
-          // Skip ts type checking
-          const request = objectStore[action].call(objectStore, ...(task.args || [])) as IDBRequest;
-          request.onsuccess = () => (res = request.result);
+          if (
+            action === TransactionType.$GET ||
+            action === TransactionType.$UPDATE ||
+            action === TransactionType.$DELETE
+          ) {
+            // using cursor
+            this.cursor<S>(objectStore, task as CursorTransactionTask<S>).then(
+              (records) => (res = records),
+            );
+          } else {
+            // `action` = get | add | put | delete | count | clear
+            // Skip ts type checking
+            const request = objectStore[action].call(objectStore, ...args) as IDBRequest;
+            request.onsuccess = () => (res = request.result);
+          }
         }
       }
 
       const errorHandler = (event: Event) => {
         // Error event will bubbled up to IDB
-        reject(tx.error || (event.target as IDBRequest).error);
+        reject(event);
       };
 
       // On complete
@@ -133,7 +136,7 @@ export default class BoxTransaction {
     const limit = task.limit || null;
     const direction = task.direction || 'next';
     const updateValue = task.updateValue || null;
-    const res = [];
+    const res: IDBData[] = [];
 
     // Bundle of filter functions
     const pass = filter && filter.length ? (value) => filter.every((f) => f(value)) : () => true;
@@ -151,10 +154,10 @@ export default class BoxTransaction {
       const limitHandler = () => limit === null || limit > rows;
       const cursorTaskRequestHandler = (request: IDBRequest) => {
         /* istanbul ignore next */
-        request.onerror = (event) => (running = void reject(event));
+        request.onerror = (event) => (running = !!void reject(event));
       };
 
-      const request: IDBRequest<IDBCursorWithValue> = (
+      const request: IDBRequest<IDBCursorWithValue | null> = (
         index ? objectStore.index(index) : objectStore
       ).openCursor(range ? range.value : null, direction);
 

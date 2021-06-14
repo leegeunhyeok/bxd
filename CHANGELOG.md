@@ -1,5 +1,11 @@
 # Change Log
 
+## [1.0.0-rc.9] 2021-06-15
+
+- Update type checking logics (now based on `typeof`)
+- Add task arguments filter logic for lagacy browsers
+- Using `strictNullChecks` mode (Typescript)
+
 ## [1.0.0-rc.8] 2021-06-00
 
 - Change `BoxRange` type (Raname `target` to `index`)

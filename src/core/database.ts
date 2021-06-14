@@ -35,7 +35,7 @@ class BoxDB {
   private metas: BoxMetaMap = {};
   private tx: BoxTransaction;
   private builder: BoxBuilder;
-  private idb: IDBDatabase = null;
+  private idb: IDBDatabase | null = null;
   private ready = false;
 
   /**
@@ -50,7 +50,7 @@ class BoxDB {
     this.builder = new BoxBuilder(this.tx);
   }
 
-  getDB(): IDBDatabase {
+  getDB(): IDBDatabase | null {
     return this.idb;
   }
 
@@ -70,7 +70,7 @@ class BoxDB {
    * Returns interrupt task for abort transaction
    */
   static interrupt(): TransactionTask {
-    return createTask(TransactionType.INTERRUPT, null);
+    return createTask(TransactionType.INTERRUPT, ''); // empty object store name
   }
 
   /**
@@ -142,7 +142,7 @@ class BoxDB {
    * Close database connection
    */
   close(): void {
-    if (!this.ready) {
+    if (!this.ready || !this.idb) {
       throw new BoxDBError('Database not ready');
     }
     this.tx.close();
@@ -163,8 +163,8 @@ class BoxDB {
    */
   private meta(
     name: string,
-    schema: ConfiguredBoxSchema,
-    inKey: string,
+    schema: ConfiguredBoxSchema | null,
+    inKey: string | null,
     outKey: boolean,
     index: BoxIndexConfig[],
     force: boolean,
@@ -199,8 +199,8 @@ class BoxDB {
    * @param options box option
    */
   private toMeta(storeName: string, schema: BoxSchema, options?: BoxOptions): BoxMeta {
-    let primaryKeyPath = null;
-    const indexList = [];
+    let primaryKeyPath: string | null = null;
+    const indexList: { keyPath: string; unique: boolean }[] = [];
 
     const configuredSchema = Object.entries(schema).reduce((prev, [field, type]) => {
       // Is BoxDataTypes
@@ -247,6 +247,10 @@ class BoxDB {
   private update(openRequest: IDBOpenDBRequest) {
     const db = openRequest.result;
     const tx = openRequest.transaction;
+
+    /* istanbul ignore next */
+    if (!tx) return;
+
     // Object store names in IDB
     const objectStoreNames = Array.from(db.objectStoreNames);
     // defined box(object store) names

@@ -156,10 +156,10 @@
         <p id="bxd_final_count" class="wait">wait<!-- Value --></p>
       </div>
     </div>
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=Symbol%2CSymbol.asyncIterator%2CSymbol.prototype.description%2CSymbol.iterator%2CArray.prototype.%40%40iterator%2CObject.assign%2CObject.getOwnPropertyDescriptor%2CObject.setPrototypeOf%2CPromise%2CString.prototype.%40%40iterator"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=Array.from%2CSymbol%2CSymbol.asyncIterator%2CSymbol.prototype.description%2CSymbol.iterator%2CArray.prototype.some%2CArray.prototype.includes%2CArray.prototype.every%2CArray.prototype.find%2CArray.isArray%2CArray.prototype.%40%40iterator%2CString.prototype.%40%40iterator%2CObject.assign%2CObject.entries%2CObject.getOwnPropertyDescriptor%2CObject.getPrototypeOf%2CObject.setPrototypeOf%2CPromise%2CPromise.prototype.finally"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bxd@latest/dist/bxd.min.js"></script>
-    <script>
+    <script type="text/javascript">
       // utilities
       function inBrowser(name) {
         return eval('typeof ' + name) !== 'undefined';
@@ -213,7 +213,7 @@
         }
       }
     </script>
-    <script>
+    <script type="text/javascript">
       // Global
       var idbSupport = inBrowser('indexedDB');
       var taskTracker = {};
@@ -222,21 +222,21 @@
       var boxScheme = {
         id: {
           type: BoxDB.Types.NUMBER,
-          key: true,
+          key: true
         },
         name: {
           type: BoxDB.Types.STRING,
-          index: true,
+          index: true
         },
         number: {
           type: BoxDB.Types.STRING,
           index: true,
-          unique: true,
+          unique: true
         },
         age: {
           type: BoxDB.Types.NUMBER,
-          index: true,
-        },
+          index: true
+        }
       };
 
       var users = [
@@ -249,7 +249,7 @@
         { id: 7, name: 'Mae Skeels', age: 42, number: '281-756-6133' },
         { id: 8, name: 'Carol Bousquet', age: 75, number: '646-215-1642' },
         { id: 9, name: 'Jonathan Cline', age: 13, number: '509-794-6711' },
-        { id: 10, name: 'Dallas Garoutte', age: 58, number: '773-682-5207' },
+        { id: 10, name: 'Dallas Garoutte', age: 58, number: '773-682-5207' }
       ];
 
       // main
@@ -259,7 +259,7 @@
 
         function bxdInstance() {
           runner(function () {
-            db = new BoxDB($('#db_name').val(), +$('#db_version').val());
+            db = new BoxDB($('#db_name').val(), parseInt($('#db_version').val()));
           });
           status($('#bxd_instance'), db !== null);
           text($('#bxd_name'), 'getName():', db.getName());
@@ -435,7 +435,7 @@
               .transaction(
                 box.$add({ id: 99, name: 'UNKNOWN', age: 99999, number: null }),
                 box.$put({ id: 7, name: 'CHNAGED' }),
-                box.$delete(8),
+                box.$delete(8)
               )
               .then(function () {
                 done = true;
@@ -478,7 +478,7 @@
           deleteRecordsByRange,
           deleteRecordsByFilter,
           transitions,
-          final,
+          final
         ];
 
         function run() {

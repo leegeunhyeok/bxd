@@ -155,7 +155,7 @@ export interface BoxTask<S extends BoxSchema> {
 
 // Box.find = () => BoxCursorHandler
 export interface BoxCursorHandler<S extends BoxSchema> {
-  get(order?: BoxCursorDirections, limit?: number): Promise<BoxData<S>[]>;
+  get(order?: BoxCursorDirections | null, limit?: number): Promise<BoxData<S>[]>;
   update(value: OptionalBoxData<S>): Promise<void>;
   delete(): Promise<void>;
 }
@@ -176,9 +176,9 @@ export interface TransactionTask {
 }
 
 export interface CursorTransactionTask<S extends BoxSchema> extends TransactionTask {
-  direction?: BoxCursorDirections;
+  direction?: BoxCursorDirections | null;
   filter?: BoxFilterFunction<S>[];
-  range?: BoxRange<S>;
+  range?: BoxRange<S> | null;
   target?: IDBKeyPath;
   limit?: number;
   updateValue?: IDBValue;
@@ -186,8 +186,8 @@ export interface CursorTransactionTask<S extends BoxSchema> extends TransactionT
 
 export interface BoxMeta {
   name: string;
-  schema: ConfiguredBoxSchema;
-  inKey: string;
+  schema: ConfiguredBoxSchema | null;
+  inKey: string | null;
   outKey: boolean;
   index: BoxIndexConfig[];
   force: boolean;
@@ -207,7 +207,7 @@ export type BoxFilterFunction<S extends BoxSchema> = (value: BoxData<S>) => bool
 
 // BoxData
 export type BoxData<S extends BoxSchema> = {
-  [field in keyof S]: AsType<PickType<S[field]>>;
+  [field in keyof S]: AsType<PickType<S[field]>> | null;
 };
 
 export type OptionalBoxData<S extends BoxSchema> = Partial<BoxData<S>>;

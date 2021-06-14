@@ -163,7 +163,7 @@ describe('Transaction', () => {
         });
 
         const record = await User.get(key);
-        expect(record.name).not.toEqual(target.name);
+        expect(record.name).not.toEqual(target?.name);
       });
     });
 
