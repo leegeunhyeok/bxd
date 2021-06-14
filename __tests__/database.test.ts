@@ -1,5 +1,5 @@
 import 'fake-indexeddb/auto';
-import BoxDB, { Box } from '../src/index.es';
+import BoxDB, { Box, BoxData, BoxSchema } from '../src/index.es';
 
 const testSchema = {
   id: {
@@ -19,7 +19,7 @@ const testSchema = {
 };
 
 describe('BoxDB', () => {
-  let db: BoxDB = null;
+  let db: BoxDB = {} as BoxDB;
   let version = 0;
   const name = 'database-db';
 
@@ -50,7 +50,7 @@ describe('BoxDB', () => {
   });
 
   describe('when create new box', () => {
-    let User: Box<typeof testSchema> = null;
+    let User: Box<typeof testSchema> = {} as Box<typeof testSchema>;
     const name = 'user';
 
     beforeAll(() => {
@@ -123,7 +123,7 @@ describe('BoxDB', () => {
 
       describe('when provide valid data', () => {
         it('should returns box value', () => {
-          let data = null;
+          let data: BoxData<BoxSchema> | null = null;
           expect(() => {
             data = new User({
               id: 1,

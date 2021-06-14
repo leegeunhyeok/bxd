@@ -1,6 +1,7 @@
 import 'fake-indexeddb/auto';
 import BoxDB from '../src/index.es';
 import BoxBuilder from '../src/core/box';
+import BoxTransaction from '../src/core/transaction';
 
 const modelArgs = {
   targetVersion: 1,
@@ -19,7 +20,7 @@ const modelArgs = {
   },
 };
 
-const builder = new BoxBuilder(null);
+const builder = new BoxBuilder({} as BoxTransaction);
 
 describe('Box', () => {
   const Box = builder.build(modelArgs.targetVersion, modelArgs.storeName, modelArgs.scheme);

@@ -110,7 +110,6 @@ export default class BoxTransaction {
 
       const errorHandler = (event: Event) => {
         // Error event will bubbled up to IDB
-        console.error(event);
         reject(event);
       };
 

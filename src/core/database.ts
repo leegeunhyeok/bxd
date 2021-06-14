@@ -142,11 +142,11 @@ class BoxDB {
    * Close database connection
    */
   close(): void {
-    if (!this.ready) {
+    if (!this.ready || !this.idb) {
       throw new BoxDBError('Database not ready');
     }
     this.tx.close();
-    this.idb?.close();
+    this.idb.close();
     this.ready = false;
   }
 
@@ -248,6 +248,7 @@ class BoxDB {
     const db = openRequest.result;
     const tx = openRequest.transaction;
 
+    /* istanbul ignore next */
     if (!tx) return;
 
     // Object store names in IDB

@@ -155,7 +155,7 @@ export interface BoxTask<S extends BoxSchema> {
 
 // Box.find = () => BoxCursorHandler
 export interface BoxCursorHandler<S extends BoxSchema> {
-  get(order?: BoxCursorDirections, limit?: number): Promise<BoxData<S>[]>;
+  get(order?: BoxCursorDirections | null, limit?: number): Promise<BoxData<S>[]>;
   update(value: OptionalBoxData<S>): Promise<void>;
   delete(): Promise<void>;
 }
