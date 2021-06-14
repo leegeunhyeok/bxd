@@ -156,7 +156,7 @@
         <p id="bxd_final_count" class="wait">wait<!-- Value --></p>
       </div>
     </div>
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=Symbol%2CSymbol.asyncIterator%2CSymbol.prototype.description%2CSymbol.iterator%2CArray.prototype.%40%40iterator%2CObject.assign%2CObject.getOwnPropertyDescriptor%2CObject.setPrototypeOf%2CPromise%2CString.prototype.%40%40iterator"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=Array.from%2CSymbol%2CSymbol.asyncIterator%2CSymbol.prototype.description%2CSymbol.iterator%2CArray.prototype.some%2CArray.prototype.includes%2CArray.prototype.every%2CArray.prototype.find%2CArray.isArray%2CArray.prototype.%40%40iterator%2CString.prototype.%40%40iterator%2CObject.assign%2CObject.entries%2CObject.getOwnPropertyDescriptor%2CObject.getPrototypeOf%2CObject.setPrototypeOf%2CPromise%2CPromise.prototype.finally"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bxd@latest/dist/bxd.min.js"></script>
     <script type="text/javascript">
@@ -259,7 +259,7 @@
 
         function bxdInstance() {
           runner(function () {
-            db = new BoxDB($('#db_name').val(), +$('#db_version').val());
+            db = new BoxDB($('#db_name').val(), parseInt($('#db_version').val()));
           });
           status($('#bxd_instance'), db !== null);
           text($('#bxd_name'), 'getName():', db.getName());
