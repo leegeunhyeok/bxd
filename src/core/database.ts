@@ -13,7 +13,7 @@ import {
   TransactionTask,
   TransactionType,
 } from '../types';
-import { createTask } from '../utils';
+import { toBoxMeta, createTask } from '../utils';
 
 export interface BoxOption {
   autoIncrement?: boolean;
@@ -151,47 +151,6 @@ class BoxDB {
   }
 
   /**
-   * Create BoxMeta object
-   *
-   * @param name
-   * @param schema
-   * @param keyPath
-   * @param autoIncrement
-   * @param index
-   * @param force
-   * @returns
-   */
-  private meta(
-    name: string,
-    schema: ConfiguredBoxSchema | null,
-    inKey: string | null,
-    outKey: boolean,
-    index: BoxIndexConfig[],
-    force: boolean,
-  ): BoxMeta {
-    return { name, schema, inKey, outKey, index, force };
-  }
-
-  /**
-   * Extract metadata from IDBObjectStore
-   *
-   * @param objectStore object store
-   */
-  private convert(objectStore: IDBObjectStore): BoxMeta {
-    return this.meta(
-      objectStore.name,
-      null,
-      objectStore.keyPath as string, // assertion (origin: string[] | string)
-      objectStore.autoIncrement,
-      Array.from(objectStore.indexNames).map((name) => {
-        const idx = objectStore.index(name);
-        return { keyPath: idx.keyPath, unique: idx.unique } as BoxIndexConfig;
-      }),
-      false,
-    );
-  }
-
-  /**
    * Box schema object convert to BoxMeta
    *
    * @param storeName object store name
@@ -229,14 +188,14 @@ class BoxDB {
       return prev;
     }, {} as ConfiguredBoxSchema);
 
-    return this.meta(
-      storeName,
-      configuredSchema,
-      primaryKeyPath,
-      !!options?.autoIncrement,
-      indexList,
-      !!options?.force,
-    );
+    return toBoxMeta({
+      name: storeName,
+      schema: configuredSchema,
+      inKey: primaryKeyPath,
+      outKey: !!options?.autoIncrement,
+      index: indexList,
+      force: !!options?.force,
+    });
   }
 
   /**
@@ -263,7 +222,15 @@ class BoxDB {
       if (boxStoreNames.includes(name)) {
         const { inKey, outKey, index, force } = getBoxMeta(name);
         const objectStore = tx.objectStore(name);
-        const objectStoreMeta = this.convert(objectStore);
+        const objectStoreMeta = toBoxMeta({
+          name: objectStore.name,
+          inKey: objectStore.keyPath as string, // assertion (origin: string[] | string)
+          outKey: objectStore.autoIncrement,
+          index: Array.from(objectStore.indexNames).map((name) => {
+            const idx = objectStore.index(name);
+            return { keyPath: idx.keyPath, unique: idx.unique } as BoxIndexConfig;
+          }),
+        });
 
         // Delete exist object store
         if (force) {

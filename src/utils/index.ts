@@ -3,6 +3,8 @@ import {
   IDBArgument,
   BoxSchema,
   BoxRange,
+  BoxMeta,
+  BoxIndexConfig,
   BoxCursorDirections,
   BoxFilterFunction,
   CursorTransactionTask,
@@ -10,6 +12,7 @@ import {
   BoxContext,
   BoxCursorHandler,
   TransactionCursorHandler,
+  ConfiguredBoxSchema,
 } from '../types';
 
 export type TaskArguments<S extends BoxSchema> = {
@@ -19,6 +22,24 @@ export type TaskArguments<S extends BoxSchema> = {
   range?: BoxRange<S> | null;
   limit?: number;
   updateValue?: IDBValue;
+};
+
+export const toBoxMeta = ({
+  name,
+  schema = null,
+  inKey,
+  outKey,
+  index,
+  force = false,
+}: {
+  name: string;
+  schema?: ConfiguredBoxSchema | null;
+  inKey: string | null;
+  outKey: boolean;
+  index: BoxIndexConfig[];
+  force?: boolean;
+}): BoxMeta => {
+  return { name, schema, inKey, outKey, index, force };
 };
 
 export const getCursorHandler = (
