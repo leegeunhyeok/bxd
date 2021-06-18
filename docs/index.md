@@ -1,3 +1,10 @@
+<style type="text/css">
+table {
+  display: block;
+  overflow-x: scroll;
+}
+</style>
+
 # Getting started
 
 BoxDB is a promise-based browser ORM for [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API)
