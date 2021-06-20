@@ -31,7 +31,7 @@ BoxDB is a promise-based browser ORM for [IndexedDB](https://developer.mozilla.o
 
 <div align="center" style="padding-bottom: 1rem">
 
-<a href="./apis">API Reference</a> | <a href="./web-workers">Web Workers</a> | <a href="./react">React</a> | <a href="./examples">Examples</a>
+<a href="./apis">API Reference</a> | <a href="./web-workers">Web Workers</a> | <a href="./examples">Examples</a>
 
 </div>
 
