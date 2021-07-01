@@ -14,6 +14,7 @@ import {
   TransactionType,
 } from '../types';
 import { toBoxMeta, createTask } from '../utils';
+import { Transaction } from '../types/bxd';
 
 export interface BoxOption {
   autoIncrement?: boolean;
@@ -33,7 +34,7 @@ class BoxDB {
   private name: string;
   private version: number;
   private metas: BoxMetaMap = {};
-  private tx: BoxTransaction;
+  private tx: Transaction;
   private builder: BoxBuilder;
   private idb: IDBDatabase | null = null;
   private ready = false;

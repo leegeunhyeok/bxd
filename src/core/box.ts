@@ -1,4 +1,3 @@
-import BoxTransaction from './transaction';
 import { TaskArguments, createTask, getCursorHandler, getTransactionCursorHandler } from '../utils';
 import { BoxDBError } from './errors';
 import {
@@ -13,6 +12,7 @@ import {
   UncheckedData,
   TransactionType,
   IDBData,
+  Transaction,
 } from '../types';
 
 /**
@@ -174,7 +174,7 @@ export const rangeBuilder = {
 export default class BoxBuilder {
   private proto: BoxPrototype;
 
-  constructor(tx: BoxTransaction) {
+  constructor(tx: Transaction) {
     this.proto = { tx, $: transactionExecuter, pass: schemaValidator, data: createBoxData };
   }
 

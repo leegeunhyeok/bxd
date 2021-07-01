@@ -7,6 +7,7 @@ import {
   CursorTransactionTask,
   TransactionType,
   TransactionMode,
+  Transaction,
 } from '../types';
 
 const READONLY_TYPES = [
@@ -23,7 +24,7 @@ const HAS_VALUE_TYPES = [
   TransactionType.ADD,
 ];
 
-export default class BoxTransaction {
+export default class BoxTransaction implements Transaction<IDBDatabase> {
   private idb: {
     value: IDBDatabase | null;
   } = { value: null };
