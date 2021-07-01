@@ -139,7 +139,7 @@ npm install bxd
 In script tag:
 
 ```html
-<script src="/path/to/bxd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bxd@latest/dist/bxd.min.js"></script>
 ```
 
 In script tag (legacy - like an IE11):
@@ -148,7 +148,7 @@ In script tag (legacy - like an IE11):
 <!-- Polyfills required -->
 <script src="https://polyfill.io/v3/polyfill.min.js?features=Array.from%2CSymbol%2CSymbol.asyncIterator%2CSymbol.prototype.description%2CSymbol.iterator%2CArray.prototype.some%2CArray.prototype.includes%2CArray.prototype.every%2CArray.prototype.find%2CArray.isArray%2CArray.prototype.%40%40iterator%2CString.prototype.%40%40iterator%2CObject.assign%2CObject.entries%2CObject.getOwnPropertyDescriptor%2CObject.getPrototypeOf%2CObject.setPrototypeOf%2CPromise
 "></script>
-<script src="/path/to/bxd.js">
+<script src="https://cdn.jsdelivr.net/npm/bxd@latest/dist/bxd.min.js">
 ```
 
 🔽 `IE11` targeted polyfills (Based on core-js 3)
