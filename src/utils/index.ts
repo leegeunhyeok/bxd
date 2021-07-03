@@ -1,28 +1,17 @@
 import {
-  IDBValue,
-  IDBArgument,
   BoxSchema,
   BoxRange,
   BoxMeta,
   BoxIndexConfig,
-  BoxCursorDirections,
   BoxFilterFunction,
   CursorTransactionTask,
   TransactionType,
   BoxContext,
   BoxCursorHandler,
   TransactionCursorHandler,
+  TaskParameters,
   ConfiguredBoxSchema,
 } from '../types';
-
-export type TaskArguments<S extends BoxSchema> = {
-  args?: IDBArgument;
-  direction?: BoxCursorDirections | null;
-  filter?: BoxFilterFunction<S>[];
-  range?: BoxRange<S> | null;
-  limit?: number;
-  updateValue?: IDBValue;
-};
 
 export const toBoxMeta = ({
   name,
@@ -89,7 +78,7 @@ export const getTransactionCursorHandler = (
 export const createTask = <S extends BoxSchema>(
   type: TransactionType,
   name: string,
-  taskArgs?: TaskArguments<S>,
+  taskArgs?: TaskParameters<S>,
 ): CursorTransactionTask<S> => {
   const { args, direction, filter, range, limit, updateValue } = taskArgs || {};
   return {

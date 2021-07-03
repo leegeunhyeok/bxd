@@ -24,7 +24,7 @@ const HAS_VALUE_TYPES = [
   TransactionType.ADD,
 ];
 
-export default class BoxTransaction implements Transaction<IDBDatabase> {
+export default class BoxTransaction implements Transaction {
   private idb: {
     value: IDBDatabase | null;
   } = { value: null };

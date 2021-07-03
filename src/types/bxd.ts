@@ -1,5 +1,3 @@
-import { TaskArguments } from '../utils';
-
 // IDB APIs types
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type IDBData = any;
@@ -13,6 +11,15 @@ export interface Transaction {
   close(): void;
   run<T extends TransactionTask>(...tasks: T[]): Promise<void | IDBData | IDBData[]>;
 }
+
+export type TaskParameters<S extends BoxSchema> = {
+  args?: IDBArgument;
+  direction?: BoxCursorDirections | null;
+  filter?: BoxFilterFunction<S>[];
+  range?: BoxRange<S> | null;
+  limit?: number;
+  updateValue?: IDBValue;
+};
 
 export enum TransactionMode {
   READ = 'readonly',
@@ -93,7 +100,7 @@ export interface Box<S extends BoxSchema> extends BoxHandler<S>, BoxTask<S> {
 
 export interface BoxPrototype {
   tx: Transaction;
-  $(type: TransactionType, args?: TaskArguments<BoxSchema>): Promise<void | IDBData | IDBData[]>;
+  $(type: TransactionType, args?: TaskParameters<BoxSchema>): Promise<void | IDBData | IDBData[]>;
   pass(target: UncheckedData, strict?: boolean): void | never;
   data<T extends BoxSchema>(initalData?: BoxData<T>): BoxData<T>;
 }

@@ -1,4 +1,4 @@
-import { TaskArguments, createTask, getCursorHandler, getTransactionCursorHandler } from '../utils';
+import { createTask, getCursorHandler, getTransactionCursorHandler } from '../utils';
 import { BoxDBError } from './errors';
 import {
   Box,
@@ -13,6 +13,7 @@ import {
   TransactionType,
   IDBData,
   Transaction,
+  TaskParameters,
 } from '../types';
 
 /**
@@ -94,14 +95,14 @@ function createBoxData<T extends BoxSchema>(this: BoxContext, initalData?: BoxDa
  * Execute task and returns tasked Promise
  *
  * @param type Transaction type
- * @param args Arguments
+ * @param params Parameters
  */
 function transactionExecuter(
   this: BoxContext,
   type: TransactionType,
-  args?: TaskArguments<BoxSchema>,
+  params?: TaskParameters<BoxSchema>,
 ) {
-  return this.tx.run(createTask(type, this.__name, args));
+  return this.tx.run(createTask(type, this.__name, params));
 }
 
 // BoxHandler
