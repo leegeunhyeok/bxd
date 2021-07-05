@@ -122,3 +122,7 @@ logo.png
 # demo
 demo/
 docs/
+
+# ignore else
+stats.html
+README.md
