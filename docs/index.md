@@ -5,7 +5,7 @@ table {
 }
 </style>
 
-# Getting started
+# BoxDB
 
 BoxDB is a promise-based browser ORM for [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API)
 
