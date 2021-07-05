@@ -11,3 +11,30 @@
 ✅ All tests passed.
 
 ![IE11](https://user-images.githubusercontent.com/26512984/121932588-ff23a980-cd7f-11eb-9aa2-ca0adc6cfd8f.png)
+
+## Polyfills
+
+🔽 `IE11` targeted polyfills (Based on core-js 3)
+
+| Polyfill                              |
+| :------------------------------------ |
+| es.symbol                             |
+| es.symbol.description                 |
+| es.symbol.async-iterator              |
+| es.symbol.iterator                    |
+| es.array.concat                       |
+| es.array.every                        |
+| es.array.find                         |
+| es.array.from                         |
+| es.array.is-array                     |
+| es.array.iterator                     |
+| es.array.some                         |
+| es.string.iterator                    |
+| es.object.assign                      |
+| es.object.entries                     |
+| es.object.get-own-property-descriptor |
+| es.object.get-prototype-of            |
+| es.object.set-prototype-of            |
+| es.object.to-string                   |
+| es.promise                            |
+| web.dom-collections.iterator          |

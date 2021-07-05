@@ -23,6 +23,7 @@
   - [Box.put(value[, key])](#boxput)
   - [Box.delete(key)](#boxdelete)
   - [Box.find([, range, [, ...predicate]])](#boxfind)
+  - [Box.count()](#boxcount)
   - [Box.clear()](#boxclear)
   - [Box.$add(value[, key])](#box$add)
   - [Box.$put(value[, key])](#box$put)
@@ -339,7 +340,7 @@ type BoxData = {
 // Find age = 10 (should `age` field is defined to index)
 const range_1 = {
   value: 10,
-  target: 'age'
+  index: 'age'
 };
 
 // Find in-line-key(_id) < 5
@@ -354,9 +355,9 @@ Box.find(range_2);
 Properties
 
 - value: [BoxDB.Range](#boxdbrange) or [IDBValidKey](https://microsoft.github.io/PowerBI-JavaScript/modules/_node_modules_typedoc_node_modules_typescript_lib_lib_dom_d_.html#idbvalidkey) value
-- target: `string` (`optional`)
+- index: `string` (`optional`)
   - Must have set name of indexed box field
-  - If target is empty, follows [in-line key](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API/Basic_Concepts_Behind_IndexedDB#gloss_inline_key)
+  - If index is empty, follows [in-line key](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API/Basic_Concepts_Behind_IndexedDB#gloss_inline_key)
 
 ## BoxFilterFunction
 
@@ -404,8 +405,8 @@ const u2 = new User({
 User.get(key);
 User.put(value, key);
 User.delete(key);
+User.count();
 User.clear();
-User.drop();
 User.find(range, ...predicate).get(order, limit);
 User.find(range, ...predicate).update(updateValue);
 User.find(range, ...predicate).delete();
@@ -558,6 +559,18 @@ Parameters
 Return value
 
 - [BoxCursorHandler](#boxcursorhandler)
+
+### Box.count()
+
+> The `BoxMode.count()` method returns all records count in object store.
+
+```javascript
+Box.count();
+```
+
+Return value
+
+- Promise<`number`>
 
 ### Box.clear()
 
