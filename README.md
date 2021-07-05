@@ -109,7 +109,7 @@ await User.clear(); // Clear all records
 - [Browsers Support](#-browsers-support)
 - [Installation](#-installation)
 - [Documentation](#-documentation)
-- [Examples](#-examples)
+- [Example](#-example)
 - [Issue](#-issue)
 - [Development](#-development)
 - [Resources](#-resources)
@@ -154,9 +154,9 @@ Looking for IE? Go to [this page](https://this.geundung.dev/bxd/ie)
 
 Go to [documentation](https://leegeunhyeok.github.io/bxd)!
 
-## 🌱 Examples
+## 🌱 Example
 
-[Examples](https://leegeunhyeok.github.io/bxd/examples.html)
+[Example](https://leegeunhyeok.github.io/bxd/example.html)
 
 ## 🔥 Issue
 
