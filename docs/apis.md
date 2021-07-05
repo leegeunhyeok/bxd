@@ -274,7 +274,7 @@ Options
 - key: `boolean` (`optional`)
   - Set this property as [in-line key](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API/Basic_Concepts_Behind_IndexedDB#gloss_inline_key)
   - Can be set in-line key only once each object store
-    - _If you want change, create new model after drop_ (Or create box with `force` option)
+    - _If you want change, create new box after drop_ ( re-create box with `force` option)
 - index: `boolean` (`optional`)
   - [Create](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/createIndex) or [delete](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/deleteIndex) index for this property
   - If you want search values on this field via index, should set to `true`
@@ -305,7 +305,7 @@ interface BoxOptions {
 > Data of based on [BoxSchema](#boxschema).
 
 ```typescript
-// Sample model
+// Sample box
 const User = db.box('user', {
   _id: {
     type: BoxDB.Types.NUMBER,
@@ -389,12 +389,11 @@ const User = db.box('user', {
   email: BoxDB.Types.STRING
 });
 
-// Can be create BoxData
 // (1) Create empty data
 const u1 = new User();
 u1.name // string
 
-// (2) Create with initial data
+// (2) Create data with initial data
 const u2 = new User({
   _id: 0,
   name: 'Jack',
@@ -436,8 +435,8 @@ Methods
 - Box.get(key): Get record from object store
 - Box.put(value[, key]): Put record to object store
 - Box.delete(key): Delete record from object store
-- Box.clear(key): Clear all records from object store
-- Box.drop(key): Drop the object store
+- Box.count(key): Get records count
+- Box.clear(): Drop the object store
 - Box.find(range, ...predicate): Returns `BoxCursorHandler`, Transaction by [IDBCursor](https://developer.mozilla.org/en-US/docs/Web/API/IDBCursor)
   - find().get(): Get records
   - find().update(updateValue): Update records
