@@ -19,7 +19,13 @@ BoxDB is a promise-based browser ORM for [IndexedDB](https://developer.mozilla.o
     <img src="https://img.shields.io/npm/v/bxd">
   </a>
   <a href="https://www.npmjs.com/package/bxd">
+    <img alt="npm bundle size" src="https://img.shields.io/bundlephobia/minzip/bxd">
+  </a>
+  <a href="https://www.npmjs.com/package/bxd">
     <img alt="npm bundle size" src="https://img.shields.io/bundlephobia/min/bxd">
+  </a>
+  <a href="https://www.npmjs.com/package/bxd">
+    <img alt="zero dependency" src="https://badgen.net/bundlephobia/dependency-count/bxd">
   </a>
   <img src="https://img.shields.io/github/license/leegeunhyeok/bxd">
   <img src="https://badgen.net/badge/-/TypeScript/blue?icon=typescript&label" alt="typescript">
