@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>bxd@latest</title>
+    <style>
+      .yes {
+        color: dodgerblue;
+      }
+      .no {
+        color: tomato;
+      }
+      .wait {
+        color: lightgray;
+      }
+      .hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Test - bxd@latest</h1>
+    <div id="error" class="wait"><!-- Value --></div>
+    <div>
+      <h3 id="idb-support-heading">IDB Support</h3>
+      <p id="agent"><!-- Value --></p>
+      <p id="idb_support"><!-- Value --></p>
+    </div>
+    <div style="margin-bottom: 5px">
+      <label>
+        Database name
+        <input id="db_name" type="text" placeholder="database name" value="test" />
+      </label>
+      <br />
+    </div>
+    <div style="margin-bottom: 5px">
+      <label>
+        Database version
+        <input id="db_version" type="number" placeholder="database version" value="1" />
+      </label>
+    </div>
+    <div>
+      <button id="button_run">run</button>
+      <button id="button_reset">reset</button>
+    </div>
+    <hr />
+    <div id="main">
+      <div>
+        <h2 id="result" class="wait">wait<!-- Value --></h2>
+      </div>
+      <hr />
+      <div>
+        <h3 id="bxd-instance">Create bxd instance</h3>
+        <a href="https://github.com/leegeunhyeok/bxd/wiki#boxdb">BoxDB</a>
+        <p id="bxd_instance" class="wait">wait<!-- Value --></p>
+        <p id="bxd_name" class="wait">wait<!-- Value --></p>
+        <p id="bxd_version" class="wait">wait<!-- Value --></p>
+      </div>
+      <div>
+        <h3 id="bxd-box">Create Box</h3>
+        <a href="https://github.com/leegeunhyeok/bxd/wiki#boxdbbox">BoxDB.box</a>
+        <p id="bxd_box" class="wait">wait<!-- Value --></p>
+      </div>
+      <div>
+        <h3 id="bxd-open">Box open</h3>
+        <a href="https://github.com/leegeunhyeok/bxd/wiki#boxdbopen">BoxDB.open</a>
+        <p id="bxd_open" class="wait">wait<!-- Value --></p>
+      </div>
+      <div>
+        <h3 id="bxd-add">Add records</h3>
+        <a href="https://github.com/leegeunhyeok/bxd/wiki#boxadd">Box.add</a>
+        <p id="bxd_add" class="wait">wait<!-- Value --></p>
+      </div>
+      <div>
+        <h3 id="bxd-count">Record count</h3>
+        <a href="https://github.com/leegeunhyeok/bxd/wiki#boxcount">Box.count</a>
+        <p id="bxd_count" class="wait">wait<!-- Value --></p>
+      </div>
+      <div>
+        <h3 id="bxd-get">Get record</h3>
+        <br />
+        <u>get in-line-key(id) = 10</u>
+        <a href="https://github.com/leegeunhyeok/bxd/wiki#boxget">Box.get</a>
+        <p id="bxd_get" class="wait">wait<!-- Value --></p>
+      </div>
+      <div>
+        <h3 id="bxd-get-all">Get all records</h3>
+        <a href="https://github.com/leegeunhyeok/bxd/wiki#boxfind">Box.find().get()</a>
+        <br />
+        <u>find age = 13</u>
+        <p id="bxd_all" class="wait">wait<!-- Value --></p>
+        <code id="bxd_get_all" class="wait">wait<!-- Value --></code>
+      </div>
+      <div>
+        <h3 id="bxd-update">Update record</h3>
+        <a href="https://github.com/leegeunhyeok/bxd/wiki#boxfind">Box.put()</a>
+        <br />
+        <u>find id = 1 and put name to 'First Name'</u>
+        <p id="bxd_put" class="wait">wait<!-- Value --></p>
+      </div>
+      <div>
+        <h3 id="bxd-update-range">Update records (range)</h3>
+        <a href="https://github.com/leegeunhyeok/bxd/wiki#boxfind">Box.find(range).update()</a>
+        <br />
+        <u>update age = 10 to age = 20</u>
+        <p id="bxd_update_range" class="wait">wait<!-- Value --></p>
+      </div>
+      <div>
+        <h3 id="bxd-update-filter">Update records (filter)</h3>
+        <a href="https://github.com/leegeunhyeok/bxd/wiki#boxfind"
+          >Box.find(null, ...filters).update()</a
+        >
+        <br />
+        <u>update age = 13 to age = 10</u>
+        <p id="bxd_update_filter" class="wait">wait<!-- Value --></p>
+      </div>
+      <div>
+        <h3 id="bxd-delete">Delete record</h3>
+        <a href="https://github.com/leegeunhyeok/bxd/wiki#boxdelete">Box.delete()</a>
+        <br />
+        <u>delete in-line-key(id) = 5</u>
+        <p id="bxd_delete" class="wait">wait<!-- Value --></p>
+      </div>
+      <div>
+        <h3 id="bxd-delete-range">Delete records (range)</h3>
+        <a href="https://github.com/leegeunhyeok/bxd/wiki#boxfind">Box.find(range).delete()</a>
+        <br />
+        <u>delete number = '920-684-4795'</u>
+        <p id="bxd_delete_range" class="wait">wait<!-- Value --></p>
+      </div>
+      <div>
+        <h3 id="bxd-delete-filter">Delete records (filter)</h3>
+        <a href="https://github.com/leegeunhyeok/bxd/wiki#boxfind"
+          >Box.find(null, ...filters).delete()</a
+        >
+        <br />
+        <u>delete age > 70</u>
+        <p id="bxd_delete_filter" class="wait">wait<!-- Value --></p>
+      </div>
+      <div>
+        <h3 id="bxd-transaction">Run multiple tasks</h3>
+        <a href="https://github.com/leegeunhyeok/bxd/wiki#boxdbtransition">BoxDB.transition()</a>
+        <br />
+        <u>add record { id: 99, name: 'UNKNOWN', age: 99999, number: null }</u>
+        <br />
+        <u>update record id = 7 to name = 'CHANGED'</u>
+        <br />
+        <u>delete record in-line-key(id) = 8</u>
+        <p id="bxd_transaction" class="wait">wait<!-- Value --></p>
+      </div>
+      <hr />
+      <div>
+        <h3 id="bxd-final">Final state</h3>
+        <code id="bxd_final_records" class="wait">wait<!-- Value --></code>
+        <p id="bxd_final" class="wait">wait<!-- Value --></p>
+        <p id="bxd_final_count" class="wait">wait<!-- Value --></p>
+      </div>
+    </div>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=Array.from%2CSymbol%2CSymbol.asyncIterator%2CSymbol.prototype.description%2CSymbol.iterator%2CArray.prototype.some%2CArray.prototype.includes%2CArray.prototype.every%2CArray.prototype.find%2CArray.isArray%2CArray.prototype.%40%40iterator%2CString.prototype.%40%40iterator%2CObject.assign%2CObject.entries%2CObject.getOwnPropertyDescriptor%2CObject.getPrototypeOf%2CObject.setPrototypeOf%2CPromise%2CPromise.prototype.finally"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bxd@latest/dist/bxd.min.js"></script>
+    <script type="text/javascript">
+      // utilities
+      function inBrowser(name) {
+        return eval('typeof ' + name) !== 'undefined';
+      }
+
+      function bool(value) {
+        return value ? 'true' : 'false';
+      }
+
+      function text(el) {
+        var text = '';
+        for (var i = 1; i < arguments.length; i++) {
+          text += arguments[i] + ' ';
+        }
+        el.removeClass();
+        el.text(text);
+      }
+
+      function status(el, yes) {
+        el.text(bool(yes));
+        el.removeClass();
+        el.addClass(yes ? 'yes' : 'no');
+      }
+
+      function error(err) {
+        console.error(err);
+        $('#error').append($('<p>' + err + '</p>').addClass('no'));
+      }
+
+      function runner(callback) {
+        try {
+          var res = callback();
+          if (res && typeof res.then === 'function') {
+            return res.catch(error);
+          } else {
+            return res;
+          }
+        } catch (err) {
+          error(err);
+          throw err;
+        }
+      }
+
+      function done(key) {
+        taskTracker[key] = true;
+      }
+
+      function before(key) {
+        if (!taskTracker[key]) {
+          throw new Error(key);
+        }
+      }
+    </script>
+    <script type="text/javascript">
+      // Global
+      var idbSupport = inBrowser('indexedDB');
+      var taskTracker = {};
+      var db = null;
+      var box = null;
+      var boxScheme = {
+        id: {
+          type: BoxDB.Types.NUMBER,
+          key: true
+        },
+        name: {
+          type: BoxDB.Types.STRING,
+          index: true
+        },
+        number: {
+          type: BoxDB.Types.STRING,
+          index: true,
+          unique: true
+        },
+        age: {
+          type: BoxDB.Types.NUMBER,
+          index: true
+        }
+      };
+
+      var users = [
+        { id: 1, name: 'Tammy Cacciotti', age: 20, number: '843-475-8425' },
+        { id: 2, name: 'Keiko Breslin', age: 75, number: '507-233-7988' },
+        { id: 3, name: 'Howard Rodriguez', age: 13, number: '507-415-0167' },
+        { id: 4, name: 'Cheryl Stabler', age: 69, number: '920-684-4795' },
+        { id: 5, name: 'Catherine Collins', age: 17, number: '415-691-5959' },
+        { id: 6, name: 'Jacklyn Bates', age: 11, number: '812-729-3831' },
+        { id: 7, name: 'Mae Skeels', age: 42, number: '281-756-6133' },
+        { id: 8, name: 'Carol Bousquet', age: 75, number: '646-215-1642' },
+        { id: 9, name: 'Jonathan Cline', age: 13, number: '509-794-6711' },
+        { id: 10, name: 'Dallas Garoutte', age: 58, number: '773-682-5207' }
+      ];
+
+      // main
+      $(function () {
+        $('#agent').text(navigator.userAgent);
+        status($('#idb_support'), idbSupport);
+
+        function bxdInstance() {
+          runner(function () {
+            db = new BoxDB($('#db_name').val(), parseInt($('#db_version').val()));
+          });
+          status($('#bxd_instance'), db !== null);
+          text($('#bxd_name'), 'getName():', db.getName());
+          text($('#bxd_version'), 'getVersion():', db.getVersion());
+          done('bxdInstance');
+        }
+
+        function bxdBox() {
+          before('bxdInstance');
+          runner(function () {
+            box = db.box('user', boxScheme);
+          });
+          status($('#bxd_box'), box !== null);
+          done('bxdBox');
+        }
+
+        function bxdOpen() {
+          return runner(function () {
+            return db.open();
+          }).then(function () {
+            status($('#bxd_open'), box !== null);
+            done('bxdOpen');
+          });
+        }
+
+        function addRecords() {
+          before('bxdBox');
+          return runner(function () {
+            var done = false;
+            return users
+              .reduce(function (prev, curr) {
+                return prev.then(function () {
+                  return box.add(curr);
+                });
+              }, Promise.resolve())
+              .then(function () {
+                done = true;
+              })
+              .finally(function () {
+                status($('#bxd_add'), done);
+              });
+          });
+        }
+
+        function getCount() {
+          return runner(function () {
+            return box.count().then(function (count) {
+              $('#bxd_count').text(count);
+            });
+          });
+        }
+
+        function getRecord() {
+          return runner(function () {
+            return box.get(10).then(function (record) {
+              text($('#bxd_get'), JSON.stringify(record));
+            });
+          });
+        }
+
+        function getAllRecords() {
+          return runner(function () {
+            var done = false;
+            return box
+              .find()
+              .get()
+              .then(function (records) {
+                done = true;
+                text($('#bxd_get_all'), JSON.stringify(records, null, 2));
+              })
+              .finally(function () {
+                status($('#bxd_all'), done);
+              });
+          });
+        }
+
+        function updateRecord() {
+          var done = false;
+          return runner(function () {
+            return box
+              .put({ id: 1, name: 'First Name' })
+              .then(function () {
+                done = true;
+              })
+              .finally(function () {
+                status($('#bxd_put'), done);
+              });
+          });
+        }
+
+        function updateRecordsByRange() {
+          return runner(function () {
+            var done = false;
+            return box
+              .find({ value: 10, index: 'age' })
+              .update({ age: 20 })
+              .then(function (records) {
+                done = true;
+              })
+              .finally(function () {
+                status($('#bxd_update_range'), done);
+              });
+          });
+        }
+
+        function updateRecordsByFilter() {
+          return runner(function () {
+            var done = false;
+            return box
+              .find(null, function (data) {
+                return data.age === 13;
+              })
+              .update({ age: 10 })
+              .then(function (records) {
+                done = true;
+              })
+              .finally(function () {
+                status($('#bxd_update_filter'), done);
+              });
+          });
+        }
+
+        function deleteRecord() {
+          return runner(function () {
+            var done = false;
+            return box
+              .delete(5)
+              .then(function () {
+                done = true;
+              })
+              .finally(function () {
+                status($('#bxd_delete'), done);
+              });
+          });
+        }
+
+        function deleteRecordsByRange() {
+          return runner(function () {
+            var done = false;
+            return box
+              .find({ value: '920-684-4795', index: 'number' })
+              .delete()
+              .then(function () {
+                done = true;
+              })
+              .finally(function () {
+                status($('#bxd_delete_range'), done);
+              });
+          });
+        }
+
+        function deleteRecordsByFilter() {
+          return runner(function () {
+            var done = false;
+            return box
+              .find(null, function (data) {
+                return data.age > 70;
+              })
+              .delete()
+              .then(function () {
+                done = true;
+              })
+              .finally(function () {
+                status($('#bxd_delete_filter'), done);
+              });
+          });
+        }
+
+        function transitions() {
+          return runner(function () {
+            var done = false;
+            return db
+              .transaction(
+                box.$add({ id: 99, name: 'UNKNOWN', age: 99999, number: null }),
+                box.$put({ id: 7, name: 'CHNAGED' }),
+                box.$delete(8)
+              )
+              .then(function () {
+                done = true;
+              })
+              .finally(function () {
+                status($('#bxd_transaction'), done);
+              });
+          });
+        }
+
+        function final() {
+          return runner(function () {
+            var done = false;
+            return box
+              .find()
+              .get()
+              .then(function (records) {
+                done = true;
+                text($('#bxd_final_records'), JSON.stringify(records));
+                return box.count();
+              })
+              .then(function (count) {
+                $('#bxd_final_count').text(count);
+              })
+              .finally(function () {
+                status($('#bxd_final'), done);
+              });
+          });
+        }
+
+        var tests = [
+          addRecords,
+          getCount,
+          getRecord,
+          getAllRecords,
+          updateRecord,
+          updateRecordsByRange,
+          updateRecordsByFilter,
+          deleteRecord,
+          deleteRecordsByRange,
+          deleteRecordsByFilter,
+          transitions,
+          final
+        ];
+
+        function run() {
+          var passed = 0;
+          bxdInstance();
+          bxdBox();
+          bxdOpen()
+            .then(function () {
+              return tests.reduce(function (prev, curr) {
+                return prev.then(curr).then(function () {
+                  ++passed;
+                });
+              }, Promise.resolve());
+            })
+            .finally(function () {
+              text($('#result'), 'Passed:', passed + ' of ' + tests.length);
+            });
+        }
+
+        $('#main').addClass(idbSupport ? '' : 'hidden');
+        $('#button_run').attr('disabled', !idbSupport);
+        $('#button_run').click(function () {
+          $(this).attr('disabled', true);
+          $('#db_name').attr('disabled', true);
+          $('#db_version').attr('disabled', true);
+          run();
+        });
+
+        $('#button_reset').click(function () {
+          if (db) {
+            db.close();
+          }
+          // Drop database
+          var request = indexedDB.deleteDatabase($('#db_name').val());
+          request.onsuccess = function () {
+            setTimeout(function () {
+              location.reload();
+            }, 50);
+          };
+          request.onerror = error;
+        });
+      });
+    </script>
+  </body>
+</html>
