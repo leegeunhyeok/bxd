@@ -36,9 +36,9 @@
       
       <guid>https://this.geundung.dev/bxd/getting-started/</guid>
       <description>BoxDB is a promise-based browser ORM for IndexedDB
-Concept IndexedDB is async, fast, powerful. but not support Promise and must use callback pattern to using IndexedDB. This feels like a legacy code.
-For this reason, I started user friendly IndexedDB library, BoxDB project.
-But, why box?
+Concept IndexedDB is async, fast, powerful. but not support Promise and must use callback pattern to using IndexedDB. It feels like a legacy code.
+For this reason, BoxDB project has started.
+But, why name is BoxDB?
  Boxes are lightweight. Boxes has shape. Boxes can store something. Boxes are easy to take.  This is the starting point and core concept of BoxDB.</description>
     </item>
     
