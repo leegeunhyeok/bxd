@@ -2,7 +2,7 @@
 
 # bxd
 
-<img src="https://user-images.githubusercontent.com/26512984/113550066-6b21bd00-962d-11eb-8e27-835d543199fe.png" width="250">
+<img alt="bxd" src="./bxd.gif">
 
 BoxDB is a promise-based browser ORM for [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API)
 
@@ -30,10 +30,6 @@ BoxDB is a promise-based browser ORM for [IndexedDB](https://developer.mozilla.o
   <img src="https://img.shields.io/github/license/leegeunhyeok/bxd">
   <img src="https://badgen.net/badge/-/TypeScript/blue?icon=typescript&label" alt="typescript">
 
-</div>
-
-<div align="center">
-  <img alt="bxd" src="./bxd.gif">
 </div>
 
 ```typescript
