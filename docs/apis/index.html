@@ -1,0 +1,1516 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>API Reference | BoxDB</title>
+<meta name="keywords" content="" />
+<meta name="description" content="All of features follows IndexedDB mechanism. (w3c, MDN)
+ BoxDB  The class for IndexedDB and object stores management.
+ 1  const db = new BoxDB(databaseName, version);   Parameters
+ databaseName: string  Name of the database   version: number  Version to open the database with    Properties
+ BoxDB.Types static BoxDB.Range static BoxDB.Order static databaseName: string  Database name   version: number  Database version   ready: boolean  Database ready status    Methods">
+<meta name="author" content="">
+<link rel="canonical" href="https://this.geundung.dev/bxd/apis/" />
+<link crossorigin="anonymous" href="/bxd/assets/css/stylesheet.min.ad9f0ead0ca83e7adfb727e59b23554a72652e38d445dd91346d5bcfd8736baf.css" integrity="sha256-rZ8OrQyoPnrftyflmyNVSnJlLjjURd2RNG1bz9hza68=" rel="preload stylesheet" as="style">
+<link rel="preload" href="logo.png" as="image">
+<link rel="icon" href="https://this.geundung.dev/bxd/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://this.geundung.dev/bxd/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://this.geundung.dev/bxd/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://this.geundung.dev/bxd/apple-touch-icon.png">
+<link rel="mask-icon" href="https://this.geundung.dev/bxd/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<meta name="generator" content="Hugo 0.85.0" />
+<meta property="og:title" content="API Reference" />
+<meta property="og:description" content="All of features follows IndexedDB mechanism. (w3c, MDN)
+ BoxDB  The class for IndexedDB and object stores management.
+ 1  const db = new BoxDB(databaseName, version);   Parameters
+ databaseName: string  Name of the database   version: number  Version to open the database with    Properties
+ BoxDB.Types static BoxDB.Range static BoxDB.Order static databaseName: string  Database name   version: number  Database version   ready: boolean  Database ready status    Methods" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://this.geundung.dev/bxd/apis/" /><meta property="article:section" content="" />
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="API Reference"/>
+<meta name="twitter:description" content="All of features follows IndexedDB mechanism. (w3c, MDN)
+ BoxDB  The class for IndexedDB and object stores management.
+ 1  const db = new BoxDB(databaseName, version);   Parameters
+ databaseName: string  Name of the database   version: number  Version to open the database with    Properties
+ BoxDB.Types static BoxDB.Range static BoxDB.Order static databaseName: string  Database name   version: number  Database version   ready: boolean  Database ready status    Methods"/>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "API Reference",
+      "item": "https://this.geundung.dev/bxd/apis/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "API Reference",
+  "name": "API Reference",
+  "description": "All of features follows IndexedDB mechanism. (w3c, MDN)\n BoxDB  The class for IndexedDB and object stores management.\n 1  const db = new BoxDB(databaseName, version);   Parameters\n databaseName: string  Name of the database   version: number  Version to open the database with    Properties\n BoxDB.Types static BoxDB.Range static BoxDB.Order static databaseName: string  Database name   version: number  Database version   ready: boolean  Database ready status    Methods",
+  "keywords": [
+    
+  ],
+  "articleBody": " All of features follows IndexedDB mechanism. (w3c, MDN)\n BoxDB  The class for IndexedDB and object stores management.\n 1  const db = new BoxDB(databaseName, version);   Parameters\n databaseName: string  Name of the database   version: number  Version to open the database with    Properties\n BoxDB.Types static BoxDB.Range static BoxDB.Order static databaseName: string  Database name   version: number  Database version   ready: boolean  Database ready status    Methods\n BoxDB.interrupt static box() open() transaction()  BoxDB.Types  The BoxDB.Types is a set of defined data types.\n 1 2 3 4 5 6 7 8 9 10 11 12 13  BoxDB.Types; // Properties BoxDB.Types.BOOLEAN; BoxDB.Types.NUMBER; BoxDB.Types.STRING; BoxDB.Types.DATE; BoxDB.Types.ARRAY; BoxDB.Types.OBJECT; BoxDB.Types.REGEXP; BoxDB.Types.FILE; BoxDB.Types.BLOB; BoxDB.Types.ANY;   Properties\n BoxDB.Types.BOOLEAN: for Boolean value BoxDB.Types.NUMBER: for Number value BoxDB.Types.STRING: for String value BoxDB.Types.DATE: for Date value BoxDB.Types.ARRAY: for Array value BoxDB.Types.OBJECT: for Object value BoxDB.Types.REGEXP: for RegExp value BoxDB.Types.FILE: for File value BoxDB.Types.BLOB: for Blob value BoxDB.Types.ANY: for any value (Skip type checking)  BoxDB.Range  The BoxDB.Range is a set of IDBKeyRange.\n 1 2 3 4 5  // Properties BoxDB.Range.equal(x); BoxDB.Range.upper(x[, open]); BoxDB.Range.lower(x[, open]); BoxDB.Range.bound(x, y[, lowerOpen, upperOpen]);   Methods\n BoxDB.Range.equal: returns a new key range containing a single value.  Using IDBKeyRange.only Returns: IDBKeyRange   BoxDB.Range.upper: returns a new upper-bound key range  Using IDBKeyRange.upperBound Returns: IDBKeyRange   BoxDB.Range.lower: returns a new key range with only a lower bound.  Using IDBKeyRange.lowerBound Returns: IDBKeyRange   BoxDB.Range.bound: returns a new key range with the specified upper and lower bounds  Using IDBKeyRange.bound Returns: IDBKeyRange    BoxDB.Order  The BoxDB.Order is a set of IDBCursor.direction.\n 1 2 3 4 5 6  BoxDB.Order; BoxDB.Order.ASC; // 'next' BoxDB.Order.ASC_UNIQUE; // 'nextunique' BoxDB.Order.DESC; // 'prev' BoxDB.Order.DESC_UNIQUE; // 'prevunique'    BoxDB.Order.ASC: for using IDBCursor with next direction BoxDB.Order.ASC_UNIQUE: for using IDBCursor with nextunique direction BoxDB.Order.DESC: for using IDBCursor with prev direction BoxDB.Order.DESC_UNIQUE: for using IDBCursor with prevunique direction  BoxDB.interrupt()  The interrupt() method of the BoxDB interface returns a TransactionTask to abort transaction.\n 1 2 3 4  const abortTask = BoxDB.interrupt(); // TransactionTask  // Usage db.transaction(Task_1, Task_2, abortTask, Task_3);   BoxDB.box()  The box() method of the BoxDB interface returns new Box.\n 1  db.box(name, schema[, options]);   Parameters\n storeName: string  Name of the object store   schema: BoxSchema  Data schema of the data to store   options: BoxOption (optional)  Object store options    Return value\n Box  BoxDB.open()  The open() method of the BoxDB interface open IndexedDB and create/update/delete object store based on created boxes.\n 1  await db.open();   Return value\n PromiseEvent  BoxDB.transaction()  The BoxDB.transaction() method takes an list of TransactionTask as an input, and perform tasks sequentially in one transaction.\n  Most important, if an error occurs during transaction, rolled back to the previous state.\n 1 2 3 4 5 6 7 8  // ACID guaranteed db.transaction( task_1, task_2, task_3, ..., task_n );   Parameters\n task: …TransactionTask[]  Transaction tasks    Return value\n Promisevoid  BoxSchema  The BoxSchema is an object that for data model. It’s includes field name with data type, and detailed options(key/index).\n 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24  interface BoxSchema { [field: string]: ConfiguredType | BoxDataTypes; } // BoxDB.Types export enum BoxDataTypes { BOOLEAN = '1', NUMBER = '2', STRING = '3', DATE = '4', ARRAY = '5', OBJECT = '6', REGEXP = '7', FILE = '8', BLOB = '9', ANY = '0', } type ConfiguredType = { type: BoxDataTypes; key?: boolean; index?: boolean; unique?: boolean; };   1 2 3 4 5 6 7 8 9 10 11  // Example const schema = { // Method 1. Define field in detail  name: { type: BoxDB.Types.STRING, index: true, unique: true, }, // Method 2. Only type (No key, No index)  age: BoxDB.Types.NUMBER, };   Options\n type: BoxDB.Types  Type of this property (used by type checking)   key: boolean (optional)  Set this property as in-line key Can be set in-line key only once each object store  If you want change, create new box after drop ( re-create box with force option)     index: boolean (optional)  Create or delete index for this property If you want search values on this field via index, should set to true   unique: boolean (optional)  Add unique constraint to this property’s index  Must have use with index option      BoxOptions  Box creation options\n 1 2 3 4  interface BoxOptions { autoIncrement?: boolean; force?: boolean; }    autoIncrement: boolean (default: false)  Use out-of-line key for this object store For autoIncrement flag   force: boolean (default: false)  Force update when versionchange event WARNING: This option will be drop exist object store before create    BoxData  Data of based on BoxSchema.\n 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25  // Sample box const User = db.box('user', { _id: { type: BoxDB.Types.NUMBER, key: true, } name: { type: BoxDB.Types.STRING, index: true, } age: BoxDB.Types.NUMBER, email: { type: BoxDB.Types.STRING, index: true, unique: true } }); // BoxData will be inferenced like this type BoxData = { _id: number name: string, age: number, email: string }   BoxRange  The BoxRange is an object for query with value or IDBKeyRange.\n 1 2 3 4 5 6 7 8 9 10 11 12 13  // Find age = 10 (should `age` field is defined to index) const range_1 = { value: 10, index: 'age', }; // Find in-line-key(_id) const range_2 = { value: BoxDB.Range.lower(5), }; Box.find(range_1); Box.find(range_2);   Properties\n value: BoxDB.Range or IDBValidKey value index: string (optional)  Indexed field name in schema (index: true option) If you don’t serve index name, follows in-line key as default.    BoxFilterFunction  The BoxFilterFunction is a function to evaluate each record. This function receives BoxData and returns a boolean value.\n 1 2 3 4 5  const predicate_1 = (data) = data.age === 10; const predicate_2 = (data) = !data.name === 'UNKNOWN'; const predicate_3 = (data) = true; Box.find(null, predicate_1, predicate_2, predicate_3);   Box  A Box is an abstraction that represents a object store. and also can generate data in a defined form (schema).\n 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40  const User = db.box('user', { _id: { type: BoxDB.Types.NUMBER, key: true, } name: { type: BoxDB.Types.STRING, index: true, } age: BoxDB.Types.NUMBER, email: BoxDB.Types.STRING }); // (1) Create empty data const u1 = new User(); u1.name // string  // (2) Create data with initial data const u2 = new User({ _id: 0, name: 'Jack', age: 12 }); // Model methods for single transaction User.get(key); User.put(value, key); User.delete(key); User.count(); User.clear(); User.find(range, ...predicate).get(order, limit); User.find(range, ...predicate).update(updateValue); User.find(range, ...predicate).delete(); // Returns TransactionTask for BoxDB.transaction() User.$get(key); User.$put(key, value); User.$delete(key); User.$find(range, ...predicate).update(updateValue); User.$find(range, ...predicate).delete();   Parameters\n storeName: string  Name of the object store   schema: BoxSchema  Data schema of the data to store   options: BoxOption (optional)  Object store options    Methods\n Box.getName(): Returns object store name Box.getVersion(): Returns target database version Box.add(value, key): Add record to object store Box.get(key): Get record from object store Box.put(value[, key]): Put record to object store Box.delete(key): Delete record from object store Box.count(key): Get records count Box.clear(): Drop the object store Box.find(range, …predicate): Returns BoxCursorHandler, Transaction by IDBCursor  find().get(): Get records find().update(updateValue): Update records find().delete(): Delete records   Box.$add(): Returns TransactionTask that add record. Box.$put(): Returns TransactionTask that update record. Box.$delete(): Returns TransactionTask that delete record. Box.$find(): Returns TransactionCursorHandler.  Box.getName()  The getName() methods returns current object store name\n 1  Box.getName();   Return value\n string  Box.getVersion()  The getVersion() methods returns version of database\n 1  Box.getVersion();   Return value\n number  Box.add()  The add() method of the Box interface stores the data in the target object store.\n 1 2  Box.add(value[, key]); Box.add({ id: 1, name: 'Tom', age: 15 });   Parameters\n value: BoxData  The data to be stored.   key: IDBValidKey (optional)  The key to use to identify the record. (default: null) Using this parameter when box defined with autoIncrement option.    Return value\n PromiseIDBValidKey  Returns added record’s key (both in/out-of-line key)    Box.get()  The get() method of the Box interface returns an specific record data from object store\n 1  Box.get(key);   Parameters\n key: IDBValidKey  The key or key range that identifies the record to be retrieved.    Return value\n PromiseBoxData  Box.put()  The put() method of the Box interface updates a given record in a database, or inserts a new record if the given item does not already exist.\n 1  Box.put(value[, key]);   Parameters\n value: BoxData  The data you wish to update.   key: IDBValidKey (optional)  The key that identifies the record to be updated. Using this parameter when box defined with autoIncrement option.    Return value\n Promisevoid  Box.delete()  The delete() method of the Box interface deletes target record\n 1  Box.delete(key);   Parameters\n key: IDBValidKey  The key that identifies the record to be deleted.    Return value\n Promisevoid  Box.find()  The find() method of the Box interface selects all records that are retrieved by BoxRange and passed the provided BoxFilterFunction.\n Parameters\n range: BoxRange (optional) pridicate: …BoxFilterFunction (optional)  Return value\n BoxCursorHandler  Box.count()  The BoxMode.count() method returns all records count in object store.\n 1  Box.count();   Return value\n Promisenumber  Box.clear()  The BoxMode.clear() method clears all of data in object store.\n 1  Box.clear();   Return value\n Promisevoid  Box.$add()  The $add() of the Box interface returns TransactionTask to add record.\n  $ Prefixed methods returns TransactionTask\n 1 2  Box.$add(value[, key]); Box.$add({ id: 2, name: 'Carl', age: 12 });   Parameters\n value: BoxData  The data to be stored.   key: IDBValidKey (optional)  The key to use to identify the record. (default: null) Using this parameter when box defined with autoIncrement option.    Return value\n TransactionTask  Box.$put()  The $put() of the Box interface returns a TransactionTask to update or insert record.\n 1  Box.$put(value[, key]);   Parameters\n value: BoxData  The data you wish to update.   key: IDBValidKey (optional)  The key that identifies the record to be updated. Using this parameter when box defined with autoIncrement option.    Return value\n TransactionTask  Box.$delete()  The $delete() of the Box interface returns a TransactionTask to delete record.\n 1  Box.$delete(key);   Parameters\n key: IDBValidKey (optional)  The key that identifies the record to be deleted. Using this parameter when box defined with autoIncrement option.    Return value\n TransactionTask  Box.$find()  The find() method of the Box interface selects all records that are retrieved by BoxRange and passed the provided BoxFilterFunction.\n  Different from find(), $find() returns TransactionCursorHandler.\n 1  Box.$find(range, ...predicate);   Parameters\n range: BoxRange (optional) pridicate: …BoxFilterFunction (optional)  Return value\n TransactionCursorHandler  BoxCursorHandler  The BoxCursorHandler interface uses IDBCursor to control data.\n 1 2 3  Box.find(...).get(order, limit); Box.find(...).update(updateValue); Box.find(...).delete();   Methods\n BoxCursorHandler.get(): Get records from object store BoxCursorHandler.update(): Update records in object store BoxCursorHandler.delete(): Delete records in object store  BoxCursorHandler.get()  The get() method of the BoxCursorHandler interface returns a filtered list of record data from object store.\n 1  Box.find(...).get(order, limit);   Parameters\n order: BoxDB.Order (optional)  Default: BoxDB.Order.ASC Uses in open IDBCursor Ordering based on specified index (default: in-line key)   limit: number (optional)  Default: unlimited    Return value\n Promise  BoxCursorHandler.update()  The update() method of the BoxCursorHandler interface updates filtered records data from object store.\n 1  Box.find(...).update(updateValue);   Parameters\n updateValue: PartialBoxData  Return value\n Promisevoid  BoxCursorHandler.delete()  The delete() method of the BoxCursorHandler interface deletes filtered records data from object store.\n 1  Box.find(...).delete();   Return value\n Promisevoid  TransactionCursorHandler 1 2  Box.$find(...).update(updateValue); Box.$find(...).delete();   Methods\n TransactionCursorHandler.update() TransactionCursorHandler.delete()  TransactionCursorHandler.update()  The TransactionCursorHandler.update() interface behaves the same as BoxCursorHandler.update(), but returns TransactionTask.\n 1 2  // Do nothing (only returns TransactionTask) const task = Box.$find(...).update(updateValue);   Parameters\n updateValue: PartialBoxData  Return value\n TransactionTask  TransactionCursorHandler.delete()  The TransactionCursorHandler.delete() interface behaves the same as BoxCursorHandler.delete(), but returns TransactionTask.\n 1 2  // Do nothing (only returns TransactionTask) const task_1 = Box.$find(...).delete();   Return value\n TransactionTask  TransactionTask  The TransactionTask is a value object for using in transaction(). It can be created with $ prefixed methods like $get(), $delete().\n ",
+  "wordCount" : "1888",
+  "inLanguage": "en",
+  "datePublished": "0001-01-01T00:00:00Z",
+  "dateModified": "0001-01-01T00:00:00Z",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://this.geundung.dev/bxd/apis/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "BoxDB",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://this.geundung.dev/bxd/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+<noscript>
+    <style type="text/css">
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: #1d1e20;
+                --entry: #2e2e33;
+                --primary: rgba(255, 255, 255, 0.84);
+                --secondary: rgba(255, 255, 255, 0.56);
+                --tertiary: rgba(255, 255, 255, 0.16);
+                --content: rgba(255, 255, 255, 0.74);
+                --hljs-bg: #2e2e33;
+                --code-bg: #37383e;
+                --border: #333;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://this.geundung.dev/bxd/" accesskey="h" title="BoxDB (Alt + H)">BoxDB</a>
+            <span class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </span>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="https://this.geundung.dev/bxd/getting-started/" title="Get started">
+                    <span>Get started</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://this.geundung.dev/bxd/apis/" title="APIs">
+                    <span class="active">APIs</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://this.geundung.dev/bxd/example/" title="Example">
+                    <span>Example</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    
+    <h1 class="post-title">
+      API Reference
+    </h1>
+    <div class="post-meta">
+</div>
+  </header> <div class="toc">
+    <details  open>
+        <summary accesskey="c" title="(Alt + C)">
+            <div class="details">Table of Contents</div>
+        </summary>
+        <div class="inner"><ul>
+                <li>
+                    <a href="#boxdb" aria-label="BoxDB">BoxDB</a><ul>
+                        
+                <li>
+                    <a href="#boxdbtypes" aria-label="BoxDB.Types">BoxDB.Types</a></li>
+                <li>
+                    <a href="#boxdbrange" aria-label="BoxDB.Range">BoxDB.Range</a></li>
+                <li>
+                    <a href="#boxdborder" aria-label="BoxDB.Order">BoxDB.Order</a></li>
+                <li>
+                    <a href="#boxdbinterrupt" aria-label="BoxDB.interrupt()">BoxDB.interrupt()</a></li>
+                <li>
+                    <a href="#boxdbbox" aria-label="BoxDB.box()">BoxDB.box()</a></li>
+                <li>
+                    <a href="#boxdbopen" aria-label="BoxDB.open()">BoxDB.open()</a></li>
+                <li>
+                    <a href="#boxdbtransaction" aria-label="BoxDB.transaction()">BoxDB.transaction()</a></li></ul>
+                </li>
+                <li>
+                    <a href="#boxschema" aria-label="BoxSchema">BoxSchema</a></li>
+                <li>
+                    <a href="#boxoptions" aria-label="BoxOptions">BoxOptions</a></li>
+                <li>
+                    <a href="#boxdata" aria-label="BoxData">BoxData</a></li>
+                <li>
+                    <a href="#boxrange" aria-label="BoxRange">BoxRange</a></li>
+                <li>
+                    <a href="#boxfilterfunction" aria-label="BoxFilterFunction">BoxFilterFunction</a></li>
+                <li>
+                    <a href="#box" aria-label="Box">Box</a><ul>
+                        
+                <li>
+                    <a href="#boxgetname" aria-label="Box.getName()">Box.getName()</a></li>
+                <li>
+                    <a href="#boxgetversion" aria-label="Box.getVersion()">Box.getVersion()</a></li>
+                <li>
+                    <a href="#boxadd" aria-label="Box.add()">Box.add()</a></li>
+                <li>
+                    <a href="#boxget" aria-label="Box.get()">Box.get()</a></li>
+                <li>
+                    <a href="#boxput" aria-label="Box.put()">Box.put()</a></li>
+                <li>
+                    <a href="#boxdelete" aria-label="Box.delete()">Box.delete()</a></li></ul>
+                </li>
+                <li>
+                    <a href="#boxfind" aria-label="Box.find()">Box.find()</a><ul>
+                        
+                <li>
+                    <a href="#boxcount" aria-label="Box.count()">Box.count()</a></li>
+                <li>
+                    <a href="#boxclear" aria-label="Box.clear()">Box.clear()</a></li>
+                <li>
+                    <a href="#boxadd-1" aria-label="Box.$add()">Box.$add()</a></li>
+                <li>
+                    <a href="#boxput-1" aria-label="Box.$put()">Box.$put()</a></li>
+                <li>
+                    <a href="#boxdelete-1" aria-label="Box.$delete()">Box.$delete()</a></li></ul>
+                </li>
+                <li>
+                    <a href="#boxfind-1" aria-label="Box.$find()">Box.$find()</a></li>
+                <li>
+                    <a href="#boxcursorhandler" aria-label="BoxCursorHandler">BoxCursorHandler</a><ul>
+                        
+                <li>
+                    <a href="#boxcursorhandlerget" aria-label="BoxCursorHandler.get()">BoxCursorHandler.get()</a></li>
+                <li>
+                    <a href="#boxcursorhandlerupdate" aria-label="BoxCursorHandler.update()">BoxCursorHandler.update()</a></li>
+                <li>
+                    <a href="#boxcursorhandlerdelete" aria-label="BoxCursorHandler.delete()">BoxCursorHandler.delete()</a></li></ul>
+                </li>
+                <li>
+                    <a href="#transactioncursorhandler" aria-label="TransactionCursorHandler">TransactionCursorHandler</a><ul>
+                        
+                <li>
+                    <a href="#transactioncursorhandlerupdate" aria-label="TransactionCursorHandler.update()">TransactionCursorHandler.update()</a></li>
+                <li>
+                    <a href="#transactioncursorhandlerdelete" aria-label="TransactionCursorHandler.delete()">TransactionCursorHandler.delete()</a></li></ul>
+                </li>
+                <li>
+                    <a href="#transactiontask" aria-label="TransactionTask">TransactionTask</a>
+                </li>
+            </ul>
+        </div>
+    </details>
+</div>
+
+  <div class="post-content"><blockquote>
+<p>All of features follows IndexedDB mechanism. (<a href="https://w3c.github.io/IndexedDB">w3c</a>, <a href="https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API">MDN</a>)</p>
+</blockquote>
+<h2 id="boxdb">BoxDB<a hidden class="anchor" aria-hidden="true" href="#boxdb">#</a></h2>
+<blockquote>
+<p>The class for IndexedDB and object stores management.</p>
+</blockquote>
+<div class="highlight"><div style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">1
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#81a1c1;font-weight:bold">const</span> db <span style="color:#81a1c1">=</span> <span style="color:#81a1c1;font-weight:bold">new</span> BoxDB<span style="color:#eceff4">(</span>databaseName<span style="color:#eceff4">,</span> version<span style="color:#eceff4">);</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Parameters</p>
+<ul>
+<li>databaseName: <code>string</code>
+<ul>
+<li>Name of the database</li>
+</ul>
+</li>
+<li>version: <code>number</code>
+<ul>
+<li>Version to open the database with</li>
+</ul>
+</li>
+</ul>
+<p>Properties</p>
+<ul>
+<li><a href="#boxdbtypes">BoxDB.Types</a> <code>static</code></li>
+<li><a href="#boxdbrange">BoxDB.Range</a> <code>static</code></li>
+<li><a href="#boxdborder">BoxDB.Order</a> <code>static</code></li>
+<li>databaseName: <code>string</code>
+<ul>
+<li>Database name</li>
+</ul>
+</li>
+<li>version: <code>number</code>
+<ul>
+<li>Database version</li>
+</ul>
+</li>
+<li>ready: <code>boolean</code>
+<ul>
+<li>Database ready status</li>
+</ul>
+</li>
+</ul>
+<p>Methods</p>
+<ul>
+<li><a href="#boxdbinterrupt">BoxDB.interrupt</a> <code>static</code></li>
+<li><a href="#box">box()</a></li>
+<li><a href="#boxdbopen">open()</a></li>
+<li><a href="#boxdbtransaction">transaction()</a></li>
+</ul>
+<h3 id="boxdbtypes">BoxDB.Types<a hidden class="anchor" aria-hidden="true" href="#boxdbtypes">#</a></h3>
+<blockquote>
+<p>The <code>BoxDB.Types</code> is a set of defined data types.</p>
+</blockquote>
+<div class="highlight"><div style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 3
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 4
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 5
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 6
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 7
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 8
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 9
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">10
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">11
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">12
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">13
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript">BoxDB<span style="color:#eceff4">.</span>Types<span style="color:#eceff4">;</span>
+
+<span style="color:#616e87;font-style:italic">// Properties
+</span><span style="color:#616e87;font-style:italic"></span>BoxDB<span style="color:#eceff4">.</span>Types<span style="color:#eceff4">.</span>BOOLEAN<span style="color:#eceff4">;</span>
+BoxDB<span style="color:#eceff4">.</span>Types<span style="color:#eceff4">.</span>NUMBER<span style="color:#eceff4">;</span>
+BoxDB<span style="color:#eceff4">.</span>Types<span style="color:#eceff4">.</span>STRING<span style="color:#eceff4">;</span>
+BoxDB<span style="color:#eceff4">.</span>Types<span style="color:#eceff4">.</span>DATE<span style="color:#eceff4">;</span>
+BoxDB<span style="color:#eceff4">.</span>Types<span style="color:#eceff4">.</span>ARRAY<span style="color:#eceff4">;</span>
+BoxDB<span style="color:#eceff4">.</span>Types<span style="color:#eceff4">.</span>OBJECT<span style="color:#eceff4">;</span>
+BoxDB<span style="color:#eceff4">.</span>Types<span style="color:#eceff4">.</span>REGEXP<span style="color:#eceff4">;</span>
+BoxDB<span style="color:#eceff4">.</span>Types<span style="color:#eceff4">.</span>FILE<span style="color:#eceff4">;</span>
+BoxDB<span style="color:#eceff4">.</span>Types<span style="color:#eceff4">.</span>BLOB<span style="color:#eceff4">;</span>
+BoxDB<span style="color:#eceff4">.</span>Types<span style="color:#eceff4">.</span>ANY<span style="color:#eceff4">;</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Properties</p>
+<ul>
+<li>BoxDB.Types.BOOLEAN: for <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">Boolean</a> value</li>
+<li>BoxDB.Types.NUMBER: for <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a> value</li>
+<li>BoxDB.Types.STRING: for <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a> value</li>
+<li>BoxDB.Types.DATE: for <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date">Date</a> value</li>
+<li>BoxDB.Types.ARRAY: for <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a> value</li>
+<li>BoxDB.Types.OBJECT: for <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a> value</li>
+<li>BoxDB.Types.REGEXP: for <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp">RegExp</a> value</li>
+<li>BoxDB.Types.FILE: for <a href="https://developer.mozilla.org/en-US/docs/Web/API/File">File</a> value</li>
+<li>BoxDB.Types.BLOB: for <a href="https://developer.mozilla.org/en-US/docs/Web/API/Blob">Blob</a> value</li>
+<li>BoxDB.Types.ANY: for <em>any</em> value (Skip type checking)</li>
+</ul>
+<h3 id="boxdbrange">BoxDB.Range<a hidden class="anchor" aria-hidden="true" href="#boxdbrange">#</a></h3>
+<blockquote>
+<p>The <code>BoxDB.Range</code> is a set of <a href="https://developer.mozilla.org/en-US/docs/Web/API/IDBKeyRange">IDBKeyRange</a>.</p>
+</blockquote>
+<div class="highlight"><div style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">3
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">4
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">5
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#616e87;font-style:italic">// Properties
+</span><span style="color:#616e87;font-style:italic"></span>BoxDB<span style="color:#eceff4">.</span>Range<span style="color:#eceff4">.</span>equal<span style="color:#eceff4">(</span>x<span style="color:#eceff4">);</span>
+BoxDB<span style="color:#eceff4">.</span>Range<span style="color:#eceff4">.</span>upper<span style="color:#eceff4">(</span>x<span style="color:#eceff4">[,</span> open<span style="color:#eceff4">]);</span>
+BoxDB<span style="color:#eceff4">.</span>Range<span style="color:#eceff4">.</span>lower<span style="color:#eceff4">(</span>x<span style="color:#eceff4">[,</span> open<span style="color:#eceff4">]);</span>
+BoxDB<span style="color:#eceff4">.</span>Range<span style="color:#eceff4">.</span>bound<span style="color:#eceff4">(</span>x<span style="color:#eceff4">,</span> y<span style="color:#eceff4">[,</span> lowerOpen<span style="color:#eceff4">,</span> upperOpen<span style="color:#eceff4">]);</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Methods</p>
+<ul>
+<li>BoxDB.Range.equal: returns a new key range containing a single value.
+<ul>
+<li>Using <a href="https://developer.mozilla.org/en-US/docs/Web/API/IDBKeyRange/only">IDBKeyRange.only</a></li>
+<li>Returns: <a href="https://developer.mozilla.org/en-US/docs/Web/API/IDBKeyRange">IDBKeyRange</a></li>
+</ul>
+</li>
+<li>BoxDB.Range.upper: returns a new upper-bound key range
+<ul>
+<li>Using <a href="https://developer.mozilla.org/en-US/docs/Web/API/IDBKeyRange/upperBound">IDBKeyRange.upperBound</a></li>
+<li>Returns: <a href="https://developer.mozilla.org/en-US/docs/Web/API/IDBKeyRange">IDBKeyRange</a></li>
+</ul>
+</li>
+<li>BoxDB.Range.lower: returns a new key range with only a lower bound.
+<ul>
+<li>Using <a href="https://developer.mozilla.org/en-US/docs/Web/API/IDBKeyRange/lowerBound">IDBKeyRange.lowerBound</a></li>
+<li>Returns: <a href="https://developer.mozilla.org/en-US/docs/Web/API/IDBKeyRange">IDBKeyRange</a></li>
+</ul>
+</li>
+<li>BoxDB.Range.bound: returns a new key range with the specified upper and lower bounds
+<ul>
+<li>Using <a href="https://developer.mozilla.org/en-US/docs/Web/API/IDBKeyRange/bound">IDBKeyRange.bound</a></li>
+<li>Returns: <a href="https://developer.mozilla.org/en-US/docs/Web/API/IDBKeyRange">IDBKeyRange</a></li>
+</ul>
+</li>
+</ul>
+<h3 id="boxdborder">BoxDB.Order<a hidden class="anchor" aria-hidden="true" href="#boxdborder">#</a></h3>
+<blockquote>
+<p>The <code>BoxDB.Order</code> is a set of <a href="https://developer.mozilla.org/en-US/docs/Web/API/IDBCursor/direction">IDBCursor.direction</a>.</p>
+</blockquote>
+<div class="highlight"><div style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">3
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">4
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">5
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">6
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript">BoxDB<span style="color:#eceff4">.</span>Order<span style="color:#eceff4">;</span>
+
+BoxDB<span style="color:#eceff4">.</span>Order<span style="color:#eceff4">.</span>ASC<span style="color:#eceff4">;</span> <span style="color:#616e87;font-style:italic">// &#39;next&#39;
+</span><span style="color:#616e87;font-style:italic"></span>BoxDB<span style="color:#eceff4">.</span>Order<span style="color:#eceff4">.</span>ASC_UNIQUE<span style="color:#eceff4">;</span> <span style="color:#616e87;font-style:italic">// &#39;nextunique&#39;
+</span><span style="color:#616e87;font-style:italic"></span>BoxDB<span style="color:#eceff4">.</span>Order<span style="color:#eceff4">.</span>DESC<span style="color:#eceff4">;</span> <span style="color:#616e87;font-style:italic">// &#39;prev&#39;
+</span><span style="color:#616e87;font-style:italic"></span>BoxDB<span style="color:#eceff4">.</span>Order<span style="color:#eceff4">.</span>DESC_UNIQUE<span style="color:#eceff4">;</span> <span style="color:#616e87;font-style:italic">// &#39;prevunique&#39;
+</span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>BoxDB.Order.ASC: for using <a href="https://developer.mozilla.org/en-US/docs/Web/API/IDBCursor">IDBCursor</a> with <code>next</code> direction</li>
+<li>BoxDB.Order.ASC_UNIQUE: for using <a href="https://developer.mozilla.org/en-US/docs/Web/API/IDBCursor">IDBCursor</a> with <code>nextunique</code> direction</li>
+<li>BoxDB.Order.DESC: for using <a href="https://developer.mozilla.org/en-US/docs/Web/API/IDBCursor">IDBCursor</a> with <code>prev</code> direction</li>
+<li>BoxDB.Order.DESC_UNIQUE: for using <a href="https://developer.mozilla.org/en-US/docs/Web/API/IDBCursor">IDBCursor</a> with <code>prevunique</code> direction</li>
+</ul>
+<h3 id="boxdbinterrupt">BoxDB.interrupt()<a hidden class="anchor" aria-hidden="true" href="#boxdbinterrupt">#</a></h3>
+<blockquote>
+<p>The <code>interrupt()</code> method of the BoxDB interface returns a <a href="#transactiontask">TransactionTask</a> to abort transaction.</p>
+</blockquote>
+<div class="highlight"><div style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">3
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">4
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#81a1c1;font-weight:bold">const</span> abortTask <span style="color:#81a1c1">=</span> BoxDB<span style="color:#eceff4">.</span>interrupt<span style="color:#eceff4">();</span> <span style="color:#616e87;font-style:italic">// TransactionTask
+</span><span style="color:#616e87;font-style:italic"></span>
+<span style="color:#616e87;font-style:italic">// Usage
+</span><span style="color:#616e87;font-style:italic"></span>db<span style="color:#eceff4">.</span>transaction<span style="color:#eceff4">(</span>Task_1<span style="color:#eceff4">,</span> Task_2<span style="color:#eceff4">,</span> abortTask<span style="color:#eceff4">,</span> Task_3<span style="color:#eceff4">);</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="boxdbbox">BoxDB.box()<a hidden class="anchor" aria-hidden="true" href="#boxdbbox">#</a></h3>
+<blockquote>
+<p>The <code>box()</code> method of the BoxDB interface returns new <a href="#box">Box</a>.</p>
+</blockquote>
+<div class="highlight"><div style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">1
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript">db<span style="color:#eceff4">.</span>box<span style="color:#eceff4">(</span>name<span style="color:#eceff4">,</span> schema<span style="color:#eceff4">[,</span> options<span style="color:#eceff4">]);</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Parameters</p>
+<ul>
+<li>storeName: <code>string</code>
+<ul>
+<li>Name of the object store</li>
+</ul>
+</li>
+<li>schema: <a href="#boxschema">BoxSchema</a>
+<ul>
+<li>Data schema of the data to store</li>
+</ul>
+</li>
+<li>options: <a href="#boxoption">BoxOption</a> (<code>optional</code>)
+<ul>
+<li>Object store options</li>
+</ul>
+</li>
+</ul>
+<p>Return value</p>
+<ul>
+<li><a href="#box">Box</a></li>
+</ul>
+<h3 id="boxdbopen">BoxDB.open()<a hidden class="anchor" aria-hidden="true" href="#boxdbopen">#</a></h3>
+<blockquote>
+<p>The <code>open()</code> method of the BoxDB interface open IndexedDB and create/update/delete object store based on created boxes.</p>
+</blockquote>
+<div class="highlight"><div style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">1
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#81a1c1;font-weight:bold">await</span> db<span style="color:#eceff4">.</span>open<span style="color:#eceff4">();</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Return value</p>
+<ul>
+<li>Promise&lt;<a href="https://developer.mozilla.org/en-us/docs/Web/API/Event">Event</a>&gt;</li>
+</ul>
+<h3 id="boxdbtransaction">BoxDB.transaction()<a hidden class="anchor" aria-hidden="true" href="#boxdbtransaction">#</a></h3>
+<blockquote>
+<p>The <code>BoxDB.transaction()</code> method takes an list of <a href="#transactiontask">TransactionTask</a> as an input, and perform tasks sequentially in one transaction.</p>
+</blockquote>
+<blockquote>
+<p>Most important, if an error occurs during transaction, rolled back to the previous state.</p>
+</blockquote>
+<div class="highlight"><div style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">3
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">4
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">5
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">6
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">7
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">8
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#616e87;font-style:italic">// ACID guaranteed
+</span><span style="color:#616e87;font-style:italic"></span>db<span style="color:#eceff4">.</span>transaction<span style="color:#eceff4">(</span>
+  task_1<span style="color:#eceff4">,</span>
+  task_2<span style="color:#eceff4">,</span>
+  task_3<span style="color:#eceff4">,</span>
+  <span style="color:#eceff4">...,</span>
+  task_n
+<span style="color:#eceff4">);</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Parameters</p>
+<ul>
+<li>task: &hellip;<a href="#transactiontask">TransactionTask</a>[]
+<ul>
+<li>Transaction tasks</li>
+</ul>
+</li>
+</ul>
+<p>Return value</p>
+<ul>
+<li>Promise&lt;<code>void</code>&gt;</li>
+</ul>
+<h2 id="boxschema">BoxSchema<a hidden class="anchor" aria-hidden="true" href="#boxschema">#</a></h2>
+<blockquote>
+<p>The <code>BoxSchema</code> is an object that for data model. It&rsquo;s includes field name with data type, and detailed options(key/index).</p>
+</blockquote>
+<div class="highlight"><div style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 3
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 4
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 5
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 6
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 7
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 8
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 9
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">10
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">11
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">12
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">13
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">14
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">15
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">16
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">17
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">18
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">19
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">20
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">21
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">22
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">23
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">24
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-typescript" data-lang="typescript"><span style="color:#81a1c1;font-weight:bold">interface</span> BoxSchema <span style="color:#eceff4">{</span>
+  <span style="color:#eceff4">[</span>field: <span style="color:#81a1c1">string</span><span style="color:#eceff4">]</span><span style="color:#81a1c1">:</span> ConfiguredType <span style="color:#81a1c1">|</span> BoxDataTypes<span style="color:#eceff4">;</span>
+<span style="color:#eceff4">}</span>
+
+<span style="color:#616e87;font-style:italic">// BoxDB.Types
+</span><span style="color:#616e87;font-style:italic"></span><span style="color:#81a1c1;font-weight:bold">export</span> <span style="color:#81a1c1;font-weight:bold">enum</span> BoxDataTypes <span style="color:#eceff4">{</span>
+  BOOLEAN <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">&#39;1&#39;</span><span style="color:#eceff4">,</span>
+  NUMBER <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">&#39;2&#39;</span><span style="color:#eceff4">,</span>
+  STRING <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">&#39;3&#39;</span><span style="color:#eceff4">,</span>
+  DATE <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">&#39;4&#39;</span><span style="color:#eceff4">,</span>
+  ARRAY <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">&#39;5&#39;</span><span style="color:#eceff4">,</span>
+  OBJECT <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">&#39;6&#39;</span><span style="color:#eceff4">,</span>
+  REGEXP <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">&#39;7&#39;</span><span style="color:#eceff4">,</span>
+  FILE <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">&#39;8&#39;</span><span style="color:#eceff4">,</span>
+  BLOB <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">&#39;9&#39;</span><span style="color:#eceff4">,</span>
+  ANY <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">&#39;0&#39;</span><span style="color:#eceff4">,</span>
+<span style="color:#eceff4">}</span>
+
+<span style="color:#81a1c1;font-weight:bold">type</span> ConfiguredType <span style="color:#81a1c1">=</span> <span style="color:#eceff4">{</span>
+  <span style="color:#81a1c1;font-weight:bold">type</span><span style="color:#81a1c1">:</span> BoxDataTypes<span style="color:#eceff4">;</span>
+  key?: <span style="color:#81a1c1">boolean</span><span style="color:#eceff4">;</span>
+  index?: <span style="color:#81a1c1">boolean</span><span style="color:#eceff4">;</span>
+  <span style="color:#81a1c1">unique</span><span style="color:#81a1c1">?:</span> <span style="color:#81a1c1;font-weight:bold">boolean</span><span style="color:#eceff4">;</span>
+<span style="color:#eceff4">};</span>
+</code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 3
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 4
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 5
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 6
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 7
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 8
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 9
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">10
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">11
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#616e87;font-style:italic">// Example
+</span><span style="color:#616e87;font-style:italic"></span><span style="color:#81a1c1;font-weight:bold">const</span> schema <span style="color:#81a1c1">=</span> <span style="color:#eceff4">{</span>
+  <span style="color:#616e87;font-style:italic">// Method 1. Define field in detail
+</span><span style="color:#616e87;font-style:italic"></span>  name<span style="color:#81a1c1">:</span> <span style="color:#eceff4">{</span>
+    type<span style="color:#81a1c1">:</span> BoxDB<span style="color:#eceff4">.</span>Types<span style="color:#eceff4">.</span>STRING<span style="color:#eceff4">,</span>
+    index<span style="color:#81a1c1">:</span> <span style="color:#81a1c1;font-weight:bold">true</span><span style="color:#eceff4">,</span>
+    unique<span style="color:#81a1c1">:</span> <span style="color:#81a1c1;font-weight:bold">true</span><span style="color:#eceff4">,</span>
+  <span style="color:#eceff4">},</span>
+  <span style="color:#616e87;font-style:italic">// Method 2. Only type (No key, No index)
+</span><span style="color:#616e87;font-style:italic"></span>  age<span style="color:#81a1c1">:</span> BoxDB<span style="color:#eceff4">.</span>Types<span style="color:#eceff4">.</span>NUMBER<span style="color:#eceff4">,</span>
+<span style="color:#eceff4">};</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Options</p>
+<ul>
+<li>type: <a href="#boxdbtypes">BoxDB.Types</a>
+<ul>
+<li>Type of this property (used by type checking)</li>
+</ul>
+</li>
+<li>key: <code>boolean</code> (<code>optional</code>)
+<ul>
+<li>Set this property as <a href="https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API/Basic_Concepts_Behind_IndexedDB#gloss_inline_key">in-line key</a></li>
+<li>Can be set in-line key only once each object store
+<ul>
+<li><em>If you want change, create new box after drop</em> ( re-create box with <code>force</code> option)</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>index: <code>boolean</code> (<code>optional</code>)
+<ul>
+<li><a href="https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/createIndex">Create</a> or <a href="https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/deleteIndex">delete</a> index for this property</li>
+<li>If you want search values on this field via index, should set to <code>true</code></li>
+</ul>
+</li>
+<li>unique: <code>boolean</code> (<code>optional</code>)
+<ul>
+<li>Add <a href="https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/createIndex#parameters">unique constraint</a> to this property&rsquo;s index
+<ul>
+<li>Must have use with <code>index</code> option</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="boxoptions">BoxOptions<a hidden class="anchor" aria-hidden="true" href="#boxoptions">#</a></h2>
+<blockquote>
+<p>Box creation options</p>
+</blockquote>
+<div class="highlight"><div style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">3
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">4
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-typescript" data-lang="typescript"><span style="color:#81a1c1;font-weight:bold">interface</span> BoxOptions <span style="color:#eceff4">{</span>
+  autoIncrement?: <span style="color:#81a1c1">boolean</span><span style="color:#eceff4">;</span>
+  force?: <span style="color:#81a1c1">boolean</span><span style="color:#eceff4">;</span>
+<span style="color:#eceff4">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>autoIncrement: <code>boolean</code> (default: <code>false</code>)
+<ul>
+<li>Use <a href="https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API/Basic_Concepts_Behind_IndexedDB#gloss_outofline_key">out-of-line key</a> for this object store</li>
+<li>For <a href="https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/autoIncrement">autoIncrement</a> flag</li>
+</ul>
+</li>
+<li>force: <code>boolean</code> (default: <code>false</code>)
+<ul>
+<li>Force update when <a href="https://developer.mozilla.org/en-US/docs/Web/API/IDBDatabase/versionchange_event">versionchange</a> event</li>
+<li>WARNING: This option will be drop exist object store before create</li>
+</ul>
+</li>
+</ul>
+<h2 id="boxdata">BoxData<a hidden class="anchor" aria-hidden="true" href="#boxdata">#</a></h2>
+<blockquote>
+<p>Data of based on <a href="#boxschema">BoxSchema</a>.</p>
+</blockquote>
+<div class="highlight"><div style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 3
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 4
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 5
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 6
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 7
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 8
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 9
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">10
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">11
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">12
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">13
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">14
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">15
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">16
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">17
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">18
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">19
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">20
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">21
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">22
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">23
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">24
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">25
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-typescript" data-lang="typescript"><span style="color:#616e87;font-style:italic">// Sample box
+</span><span style="color:#616e87;font-style:italic"></span><span style="color:#81a1c1;font-weight:bold">const</span> User <span style="color:#81a1c1">=</span> db<span style="color:#eceff4">.</span>box<span style="color:#eceff4">(</span><span style="color:#a3be8c">&#39;user&#39;</span><span style="color:#eceff4">,</span> <span style="color:#eceff4">{</span>
+  _id<span style="color:#81a1c1">:</span> <span style="color:#eceff4">{</span>
+    <span style="color:#81a1c1;font-weight:bold">type</span><span style="color:#81a1c1">:</span> BoxDB<span style="color:#eceff4">.</span>Types<span style="color:#eceff4">.</span>NUMBER<span style="color:#eceff4">,</span>
+    key: <span style="color:#81a1c1">true</span><span style="color:#eceff4">,</span>
+  <span style="color:#eceff4">}</span>
+  name<span style="color:#81a1c1">:</span> <span style="color:#eceff4">{</span>
+    <span style="color:#81a1c1;font-weight:bold">type</span><span style="color:#81a1c1">:</span> BoxDB<span style="color:#eceff4">.</span>Types<span style="color:#eceff4">.</span>STRING<span style="color:#eceff4">,</span>
+    index: <span style="color:#81a1c1">true</span><span style="color:#eceff4">,</span>
+  <span style="color:#eceff4">}</span>
+  age: <span style="color:#81a1c1">BoxDB.Types.NUMBER</span><span style="color:#eceff4">,</span>
+  email<span style="color:#81a1c1">:</span> <span style="color:#eceff4">{</span>
+    <span style="color:#81a1c1;font-weight:bold">type</span><span style="color:#81a1c1">:</span> BoxDB<span style="color:#eceff4">.</span>Types<span style="color:#eceff4">.</span>STRING<span style="color:#eceff4">,</span>
+    index: <span style="color:#81a1c1">true</span><span style="color:#eceff4">,</span>
+    <span style="color:#81a1c1">unique</span><span style="color:#81a1c1">:</span> <span style="color:#81a1c1;font-weight:bold">true</span>
+  <span style="color:#eceff4">}</span>
+<span style="color:#eceff4">});</span>
+
+<span style="color:#616e87;font-style:italic">// BoxData will be inferenced like this
+</span><span style="color:#616e87;font-style:italic"></span><span style="color:#81a1c1;font-weight:bold">type</span> BoxData <span style="color:#81a1c1">=</span> <span style="color:#eceff4">{</span>
+  _id: <span style="color:#81a1c1">number</span>
+  name: <span style="color:#81a1c1">string</span><span style="color:#eceff4">,</span>
+  age: <span style="color:#81a1c1">number</span><span style="color:#eceff4">,</span>
+  email: <span style="color:#81a1c1">string</span>
+<span style="color:#eceff4">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="boxrange">BoxRange<a hidden class="anchor" aria-hidden="true" href="#boxrange">#</a></h2>
+<blockquote>
+<p>The <code>BoxRange</code> is an object for query with value or <a href="https://developer.mozilla.org/en-US/docs/Web/API/IDBKeyRange">IDBKeyRange</a>.</p>
+</blockquote>
+<div class="highlight"><div style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 3
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 4
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 5
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 6
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 7
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 8
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 9
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">10
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">11
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">12
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">13
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#616e87;font-style:italic">// Find age = 10 (should `age` field is defined to index)
+</span><span style="color:#616e87;font-style:italic"></span><span style="color:#81a1c1;font-weight:bold">const</span> range_1 <span style="color:#81a1c1">=</span> <span style="color:#eceff4">{</span>
+  value<span style="color:#81a1c1">:</span> <span style="color:#b48ead">10</span><span style="color:#eceff4">,</span>
+  index<span style="color:#81a1c1">:</span> <span style="color:#a3be8c">&#39;age&#39;</span><span style="color:#eceff4">,</span>
+<span style="color:#eceff4">};</span>
+
+<span style="color:#616e87;font-style:italic">// Find in-line-key(_id) &lt; 5
+</span><span style="color:#616e87;font-style:italic"></span><span style="color:#81a1c1;font-weight:bold">const</span> range_2 <span style="color:#81a1c1">=</span> <span style="color:#eceff4">{</span>
+  value<span style="color:#81a1c1">:</span> BoxDB<span style="color:#eceff4">.</span>Range<span style="color:#eceff4">.</span>lower<span style="color:#eceff4">(</span><span style="color:#b48ead">5</span><span style="color:#eceff4">),</span>
+<span style="color:#eceff4">};</span>
+
+Box<span style="color:#eceff4">.</span>find<span style="color:#eceff4">(</span>range_1<span style="color:#eceff4">);</span>
+Box<span style="color:#eceff4">.</span>find<span style="color:#eceff4">(</span>range_2<span style="color:#eceff4">);</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Properties</p>
+<ul>
+<li>value: <a href="#boxdbrange">BoxDB.Range</a> or <a href="https://microsoft.github.io/PowerBI-JavaScript/modules/_node_modules_typedoc_node_modules_typescript_lib_lib_dom_d_.html#idbvalidkey">IDBValidKey</a> value</li>
+<li>index: <code>string</code> (<code>optional</code>)
+<ul>
+<li>Indexed field name in schema (<code>index: true</code> option)</li>
+<li>If you don&rsquo;t serve index name, follows <a href="https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API/Basic_Concepts_Behind_IndexedDB#gloss_inline_key">in-line key</a> as default.</li>
+</ul>
+</li>
+</ul>
+<h2 id="boxfilterfunction">BoxFilterFunction<a hidden class="anchor" aria-hidden="true" href="#boxfilterfunction">#</a></h2>
+<blockquote>
+<p>The <code>BoxFilterFunction</code> is a function to evaluate each record. This function receives <a href="#boxdata">BoxData</a> and returns a boolean value.</p>
+</blockquote>
+<div class="highlight"><div style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">3
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">4
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">5
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#81a1c1;font-weight:bold">const</span> predicate_1 <span style="color:#81a1c1">=</span> <span style="color:#eceff4">(</span>data<span style="color:#eceff4">)</span> <span style="color:#eceff4">=&gt;</span> data<span style="color:#eceff4">.</span>age <span style="color:#81a1c1">===</span> <span style="color:#b48ead">10</span><span style="color:#eceff4">;</span>
+<span style="color:#81a1c1;font-weight:bold">const</span> predicate_2 <span style="color:#81a1c1">=</span> <span style="color:#eceff4">(</span>data<span style="color:#eceff4">)</span> <span style="color:#eceff4">=&gt;</span> <span style="color:#81a1c1">!</span>data<span style="color:#eceff4">.</span>name <span style="color:#81a1c1">===</span> <span style="color:#a3be8c">&#39;UNKNOWN&#39;</span><span style="color:#eceff4">;</span>
+<span style="color:#81a1c1;font-weight:bold">const</span> predicate_3 <span style="color:#81a1c1">=</span> <span style="color:#eceff4">(</span>data<span style="color:#eceff4">)</span> <span style="color:#eceff4">=&gt;</span> <span style="color:#81a1c1;font-weight:bold">true</span><span style="color:#eceff4">;</span>
+
+Box<span style="color:#eceff4">.</span>find<span style="color:#eceff4">(</span><span style="color:#81a1c1;font-weight:bold">null</span><span style="color:#eceff4">,</span> predicate_1<span style="color:#eceff4">,</span> predicate_2<span style="color:#eceff4">,</span> predicate_3<span style="color:#eceff4">);</span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="box">Box<a hidden class="anchor" aria-hidden="true" href="#box">#</a></h2>
+<blockquote>
+<p>A <code>Box</code> is an abstraction that represents a <a href="https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore">object store</a>. and also can generate data in a defined form (schema).</p>
+</blockquote>
+<div class="highlight"><div style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 3
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 4
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 5
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 6
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 7
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 8
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74"> 9
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">10
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">11
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">12
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">13
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">14
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">15
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">16
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">17
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">18
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">19
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">20
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">21
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">22
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">23
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">24
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">25
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">26
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">27
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">28
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">29
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">30
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">31
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">32
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">33
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">34
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">35
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">36
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">37
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">38
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">39
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">40
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#81a1c1;font-weight:bold">const</span> User <span style="color:#81a1c1">=</span> db<span style="color:#eceff4">.</span>box<span style="color:#eceff4">(</span><span style="color:#a3be8c">&#39;user&#39;</span><span style="color:#eceff4">,</span> <span style="color:#eceff4">{</span>
+  <span style="color:#b48ead">_</span>id<span style="color:#81a1c1">:</span> <span style="color:#eceff4">{</span>
+    type<span style="color:#81a1c1">:</span> BoxDB<span style="color:#eceff4">.</span>Types<span style="color:#eceff4">.</span>NUMBER<span style="color:#eceff4">,</span>
+    key<span style="color:#81a1c1">:</span> <span style="color:#81a1c1;font-weight:bold">true</span><span style="color:#eceff4">,</span>
+  <span style="color:#eceff4">}</span>
+  name<span style="color:#81a1c1">:</span> <span style="color:#eceff4">{</span>
+    type<span style="color:#81a1c1">:</span> BoxDB<span style="color:#eceff4">.</span>Types<span style="color:#eceff4">.</span>STRING<span style="color:#eceff4">,</span>
+    index<span style="color:#81a1c1">:</span> <span style="color:#81a1c1;font-weight:bold">true</span><span style="color:#eceff4">,</span>
+  <span style="color:#eceff4">}</span>
+  age<span style="color:#81a1c1">:</span> BoxDB<span style="color:#eceff4">.</span>Types<span style="color:#eceff4">.</span>NUMBER<span style="color:#eceff4">,</span>
+  email<span style="color:#81a1c1">:</span> BoxDB<span style="color:#eceff4">.</span>Types<span style="color:#eceff4">.</span>STRING
+<span style="color:#eceff4">});</span>
+
+<span style="color:#616e87;font-style:italic">// (1) Create empty data
+</span><span style="color:#616e87;font-style:italic"></span><span style="color:#81a1c1;font-weight:bold">const</span> u1 <span style="color:#81a1c1">=</span> <span style="color:#81a1c1;font-weight:bold">new</span> User<span style="color:#eceff4">();</span>
+u1<span style="color:#eceff4">.</span>name <span style="color:#616e87;font-style:italic">// string
+</span><span style="color:#616e87;font-style:italic"></span>
+<span style="color:#616e87;font-style:italic">// (2) Create data with initial data
+</span><span style="color:#616e87;font-style:italic"></span><span style="color:#81a1c1;font-weight:bold">const</span> u2 <span style="color:#81a1c1">=</span> <span style="color:#81a1c1;font-weight:bold">new</span> User<span style="color:#eceff4">({</span>
+  <span style="color:#b48ead">_</span>id<span style="color:#81a1c1">:</span> <span style="color:#b48ead">0</span><span style="color:#eceff4">,</span>
+  name<span style="color:#81a1c1">:</span> <span style="color:#a3be8c">&#39;Jack&#39;</span><span style="color:#eceff4">,</span>
+  age<span style="color:#81a1c1">:</span> <span style="color:#b48ead">12</span>
+<span style="color:#eceff4">});</span>
+
+<span style="color:#616e87;font-style:italic">// Model methods for single transaction
+</span><span style="color:#616e87;font-style:italic"></span>User<span style="color:#eceff4">.</span>get<span style="color:#eceff4">(</span>key<span style="color:#eceff4">);</span>
+User<span style="color:#eceff4">.</span>put<span style="color:#eceff4">(</span>value<span style="color:#eceff4">,</span> key<span style="color:#eceff4">);</span>
+User<span style="color:#eceff4">.</span><span style="color:#81a1c1;font-weight:bold">delete</span><span style="color:#eceff4">(</span>key<span style="color:#eceff4">);</span>
+User<span style="color:#eceff4">.</span>count<span style="color:#eceff4">();</span>
+User<span style="color:#eceff4">.</span>clear<span style="color:#eceff4">();</span>
+User<span style="color:#eceff4">.</span>find<span style="color:#eceff4">(</span>range<span style="color:#eceff4">,</span> <span style="color:#eceff4">...</span>predicate<span style="color:#eceff4">).</span>get<span style="color:#eceff4">(</span>order<span style="color:#eceff4">,</span> limit<span style="color:#eceff4">);</span>
+User<span style="color:#eceff4">.</span>find<span style="color:#eceff4">(</span>range<span style="color:#eceff4">,</span> <span style="color:#eceff4">...</span>predicate<span style="color:#eceff4">).</span>update<span style="color:#eceff4">(</span>updateValue<span style="color:#eceff4">);</span>
+User<span style="color:#eceff4">.</span>find<span style="color:#eceff4">(</span>range<span style="color:#eceff4">,</span> <span style="color:#eceff4">...</span>predicate<span style="color:#eceff4">).</span><span style="color:#81a1c1;font-weight:bold">delete</span><span style="color:#eceff4">();</span>
+
+<span style="color:#616e87;font-style:italic">// Returns TransactionTask for BoxDB.transaction()
+</span><span style="color:#616e87;font-style:italic"></span>User<span style="color:#eceff4">.</span>$get<span style="color:#eceff4">(</span>key<span style="color:#eceff4">);</span>
+User<span style="color:#eceff4">.</span>$put<span style="color:#eceff4">(</span>key<span style="color:#eceff4">,</span> value<span style="color:#eceff4">);</span>
+User<span style="color:#eceff4">.</span>$delete<span style="color:#eceff4">(</span>key<span style="color:#eceff4">);</span>
+User<span style="color:#eceff4">.</span>$find<span style="color:#eceff4">(</span>range<span style="color:#eceff4">,</span> <span style="color:#eceff4">...</span>predicate<span style="color:#eceff4">).</span>update<span style="color:#eceff4">(</span>updateValue<span style="color:#eceff4">);</span>
+User<span style="color:#eceff4">.</span>$find<span style="color:#eceff4">(</span>range<span style="color:#eceff4">,</span> <span style="color:#eceff4">...</span>predicate<span style="color:#eceff4">).</span><span style="color:#81a1c1;font-weight:bold">delete</span><span style="color:#eceff4">();</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Parameters</p>
+<ul>
+<li>storeName: <code>string</code>
+<ul>
+<li>Name of the object store</li>
+</ul>
+</li>
+<li>schema: <a href="#boxschema">BoxSchema</a>
+<ul>
+<li>Data schema of the data to store</li>
+</ul>
+</li>
+<li>options: <a href="#boxoption">BoxOption</a> (<code>optional</code>)
+<ul>
+<li>Object store options</li>
+</ul>
+</li>
+</ul>
+<p>Methods</p>
+<ul>
+<li>Box.getName(): Returns object store name</li>
+<li>Box.getVersion(): Returns target database version</li>
+<li>Box.add(value, key): Add record to object store</li>
+<li>Box.get(key): Get record from object store</li>
+<li>Box.put(value[, key]): Put record to object store</li>
+<li>Box.delete(key): Delete record from object store</li>
+<li>Box.count(key): Get records count</li>
+<li>Box.clear(): Drop the object store</li>
+<li>Box.find(range, &hellip;predicate): Returns <code>BoxCursorHandler</code>, Transaction by <a href="https://developer.mozilla.org/en-US/docs/Web/API/IDBCursor">IDBCursor</a>
+<ul>
+<li>find().get(): Get records</li>
+<li>find().update(updateValue): Update records</li>
+<li>find().delete(): Delete records</li>
+</ul>
+</li>
+<li><a href="#box$add">Box.$add()</a>: Returns <a href="#transactiontask">TransactionTask</a> that add record.</li>
+<li><a href="#box$put">Box.$put()</a>: Returns <a href="#transactiontask">TransactionTask</a> that update record.</li>
+<li><a href="#box$delete">Box.$delete()</a>: Returns <a href="#transactiontask">TransactionTask</a> that delete record.</li>
+<li><a href="#box$find">Box.$find()</a>: Returns <a href="#transactioncursorhandler">TransactionCursorHandler</a>.</li>
+</ul>
+<h3 id="boxgetname">Box.getName()<a hidden class="anchor" aria-hidden="true" href="#boxgetname">#</a></h3>
+<blockquote>
+<p>The <code>getName()</code> methods returns current object store name</p>
+</blockquote>
+<div class="highlight"><div style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">1
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript">Box<span style="color:#eceff4">.</span>getName<span style="color:#eceff4">();</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Return value</p>
+<ul>
+<li>string</li>
+</ul>
+<h3 id="boxgetversion">Box.getVersion()<a hidden class="anchor" aria-hidden="true" href="#boxgetversion">#</a></h3>
+<blockquote>
+<p>The <code>getVersion()</code> methods returns version of database</p>
+</blockquote>
+<div class="highlight"><div style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">1
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript">Box<span style="color:#eceff4">.</span>getVersion<span style="color:#eceff4">();</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Return value</p>
+<ul>
+<li>number</li>
+</ul>
+<h3 id="boxadd">Box.add()<a hidden class="anchor" aria-hidden="true" href="#boxadd">#</a></h3>
+<blockquote>
+<p>The <code>add()</code> method of the Box interface stores the data in the target object store.</p>
+</blockquote>
+<div class="highlight"><div style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">2
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript">Box<span style="color:#eceff4">.</span>add<span style="color:#eceff4">(</span>value<span style="color:#eceff4">[,</span> key<span style="color:#eceff4">]);</span>
+Box<span style="color:#eceff4">.</span>add<span style="color:#eceff4">({</span> id<span style="color:#81a1c1">:</span> <span style="color:#b48ead">1</span><span style="color:#eceff4">,</span> name<span style="color:#81a1c1">:</span> <span style="color:#a3be8c">&#39;Tom&#39;</span><span style="color:#eceff4">,</span> age<span style="color:#81a1c1">:</span> <span style="color:#b48ead">15</span> <span style="color:#eceff4">});</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Parameters</p>
+<ul>
+<li>value: <a href="#boxdata">BoxData</a>
+<ul>
+<li>The data to be stored.</li>
+</ul>
+</li>
+<li>key: <a href="https://microsoft.github.io/PowerBI-JavaScript/modules/_node_modules_typedoc_node_modules_typescript_lib_lib_dom_d_.html#idbvalidkey">IDBValidKey</a> (<code>optional</code>)
+<ul>
+<li>The key to use to identify the record. (default: <code>null</code>)</li>
+<li>Using this parameter when box defined with <code>autoIncrement</code> option.</li>
+</ul>
+</li>
+</ul>
+<p>Return value</p>
+<ul>
+<li>Promise&lt;<a href="https://microsoft.github.io/PowerBI-JavaScript/modules/_node_modules_typedoc_node_modules_typescript_lib_lib_dom_d_.html#idbvalidkey">IDBValidKey</a>&gt;
+<ul>
+<li>Returns added record&rsquo;s key (both in/out-of-line key)</li>
+</ul>
+</li>
+</ul>
+<h3 id="boxget">Box.get()<a hidden class="anchor" aria-hidden="true" href="#boxget">#</a></h3>
+<blockquote>
+<p>The <code>get()</code> method of the Box interface returns an specific record data from object store</p>
+</blockquote>
+<div class="highlight"><div style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">1
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript">Box<span style="color:#eceff4">.</span>get<span style="color:#eceff4">(</span>key<span style="color:#eceff4">);</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Parameters</p>
+<ul>
+<li>key: <a href="https://microsoft.github.io/PowerBI-JavaScript/modules/_node_modules_typedoc_node_modules_typescript_lib_lib_dom_d_.html#idbvalidkey">IDBValidKey</a>
+<ul>
+<li>The key or key range that identifies the record to be retrieved.</li>
+</ul>
+</li>
+</ul>
+<p>Return value</p>
+<ul>
+<li>Promise&lt;<a href="#boxdata">BoxData</a>&gt;</li>
+</ul>
+<h3 id="boxput">Box.put()<a hidden class="anchor" aria-hidden="true" href="#boxput">#</a></h3>
+<blockquote>
+<p>The <code>put()</code> method of the Box interface updates a given record in a database, or inserts a new record if the given item does not already exist.</p>
+</blockquote>
+<div class="highlight"><div style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">1
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript">Box<span style="color:#eceff4">.</span>put<span style="color:#eceff4">(</span>value<span style="color:#eceff4">[,</span> key<span style="color:#eceff4">]);</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Parameters</p>
+<ul>
+<li>value: <a href="#boxdata">BoxData</a>
+<ul>
+<li>The data you wish to update.</li>
+</ul>
+</li>
+<li>key: <a href="https://microsoft.github.io/PowerBI-JavaScript/modules/_node_modules_typedoc_node_modules_typescript_lib_lib_dom_d_.html#idbvalidkey">IDBValidKey</a> (<code>optional</code>)
+<ul>
+<li>The key that identifies the record to be updated.</li>
+<li>Using this parameter when box defined with <code>autoIncrement</code> option.</li>
+</ul>
+</li>
+</ul>
+<p>Return value</p>
+<ul>
+<li>Promise&lt;<code>void</code>&gt;</li>
+</ul>
+<h3 id="boxdelete">Box.delete()<a hidden class="anchor" aria-hidden="true" href="#boxdelete">#</a></h3>
+<blockquote>
+<p>The <code>delete()</code> method of the Box interface deletes target record</p>
+</blockquote>
+<div class="highlight"><div style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">1
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript">Box<span style="color:#eceff4">.</span><span style="color:#81a1c1;font-weight:bold">delete</span><span style="color:#eceff4">(</span>key<span style="color:#eceff4">);</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Parameters</p>
+<ul>
+<li>key: <a href="https://microsoft.github.io/PowerBI-JavaScript/modules/_node_modules_typedoc_node_modules_typescript_lib_lib_dom_d_.html#idbvalidkey">IDBValidKey</a>
+<ul>
+<li>The key that identifies the record to be deleted.</li>
+</ul>
+</li>
+</ul>
+<p>Return value</p>
+<ul>
+<li>Promise&lt;<code>void</code>&gt;</li>
+</ul>
+<h2 id="boxfind">Box.find()<a hidden class="anchor" aria-hidden="true" href="#boxfind">#</a></h2>
+<blockquote>
+<p>The <code>find()</code> method of the Box interface selects all records that are retrieved by <a href="#boxrange">BoxRange</a> and passed the provided <a href="#boxfilterfunction">BoxFilterFunction</a>.</p>
+</blockquote>
+<p>Parameters</p>
+<ul>
+<li>range: <a href="#boxrange">BoxRange</a> (<code>optional</code>)</li>
+<li>pridicate: &hellip;<a href="#boxfilterfunction">BoxFilterFunction</a> (<code>optional</code>)</li>
+</ul>
+<p>Return value</p>
+<ul>
+<li><a href="#boxcursorhandler">BoxCursorHandler</a></li>
+</ul>
+<h3 id="boxcount">Box.count()<a hidden class="anchor" aria-hidden="true" href="#boxcount">#</a></h3>
+<blockquote>
+<p>The <code>BoxMode.count()</code> method returns all records count in object store.</p>
+</blockquote>
+<div class="highlight"><div style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">1
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript">Box<span style="color:#eceff4">.</span>count<span style="color:#eceff4">();</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Return value</p>
+<ul>
+<li>Promise&lt;<code>number</code>&gt;</li>
+</ul>
+<h3 id="boxclear">Box.clear()<a hidden class="anchor" aria-hidden="true" href="#boxclear">#</a></h3>
+<blockquote>
+<p>The <code>BoxMode.clear()</code> method clears all of data in object store.</p>
+</blockquote>
+<div class="highlight"><div style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">1
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript">Box<span style="color:#eceff4">.</span>clear<span style="color:#eceff4">();</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Return value</p>
+<ul>
+<li>Promise&lt;<code>void</code>&gt;</li>
+</ul>
+<h3 id="boxadd-1">Box.$add()<a hidden class="anchor" aria-hidden="true" href="#boxadd-1">#</a></h3>
+<blockquote>
+<p>The <code>$add()</code> of the Box interface returns <a href="#transactiontask">TransactionTask</a> to add record.</p>
+</blockquote>
+<blockquote>
+<p><code>$</code> Prefixed methods returns <a href="#transactiontask">TransactionTask</a></p>
+</blockquote>
+<div class="highlight"><div style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">2
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript">Box<span style="color:#eceff4">.</span>$add<span style="color:#eceff4">(</span>value<span style="color:#eceff4">[,</span> key<span style="color:#eceff4">]);</span>
+Box<span style="color:#eceff4">.</span>$add<span style="color:#eceff4">({</span> id<span style="color:#81a1c1">:</span> <span style="color:#b48ead">2</span><span style="color:#eceff4">,</span> name<span style="color:#81a1c1">:</span> <span style="color:#a3be8c">&#39;Carl&#39;</span><span style="color:#eceff4">,</span> age<span style="color:#81a1c1">:</span> <span style="color:#b48ead">12</span> <span style="color:#eceff4">});</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Parameters</p>
+<ul>
+<li>value: <a href="#boxdata">BoxData</a>
+<ul>
+<li>The data to be stored.</li>
+</ul>
+</li>
+<li>key: <a href="https://microsoft.github.io/PowerBI-JavaScript/modules/_node_modules_typedoc_node_modules_typescript_lib_lib_dom_d_.html#idbvalidkey">IDBValidKey</a> (<code>optional</code>)
+<ul>
+<li>The key to use to identify the record. (default: <code>null</code>)</li>
+<li>Using this parameter when box defined with <code>autoIncrement</code> option.</li>
+</ul>
+</li>
+</ul>
+<p>Return value</p>
+<ul>
+<li><a href="#transactiontask">TransactionTask</a></li>
+</ul>
+<h3 id="boxput-1">Box.$put()<a hidden class="anchor" aria-hidden="true" href="#boxput-1">#</a></h3>
+<blockquote>
+<p>The <code>$put()</code> of the Box interface returns a <a href="#transactiontask">TransactionTask</a> to update or insert record.</p>
+</blockquote>
+<div class="highlight"><div style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">1
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript">Box<span style="color:#eceff4">.</span>$put<span style="color:#eceff4">(</span>value<span style="color:#eceff4">[,</span> key<span style="color:#eceff4">]);</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Parameters</p>
+<ul>
+<li>value: <a href="#boxdata">BoxData</a>
+<ul>
+<li>The data you wish to update.</li>
+</ul>
+</li>
+<li>key: <a href="https://microsoft.github.io/PowerBI-JavaScript/modules/_node_modules_typedoc_node_modules_typescript_lib_lib_dom_d_.html#idbvalidkey">IDBValidKey</a> (<code>optional</code>)
+<ul>
+<li>The key that identifies the record to be updated.</li>
+<li>Using this parameter when box defined with <code>autoIncrement</code> option.</li>
+</ul>
+</li>
+</ul>
+<p>Return value</p>
+<ul>
+<li><a href="#transactiontask">TransactionTask</a></li>
+</ul>
+<h3 id="boxdelete-1">Box.$delete()<a hidden class="anchor" aria-hidden="true" href="#boxdelete-1">#</a></h3>
+<blockquote>
+<p>The <code>$delete()</code> of the Box interface returns a <a href="#transactiontask">TransactionTask</a> to delete record.</p>
+</blockquote>
+<div class="highlight"><div style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">1
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript">Box<span style="color:#eceff4">.</span>$delete<span style="color:#eceff4">(</span>key<span style="color:#eceff4">);</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Parameters</p>
+<ul>
+<li>key: <a href="https://microsoft.github.io/PowerBI-JavaScript/modules/_node_modules_typedoc_node_modules_typescript_lib_lib_dom_d_.html#idbvalidkey">IDBValidKey</a> (<code>optional</code>)
+<ul>
+<li>The key that identifies the record to be deleted.</li>
+<li>Using this parameter when box defined with <code>autoIncrement</code> option.</li>
+</ul>
+</li>
+</ul>
+<p>Return value</p>
+<ul>
+<li><a href="#transactiontask">TransactionTask</a></li>
+</ul>
+<h2 id="boxfind-1">Box.$find()<a hidden class="anchor" aria-hidden="true" href="#boxfind-1">#</a></h2>
+<blockquote>
+<p>The <code>find()</code> method of the Box interface selects all records that are retrieved by <a href="#boxrange">BoxRange</a> and passed the provided <a href="#boxfilterfunction">BoxFilterFunction</a>.</p>
+</blockquote>
+<blockquote>
+<p>Different from <code>find()</code>, <code>$find()</code> returns <a href="#transactioncursorhandler">TransactionCursorHandler</a>.</p>
+</blockquote>
+<div class="highlight"><div style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">1
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript">Box<span style="color:#eceff4">.</span>$find<span style="color:#eceff4">(</span>range<span style="color:#eceff4">,</span> <span style="color:#eceff4">...</span>predicate<span style="color:#eceff4">);</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Parameters</p>
+<ul>
+<li>range: <a href="#boxrange">BoxRange</a> (<code>optional</code>)</li>
+<li>pridicate: &hellip;<a href="#boxfilterfunction">BoxFilterFunction</a> (<code>optional</code>)</li>
+</ul>
+<p>Return value</p>
+<ul>
+<li><a href="#transactioncursorhandler">TransactionCursorHandler</a></li>
+</ul>
+<h2 id="boxcursorhandler">BoxCursorHandler<a hidden class="anchor" aria-hidden="true" href="#boxcursorhandler">#</a></h2>
+<blockquote>
+<p>The <code>BoxCursorHandler</code> interface uses <a href="https://developer.mozilla.org/en-US/docs/Web/API/IDBCursor">IDBCursor</a> to control data.</p>
+</blockquote>
+<div class="highlight"><div style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">3
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-typescript" data-lang="typescript">Box<span style="color:#eceff4">.</span>find<span style="color:#eceff4">(...).</span><span style="color:#81a1c1;font-weight:bold">get</span><span style="color:#eceff4">(</span>order<span style="color:#eceff4">,</span> limit<span style="color:#eceff4">);</span>
+Box<span style="color:#eceff4">.</span>find<span style="color:#eceff4">(...).</span>update<span style="color:#eceff4">(</span>updateValue<span style="color:#eceff4">);</span>
+Box<span style="color:#eceff4">.</span>find<span style="color:#eceff4">(...).</span><span style="color:#81a1c1;font-weight:bold">delete</span><span style="color:#eceff4">();</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Methods</p>
+<ul>
+<li><a href="#boxcursorhandlerget">BoxCursorHandler.get()</a>: Get records from object store</li>
+<li><a href="#boxcursorhandlerupdate">BoxCursorHandler.update()</a>: Update records in object store</li>
+<li><a href="#boxcursorhandlerdelete">BoxCursorHandler.delete()</a>: Delete records in object store</li>
+</ul>
+<h3 id="boxcursorhandlerget">BoxCursorHandler.get()<a hidden class="anchor" aria-hidden="true" href="#boxcursorhandlerget">#</a></h3>
+<blockquote>
+<p>The <code>get()</code> method of the BoxCursorHandler interface returns a filtered list of record data from object store.</p>
+</blockquote>
+<div class="highlight"><div style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">1
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript">Box<span style="color:#eceff4">.</span>find<span style="color:#eceff4">(...).</span>get<span style="color:#eceff4">(</span>order<span style="color:#eceff4">,</span> limit<span style="color:#eceff4">);</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Parameters</p>
+<ul>
+<li>order: <a href="#boxdborder">BoxDB.Order</a> (<code>optional</code>)
+<ul>
+<li>Default: BoxDB.Order.ASC</li>
+<li>Uses in open <a href="https://developer.mozilla.org/en-US/docs/Web/API/IDBCursor">IDBCursor</a></li>
+<li>Ordering based on specified index (default: <a href="https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API/Basic_Concepts_Behind_IndexedDB#gloss_inline_key">in-line key</a>)</li>
+</ul>
+</li>
+<li>limit: <code>number</code> (<code>optional</code>)
+<ul>
+<li>Default: <em>unlimited</em></li>
+</ul>
+</li>
+</ul>
+<p>Return value</p>
+<ul>
+<li><a href="#boxdata">Promise&lt;BoxData[]&gt;</a></li>
+</ul>
+<h3 id="boxcursorhandlerupdate">BoxCursorHandler.update()<a hidden class="anchor" aria-hidden="true" href="#boxcursorhandlerupdate">#</a></h3>
+<blockquote>
+<p>The <code>update()</code> method of the BoxCursorHandler interface updates filtered records data from object store.</p>
+</blockquote>
+<div class="highlight"><div style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">1
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript">Box<span style="color:#eceff4">.</span>find<span style="color:#eceff4">(...).</span>update<span style="color:#eceff4">(</span>updateValue<span style="color:#eceff4">);</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Parameters</p>
+<ul>
+<li>updateValue: Partial&lt;<a href="#boxdata">BoxData</a>&gt;</li>
+</ul>
+<p>Return value</p>
+<ul>
+<li>Promise&lt;<code>void</code>&gt;</li>
+</ul>
+<h3 id="boxcursorhandlerdelete">BoxCursorHandler.delete()<a hidden class="anchor" aria-hidden="true" href="#boxcursorhandlerdelete">#</a></h3>
+<blockquote>
+<p>The <code>delete()</code> method of the BoxCursorHandler interface deletes filtered records data from object store.</p>
+</blockquote>
+<div class="highlight"><div style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">1
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript">Box<span style="color:#eceff4">.</span>find<span style="color:#eceff4">(...).</span><span style="color:#81a1c1;font-weight:bold">delete</span><span style="color:#eceff4">();</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Return value</p>
+<ul>
+<li>Promise&lt;<code>void</code>&gt;</li>
+</ul>
+<h2 id="transactioncursorhandler">TransactionCursorHandler<a hidden class="anchor" aria-hidden="true" href="#transactioncursorhandler">#</a></h2>
+<div class="highlight"><div style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">2
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-typescript" data-lang="typescript">Box<span style="color:#eceff4">.</span>$find<span style="color:#eceff4">(...).</span>update<span style="color:#eceff4">(</span>updateValue<span style="color:#eceff4">);</span>
+Box<span style="color:#eceff4">.</span>$find<span style="color:#eceff4">(...).</span><span style="color:#81a1c1;font-weight:bold">delete</span><span style="color:#eceff4">();</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Methods</p>
+<ul>
+<li><a href="#transactioncursorhandlerupdate">TransactionCursorHandler.update()</a></li>
+<li><a href="#transactioncursorhandlerdelete">TransactionCursorHandler.delete()</a></li>
+</ul>
+<h3 id="transactioncursorhandlerupdate">TransactionCursorHandler.update()<a hidden class="anchor" aria-hidden="true" href="#transactioncursorhandlerupdate">#</a></h3>
+<blockquote>
+<p>The <code>TransactionCursorHandler.update()</code> interface behaves the same as <a href="#boxcursorhandlerupdate">BoxCursorHandler.update()</a>, but returns <a href="#transactiontask">TransactionTask</a>.</p>
+</blockquote>
+<div class="highlight"><div style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">2
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#616e87;font-style:italic">// Do nothing (only returns TransactionTask)
+</span><span style="color:#616e87;font-style:italic"></span><span style="color:#81a1c1;font-weight:bold">const</span> task <span style="color:#81a1c1">=</span> Box<span style="color:#eceff4">.</span>$find<span style="color:#eceff4">(...).</span>update<span style="color:#eceff4">(</span>updateValue<span style="color:#eceff4">);</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Parameters</p>
+<ul>
+<li>updateValue: Partial&lt;<a href="#boxdata">BoxData</a>&gt;</li>
+</ul>
+<p>Return value</p>
+<ul>
+<li><a href="#transactiontask">TransactionTask</a></li>
+</ul>
+<h3 id="transactioncursorhandlerdelete">TransactionCursorHandler.delete()<a hidden class="anchor" aria-hidden="true" href="#transactioncursorhandlerdelete">#</a></h3>
+<blockquote>
+<p>The <code>TransactionCursorHandler.delete()</code> interface behaves the same as <a href="#boxcursorhandlerdelete">BoxCursorHandler.delete()</a>, but returns <a href="#transactiontask">TransactionTask</a>.</p>
+</blockquote>
+<div class="highlight"><div style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#6c6f74">2
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#616e87;font-style:italic">// Do nothing (only returns TransactionTask)
+</span><span style="color:#616e87;font-style:italic"></span><span style="color:#81a1c1;font-weight:bold">const</span> task_1 <span style="color:#81a1c1">=</span> Box<span style="color:#eceff4">.</span>$find<span style="color:#eceff4">(...).</span><span style="color:#81a1c1;font-weight:bold">delete</span><span style="color:#eceff4">();</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Return value</p>
+<ul>
+<li><a href="#transactiontask">TransactionTask</a></li>
+</ul>
+<h2 id="transactiontask">TransactionTask<a hidden class="anchor" aria-hidden="true" href="#transactiontask">#</a></h2>
+<blockquote>
+<p>The <code>TransactionTask</code> is a value object for using in <a href="#transaction">transaction()</a>. It can be created with <code>$</code> prefixed methods like <a href="#$get">$get()</a>, <a href="#$delete">$delete()</a>.</p>
+</blockquote>
+
+
+  </div>
+  <footer class="post-footer">
+  </footer>
+</article>
+    </main>
+    <footer class="footer">
+    <span>&copy; 2021 <a href="https://this.geundung.dev/bxd/">BoxDB</a></span>
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://git.io/hugopapermod" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)">
+    <button class="top-link" id="top-link" type="button" accesskey="g">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+            <path d="M12 6H0l6-6z" />
+        </svg>
+    </button>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+    menu.onscroll = function () {
+        localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>

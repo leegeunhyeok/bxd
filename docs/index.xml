@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>BoxDB</title>
+    <link>https://this.geundung.dev/bxd/</link>
+    <description>Recent content on BoxDB</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language><atom:link href="https://this.geundung.dev/bxd/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>API Reference</title>
+      <link>https://this.geundung.dev/bxd/apis/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://this.geundung.dev/bxd/apis/</guid>
+      <description>All of features follows IndexedDB mechanism. (w3c, MDN)
+ BoxDB  The class for IndexedDB and object stores management.
+ 1  const db = new BoxDB(databaseName, version);   Parameters
+ databaseName: string  Name of the database   version: number  Version to open the database with    Properties
+ BoxDB.Types static BoxDB.Range static BoxDB.Order static databaseName: string  Database name   version: number  Database version   ready: boolean  Database ready status    Methods</description>
+    </item>
+    
+    
+    <item>
+      <title>Example</title>
+      <link>https://this.geundung.dev/bxd/example/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://this.geundung.dev/bxd/example/</guid>
+      <description> Any Note: Simple note web application Hash Worker: Find hash via Web Worker and store task history to IndexedDB  </description>
+    </item>
+    
+    <item>
+      <title>Getting Started</title>
+      <link>https://this.geundung.dev/bxd/getting-started/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://this.geundung.dev/bxd/getting-started/</guid>
+      <description>BoxDB is a promise-based browser ORM for IndexedDB
+Concept IndexedDB is async, fast, powerful. but not support Promise and must use callback pattern to using IndexedDB. It feels like a legacy code.
+For this reason, BoxDB project has started.
+But, why name is BoxDB?
+ Boxes are lightweight. Boxes has shape. Boxes can store something. Boxes are easy to take.  This is the starting point and core concept of BoxDB.</description>
+    </item>
+    
+    <item>
+      <title>Internet Explorer</title>
+      <link>https://this.geundung.dev/bxd/ie/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://this.geundung.dev/bxd/ie/</guid>
+      <description>🎉 BoxDB supports IE11 (IE10 was dropped.)
+Test  Environment: VirtualBox windows agent (Provided by Microsoft)  ✅ All tests passed.
+Polyfills 1 2  &amp;lt;script src=&amp;#34;https://polyfill.io/v3/polyfill.min.js?features=Array.from%2CSymbol%2CSymbol.asyncIterator%2CSymbol.prototype.description%2CSymbol.iterator%2CArray.prototype.some%2CArray.prototype.includes%2CArray.prototype.every%2CArray.prototype.find%2CArray.isArray%2CArray.prototype.%40%40iterator%2CString.prototype.%40%40iterator%2CObject.assign%2CObject.entries%2CObject.getOwnPropertyDescriptor%2CObject.getPrototypeOf%2CObject.setPrototypeOf%2CPromise &amp;#34;&amp;gt;&amp;lt;/script&amp;gt;   🔽 IE11 targeted polyfills (Based on core-js 3)
+   Polyfill     es.symbol   es.symbol.description   es.symbol.async-iterator   es.symbol.iterator   es.array.concat   es.array.every   es.array.find   es.array.from   es.</description>
+    </item>
+    
+  </channel>
+</rss>
