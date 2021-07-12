@@ -32,6 +32,10 @@ BoxDB is a promise-based browser ORM for [IndexedDB](https://developer.mozilla.o
 
 </div>
 
+<div align="center">
+  <img alt="bxd" src="./bxd.gif">
+</div>
+
 ```typescript
 import BoxDB from 'bxd';
 
@@ -120,12 +124,12 @@ await User.clear(); // Clear all records
 - Promise based ORM
 - User friendly and easy to use
 - Lightweight(< 10kb) IndexedDB wrapper
-- Zero dependencies
+- Zero dependency
 - Database and object store version management
 - Data validation and transaction control via model (box)
 - ACID(Atomicity, Consistency, Isolation, Durability) guaranteed with transaction
 - Supports TypeScript
-- Works on [Web Workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API)
+- Works on [Web workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API)
 
 ## 🌍 Browsers Support
 
