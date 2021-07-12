@@ -134,7 +134,7 @@ await User.clear(); // Clear all records
 | 11                                                                                                                                                               | 12~                                                                                                                                                                | 10~                                                                                                                                                                      | 23~                                                                                                                                                                    | 10~                                                                                                                                                                    | 10~                                                                                                                                                                            | 4~                                                                                                                                                                       | 15~                                                                                                                                                                  |
 
 - Test features in your browser [here](https://leegeunhyeok.github.io/bxd/demo.html).
-- Checkout `IE11` test [here](https://leegeunhyeok.github.io/bxd/ie.html).
+- Checkout `IE11` test [here](https://leegeunhyeok.github.io/bxd/ie).
 
 ## 🛠 Installation
 
@@ -156,7 +156,7 @@ Go to [documentation](https://leegeunhyeok.github.io/bxd)!
 
 ## 🌱 Example
 
-[Example](https://leegeunhyeok.github.io/bxd/example.html)
+[Example](https://leegeunhyeok.github.io/bxd/example)
 
 ## 🔥 Issue
 
