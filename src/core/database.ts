@@ -1,25 +1,29 @@
-import BoxTransaction from './transaction';
-import BoxBuilder, { rangeBuilder } from './box';
+import BoxTransaction, { BoxTask, CursorDirection } from './transaction';
+import BoxBuilder, { Box, rangeBuilder } from './box';
 import { BoxDBError } from './errors';
-import {
-  Box,
-  BoxSchema,
-  BoxDataTypes,
-  BoxOptions,
-  BoxMeta,
-  BoxIndexConfig,
-  ConfiguredBoxSchema,
-  BoxCursorDirections,
-  TransactionTask,
-  TransactionType,
-} from '../types';
 import { toBoxMeta, createTask } from '../utils';
-import { Transaction } from '../types/bxd';
+import { ConfiguredSchema, Schema } from '../types/schema';
+import { TransactionType } from '../types/transaction';
+import { DataType } from '../types/dataType';
 
-export interface BoxOption {
+export type BoxOption = {
   autoIncrement?: boolean;
   force?: boolean;
-}
+};
+
+export type BoxIndexConfig = {
+  keyPath: string;
+  unique: boolean;
+};
+
+export type BoxMeta = {
+  name: string;
+  schema: ConfiguredSchema | null;
+  inKey: string | null;
+  outKey: boolean;
+  index: BoxIndexConfig[];
+  force: boolean;
+};
 
 interface BoxMetaMap {
   [storeName: string]: BoxMeta;
@@ -28,13 +32,13 @@ interface BoxMetaMap {
 export type BoxDBType = typeof BoxDB;
 
 class BoxDB {
-  public static Types = BoxDataTypes;
-  public static Order = BoxCursorDirections;
+  public static Types = DataType;
+  public static Order = CursorDirection;
   public static Range = rangeBuilder;
   private name: string;
   private version: number;
   private metas: BoxMetaMap = {};
-  private tx: Transaction;
+  private tx: BoxTransaction;
   private builder: BoxBuilder;
   private idb: IDBDatabase | null = null;
   private ready = false;
@@ -70,7 +74,7 @@ class BoxDB {
   /**
    * Returns interrupt task for abort transaction
    */
-  static interrupt(): TransactionTask {
+  static interrupt(): BoxTask {
     return createTask(TransactionType.INTERRUPT, ''); // empty object store name
   }
 
@@ -117,7 +121,7 @@ class BoxDB {
    * @param schema model schema
    * @param options box options
    */
-  box<S extends BoxSchema>(storeName: string, schema: S, options?: BoxOption): Box<S> {
+  box<S extends Schema>(storeName: string, schema: S, options?: BoxOption): Box<S> {
     if (this.ready) {
       throw new BoxDBError('Cannot define box after database opened');
     }
@@ -135,7 +139,7 @@ class BoxDB {
    *
    * @param tasks Transaction tasks
    */
-  transaction(...tasks: TransactionTask[]): Promise<void> {
+  transaction(...tasks: BoxTask[]): Promise<void> {
     return this.tx.run(...tasks).then(() => void 0);
   }
 
@@ -158,7 +162,7 @@ class BoxDB {
    * @param schema box schema
    * @param options box option
    */
-  private toMeta(storeName: string, schema: BoxSchema, options?: BoxOptions): BoxMeta {
+  private toMeta(storeName: string, schema: Schema, options?: BoxOption): BoxMeta {
     let primaryKeyPath: string | null = null;
     const indexList: { keyPath: string; unique: boolean }[] = [];
 
@@ -187,7 +191,7 @@ class BoxDB {
       }
 
       return prev;
-    }, {} as ConfiguredBoxSchema);
+    }, {} as ConfiguredSchema);
 
     return toBoxMeta({
       name: storeName,

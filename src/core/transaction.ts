@@ -1,14 +1,9 @@
+import { Data } from '../types/data';
+import { Schema } from '../types/schema';
+import { Task } from '../types/task';
+import { Transaction, TransactionResult, TransactionType } from '../types/transaction';
+import { IDBData } from '../types/idb';
 import { BoxDBError } from './errors';
-
-import {
-  IDBData,
-  BoxSchema,
-  TransactionTask,
-  CursorTransactionTask,
-  TransactionType,
-  TransactionMode,
-  Transaction,
-} from '../types';
 
 const READONLY_TYPES = [
   TransactionType.GET,
@@ -24,7 +19,51 @@ const HAS_VALUE_TYPES = [
   TransactionType.ADD,
 ];
 
-export default class BoxTransaction implements Transaction {
+export enum BoxTransactionMode {
+  READ = 'readonly',
+  WRITE = 'readwrite',
+}
+
+export enum CursorDirection {
+  ASC = 'next',
+  ASC_UNIQUE = 'nextunique',
+  DESC = 'prev',
+  DESC_UNIQUE = 'prevunique',
+}
+
+export type BoxRange<S extends Schema> = {
+  index?: Extract<keyof S, string>;
+  value: IDBKeyRange | Data<S>;
+};
+
+export type FilterFunction<S extends Schema> = (value: Data<S>) => boolean;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type IDBArgument = [any, any?];
+
+export type TaskParameter<S extends Schema> = {
+  args?: IDBArgument;
+  direction?: CursorDirection | null;
+  filter?: FilterFunction<S>[];
+  range?: BoxRange<S> | null;
+  limit?: number;
+  updateValue?: Partial<Data<S>>;
+};
+
+export interface BoxTask extends Task<IDBArgument> {
+  name: string;
+}
+
+export interface CursorTask<S extends Schema> extends BoxTask {
+  direction?: CursorDirection | null;
+  filter?: FilterFunction<S>[];
+  range?: BoxRange<S> | null;
+  target?: IDBKeyPath;
+  limit?: number;
+  updateValue?: Partial<Data<S>>;
+}
+
+export default class BoxTransaction implements Transaction<BoxTask> {
   private idb: {
     value: IDBDatabase | null;
   } = { value: null };
@@ -50,9 +89,7 @@ export default class BoxTransaction implements Transaction {
    *
    * @param tasks Transaction tasks
    */
-  run<S extends BoxSchema, T extends TransactionTask>(
-    ...tasks: T[]
-  ): Promise<void | IDBData | IDBData[]> {
+  run<S extends Schema>(...tasks: BoxTask[]): Promise<TransactionResult<S>> {
     const db = this.idb.value;
     if (db === null) {
       throw new BoxDBError('Database not ready');
@@ -73,8 +110,8 @@ export default class BoxTransaction implements Transaction {
 
     // Select transaction mode
     const mode = tasks.some((task) => !READONLY_TYPES.includes(task.type))
-      ? TransactionMode.WRITE
-      : TransactionMode.READ;
+      ? BoxTransactionMode.WRITE
+      : BoxTransactionMode.READ;
 
     return new Promise((resolve, reject) => {
       // Open new transaction
@@ -97,9 +134,7 @@ export default class BoxTransaction implements Transaction {
             action === TransactionType.$DELETE
           ) {
             // using cursor
-            this.cursor<S>(objectStore, task as CursorTransactionTask<S>).then(
-              (records) => (res = records),
-            );
+            this.cursor<S>(objectStore, task as CursorTask<S>).then((records) => (res = records));
           } else {
             // `action` = get | add | put | delete | count | clear
             // Skip ts type checking
@@ -128,9 +163,9 @@ export default class BoxTransaction implements Transaction {
    * @param objectStore Object store object
    * @param task Current task
    */
-  private cursor<S extends BoxSchema>(
+  private cursor<S extends Schema>(
     objectStore: IDBObjectStore,
-    task: CursorTransactionTask<S>,
+    task: CursorTask<S>,
   ): Promise<void | IDBData | IDBData[]> {
     const filter = task.filter;
     const range = task.range;
@@ -160,7 +195,7 @@ export default class BoxTransaction implements Transaction {
 
       const request: IDBRequest<IDBCursorWithValue | null> = (
         index ? objectStore.index(index) : objectStore
-      ).openCursor(range ? range.value : null, direction);
+      ).openCursor(range ? range.index : null, direction);
 
       request.onsuccess = () => {
         const cursor = request.result;
