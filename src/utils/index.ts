@@ -1,17 +1,8 @@
-import {
-  BoxSchema,
-  BoxRange,
-  BoxMeta,
-  BoxIndexConfig,
-  BoxFilterFunction,
-  CursorTransactionTask,
-  TransactionType,
-  BoxContext,
-  BoxCursorHandler,
-  TransactionCursorHandler,
-  TaskParameters,
-  ConfiguredBoxSchema,
-} from '../types';
+import { BoxContext, BoxCursorHandler, TransactionCursorHandler } from '../core/box';
+import { BoxIndexConfig, BoxMeta } from '../core/database';
+import { BoxRange, BoxCursorTask, FilterFunction, TaskParameter } from '../core/transaction';
+import { ConfiguredSchema, Schema } from '../types/schema';
+import { TransactionType } from '../types/transaction';
 
 export const toBoxMeta = ({
   name,
@@ -22,7 +13,7 @@ export const toBoxMeta = ({
   force = false,
 }: {
   name: string;
-  schema?: ConfiguredBoxSchema | null;
+  schema?: ConfiguredSchema | null;
   inKey: string | null;
   outKey: boolean;
   index: BoxIndexConfig[];
@@ -33,9 +24,9 @@ export const toBoxMeta = ({
 
 export const getCursorHandler = (
   context: BoxContext,
-  range?: BoxRange<BoxSchema> | null,
-  filter?: BoxFilterFunction<BoxSchema>[],
-): BoxCursorHandler<BoxSchema> => {
+  range?: BoxRange<Schema> | null,
+  filter?: FilterFunction<Schema>[],
+): BoxCursorHandler<Schema> => {
   return {
     get(order, limit) {
       return context.$(TransactionType.$GET, {
@@ -57,9 +48,9 @@ export const getCursorHandler = (
 
 export const getTransactionCursorHandler = (
   context: BoxContext,
-  range?: BoxRange<BoxSchema> | null,
-  filter?: BoxFilterFunction<BoxSchema>[],
-): TransactionCursorHandler<BoxSchema> => {
+  range?: BoxRange<Schema> | null,
+  filter?: FilterFunction<Schema>[],
+): TransactionCursorHandler<Schema> => {
   return {
     update(value) {
       context.pass(value, false);
@@ -75,11 +66,11 @@ export const getTransactionCursorHandler = (
   };
 };
 
-export const createTask = <S extends BoxSchema>(
+export const createTask = <S extends Schema>(
   type: TransactionType,
   name: string,
-  taskArgs?: TaskParameters<S>,
-): CursorTransactionTask<S> => {
+  taskArgs?: TaskParameter<S>,
+): BoxCursorTask<S> => {
   const { args, direction, filter, range, limit, updateValue } = taskArgs || {};
   return {
     type,
