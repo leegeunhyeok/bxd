@@ -185,7 +185,7 @@ describe('BoxDB', () => {
     });
 
     describe('when change in-line key for exist box', () => {
-      it('should throw error when open databas', async () => {
+      it('should throw error when open database', async () => {
         db.create('user', {
           ...testSchema,
           id: BoxDB.Types.ANY, // at past version, `key` option was `true`
@@ -195,7 +195,7 @@ describe('BoxDB', () => {
     });
 
     describe('when change out-of-line key for exist box', () => {
-      it('should throw error when open databas', async () => {
+      it('should throw error when open database', async () => {
         // at past version, `autoIncrement` option was `false`
         db.create('user', testSchema, { autoIncrement: true });
         await expect(db.open()).rejects.toThrow();

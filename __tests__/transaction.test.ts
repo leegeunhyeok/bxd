@@ -24,7 +24,7 @@ describe('Transaction', () => {
     age: BoxDB.Types.NUMBER,
   });
 
-  describe('when to transaction bafore database is opened', () => {
+  describe('when to transaction before database is opened', () => {
     it('should throw error', async () => {
       await expect(async () => {
         await User.add({
