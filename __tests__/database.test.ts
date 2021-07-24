@@ -54,7 +54,7 @@ describe('BoxDB', () => {
     const name = 'user';
 
     beforeAll(() => {
-      User = db.box('user', testSchema);
+      User = db.create('user', testSchema);
     });
 
     it('should getName() returns object store name', () => {
@@ -64,7 +64,7 @@ describe('BoxDB', () => {
     describe('when create new box with another name', () => {
       it('should returns new box successfully', () => {
         expect(() => {
-          db.box('anotherBox', testSchema);
+          db.create('anotherBox', testSchema);
         }).not.toThrow();
       });
     });
@@ -72,7 +72,7 @@ describe('BoxDB', () => {
     describe('when create new box with exist name', () => {
       it('should throw error', () => {
         expect(() => {
-          db.box('user', testSchema);
+          db.create('user', testSchema);
         }).toThrow();
       });
     });
@@ -80,7 +80,7 @@ describe('BoxDB', () => {
     describe('when create new box with multiple key', () => {
       it('should throw error', () => {
         expect(() => {
-          db.box('test', {
+          db.create('test', {
             a: {
               type: BoxDB.Types.NUMBER,
               key: true,
@@ -97,7 +97,7 @@ describe('BoxDB', () => {
     describe('when create new box with unique option without index', () => {
       it('should throw error', () => {
         expect(() => {
-          db.box('withoutIndex', {
+          db.create('withoutIndex', {
             ...testSchema,
             age: {
               type: BoxDB.Types.NUMBER,
@@ -173,7 +173,7 @@ describe('BoxDB', () => {
     describe('when define new box after database is opened', () => {
       it('should throw error', () => {
         expect(() => {
-          db.box('afterOpen', testSchema);
+          db.create('afterOpen', testSchema);
         }).toThrow();
       });
     });
@@ -185,8 +185,8 @@ describe('BoxDB', () => {
     });
 
     describe('when change in-line key for exist box', () => {
-      it('should throw error when open databas', async () => {
-        db.box('user', {
+      it('should throw error when open database', async () => {
+        db.create('user', {
           ...testSchema,
           id: BoxDB.Types.ANY, // at past version, `key` option was `true`
         });
@@ -195,9 +195,9 @@ describe('BoxDB', () => {
     });
 
     describe('when change out-of-line key for exist box', () => {
-      it('should throw error when open databas', async () => {
+      it('should throw error when open database', async () => {
         // at past version, `autoIncrement` option was `false`
-        db.box('user', testSchema, { autoIncrement: true });
+        db.create('user', testSchema, { autoIncrement: true });
         await expect(db.open()).rejects.toThrow();
       });
     });
@@ -210,7 +210,7 @@ describe('BoxDB', () => {
       describe('when change unique option', () => {
         describe('when add unique option for exist box', () => {
           it('should throw error', async () => {
-            db.box('user', {
+            db.create('user', {
               ...testSchema,
               name: {
                 ...testSchema.name,
@@ -230,7 +230,7 @@ describe('BoxDB', () => {
           });
 
           it('should throw error', async () => {
-            db.box('user', {
+            db.create('user', {
               ...testSchema,
               phone: {
                 ...testSchema.phone,
@@ -249,7 +249,7 @@ describe('BoxDB', () => {
         });
 
         it('should index update successfully', async () => {
-          db.box('user', {
+          db.create('user', {
             id: {
               type: BoxDB.Types.NUMBER,
               key: true,
@@ -284,7 +284,7 @@ describe('BoxDB', () => {
     });
 
     it('trying to register same model with force option', async () => {
-      db.box(
+      db.create(
         'user',
         {
           ...testSchema,

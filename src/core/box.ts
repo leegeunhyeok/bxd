@@ -1,19 +1,89 @@
-import BoxTransaction from './transaction';
-import { TaskArguments, createTask, getCursorHandler, getTransactionCursorHandler } from '../utils';
-import { BoxDBError } from './errors';
 import {
-  Box,
-  BoxDataTypes,
-  BoxSchema,
-  BoxContext,
-  BoxHandler,
-  BoxPrototype,
-  BoxTask,
-  BoxData,
-  UncheckedData,
+  Schema,
+  Model,
+  Data,
+  OptionalData,
+  DataType,
+  Transaction,
   TransactionType,
   IDBData,
 } from '../types';
+import { createTask, getCursorHandler, getTransactionCursorHandler } from '../utils';
+import { BoxDBError } from './errors';
+import { BoxTask, TaskParameter, CursorDirection, BoxRange, FilterFunction } from './transaction';
+
+type UncheckedData = {
+  [field: string]: unknown;
+};
+
+interface BoxPrototype {
+  tx: Transaction<BoxTask>;
+  $(type: TransactionType, args?: TaskParameter<Schema>): Promise<void | IDBData | IDBData[]>;
+  pass(target: UncheckedData, strict?: boolean): void | never;
+  data<T extends Schema>(initialData?: Data<T>): Data<T>;
+}
+
+interface BoxProperty {
+  __name: string;
+  __schema: Schema;
+  __version: number;
+}
+
+export type BoxContext = BoxPrototype & BoxProperty;
+
+/**
+ * @description Box handler Types
+ */
+export interface BoxHandler<S extends Schema> {
+  getName(): string;
+  getVersion(): number;
+  add(value: Data<S>, key?: IDBValidKey): Promise<IDBValidKey>;
+  get(
+    key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
+  ): Promise<Data<S>>;
+  put(value: OptionalData<S>, key?: IDBValidKey): Promise<void>;
+  delete(
+    key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
+  ): Promise<void>;
+  find(range?: BoxRange<S> | null, ...predicate: FilterFunction<S>[]): BoxCursorHandler<S>;
+  clear(): Promise<void>;
+  count(): Promise<number>;
+}
+
+// Box.$* = BoxTaskHandler
+export interface BoxTaskHandler<S extends Schema> {
+  $add(value: Data<S>, key?: IDBValidKey): BoxTask;
+  $put(value: OptionalData<S>, key?: IDBValidKey): BoxTask;
+  $delete(
+    key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
+  ): BoxTask;
+  $find(range?: BoxRange<S> | null, ...predicate: FilterFunction<S>[]): TransactionCursorHandler<S>;
+}
+
+// Box.find = () => BoxCursorHandler
+export interface BoxCursorHandler<S extends Schema> {
+  get(order?: CursorDirection | null, limit?: number): Promise<Data<S>[]>;
+  update(value: OptionalData<S>): Promise<void>;
+  delete(): Promise<void>;
+}
+
+// Box.$find = () => TransactionCursorHandler
+export interface TransactionCursorHandler<S extends Schema> {
+  update(value: OptionalData<S>): BoxTask;
+  delete(): BoxTask;
+}
+
+export interface Box<S extends Schema> extends Model<S>, BoxProperty {
+  getName(): string;
+  getVersion(): string;
+  find(range?: BoxRange<S> | null, ...predicate: FilterFunction<S>[]): BoxCursorHandler<S>;
+  $add(value: Data<S>, key?: IDBValidKey): BoxTask;
+  $put(value: OptionalData<S>, key?: IDBValidKey): BoxTask;
+  $delete(
+    key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange,
+  ): BoxTask;
+  $find(range?: BoxRange<S> | null, ...predicate: FilterFunction<S>[]): TransactionCursorHandler<S>;
+}
 
 /**
  * Validate with configured type
@@ -21,29 +91,29 @@ import {
  * @param type Type identifier
  * @param value Value for check
  */
-const typeValidator = (type: BoxDataTypes, value: UncheckedData[string]): boolean => {
+const typeValidator = (type: DataType, value: UncheckedData[string]): boolean => {
   if (value === null) return true;
 
   switch (type) {
-    case BoxDataTypes.BOOLEAN:
+    case DataType.BOOLEAN:
       return typeof value === 'boolean';
-    case BoxDataTypes.NUMBER:
+    case DataType.NUMBER:
       return typeof value === 'number';
-    case BoxDataTypes.STRING:
+    case DataType.STRING:
       return typeof value === 'string';
-    case BoxDataTypes.DATE:
+    case DataType.DATE:
       return value instanceof Date;
-    case BoxDataTypes.ARRAY:
+    case DataType.ARRAY:
       return Array.isArray(value);
-    case BoxDataTypes.OBJECT:
+    case DataType.OBJECT:
       return typeof value === 'object';
-    case BoxDataTypes.REGEXP:
+    case DataType.REGEXP:
       return value instanceof RegExp;
-    case BoxDataTypes.FILE:
+    case DataType.FILE:
       return value instanceof File;
-    case BoxDataTypes.BLOB:
+    case DataType.BLOB:
       return value instanceof Blob;
-    case BoxDataTypes.ANY:
+    case DataType.ANY:
       return true; // any
   }
 };
@@ -57,22 +127,22 @@ const typeValidator = (type: BoxDataTypes, value: UncheckedData[string]): boolea
  *
  * @param this Box
  * @param target Target data
- * @param strict Enable strict mode (disabled: check properties(like optinal) / enabled: +types)
+ * @param strict Enable strict mode (disabled: check field names / enabled: type checking included)
  */
 function schemaValidator(this: BoxContext, target: UncheckedData, strict = true): void | never {
   const schemaKeys = Object.keys(this.__schema);
   const targetKeys = Object.keys(target);
 
   // Checking in strict mode
-  const samekeyLength = !strict || schemaKeys.length === targetKeys.length;
+  const isMatchKeyCount = !strict || schemaKeys.length === targetKeys.length;
   const correctValueTypes =
     !strict ||
     Object.entries(this.__schema).every(([k, v]) =>
       typeValidator(typeof v === 'string' ? v : v.type, target[k]),
     );
 
-  if (!(samekeyLength && correctValueTypes && targetKeys.every((k) => schemaKeys.includes(k)))) {
-    throw new BoxDBError('Data not valid');
+  if (!(isMatchKeyCount && correctValueTypes && targetKeys.every((k) => schemaKeys.includes(k)))) {
+    throw new BoxDBError('Data is not valid');
   }
 }
 
@@ -82,10 +152,10 @@ function schemaValidator(this: BoxContext, target: UncheckedData, strict = true)
  * @param baseObject
  * @param targetObject
  */
-function createBoxData<T extends BoxSchema>(this: BoxContext, initalData?: BoxData<T>): BoxData<T> {
-  const boxData = {} as BoxData<T>;
+function createBoxData<T extends Schema>(this: BoxContext, initialData?: Data<T>): Data<T> {
+  const boxData = {} as Data<T>;
   Object.keys(this.__schema).forEach(
-    (k) => (boxData[k as keyof T] = (initalData && initalData[k]) ?? null),
+    (k) => (boxData[k as keyof T] = (initialData && initialData[k]) ?? null),
   );
   return boxData;
 }
@@ -94,14 +164,14 @@ function createBoxData<T extends BoxSchema>(this: BoxContext, initalData?: BoxDa
  * Execute task and returns tasked Promise
  *
  * @param type Transaction type
- * @param args Arguments
+ * @param params Parameters
  */
 function transactionExecuter(
   this: BoxContext,
   type: TransactionType,
-  args?: TaskArguments<BoxSchema>,
+  params?: TaskParameter<Schema>,
 ) {
-  return this.tx.run(createTask(type, this.__name, args));
+  return this.tx.run(createTask(type, this.__name, params));
 }
 
 // BoxHandler
@@ -145,8 +215,8 @@ const boxHandler: BoxHandler<IDBData> = {
   },
 };
 
-// BoxTask
-const boxTask: BoxTask<IDBData> = {
+// BoxTaskHandler
+const boxTaskHandler: BoxTaskHandler<IDBData> = {
   $add(this: BoxContext, value, key) {
     this.pass(value);
     return createTask(TransactionType.ADD, this.__name, { args: [value, key] });
@@ -174,7 +244,7 @@ export const rangeBuilder = {
 export default class BoxBuilder {
   private proto: BoxPrototype;
 
-  constructor(tx: BoxTransaction) {
+  constructor(tx: Transaction<BoxTask>) {
     this.proto = { tx, $: transactionExecuter, pass: schemaValidator, data: createBoxData };
   }
 
@@ -184,13 +254,13 @@ export default class BoxBuilder {
    * @param storeName Object store name
    * @param schema Data schema
    */
-  build<S extends BoxSchema>(targetVersion: number, storeName: string, schema: S): Box<S> {
-    const Model = function Box<S extends BoxSchema>(this: BoxContext, initalData?: BoxData<S>) {
+  build<S extends Schema>(targetVersion: number, storeName: string, schema: S): Box<S> {
+    const Model = function Box<S extends Schema>(this: BoxContext, initialData?: Data<S>) {
       // Data validate if initial data is provided
-      initalData && this.pass(initalData);
+      initialData && this.pass(initialData);
 
       // Create empty(null) object or box data based on initialData
-      return this.data(initalData);
+      return this.data(initialData);
     } as unknown as Box<S>;
 
     const context = Object.create(this.proto) as BoxContext;
@@ -199,7 +269,7 @@ export default class BoxBuilder {
     context.__version = targetVersion;
 
     // Handlers
-    const handler = Object.assign(context, boxHandler, boxTask);
+    const handler = Object.assign(context, boxHandler, boxTaskHandler);
     Object.setPrototypeOf(Model, handler);
     Object.setPrototypeOf(Model.prototype, context);
 

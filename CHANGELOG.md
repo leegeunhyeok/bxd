@@ -1,5 +1,10 @@
 # Change Log
 
+## [1.0.0-rc.10] 2021-07-24
+
+- Change `BoxDB.box()` to `BoxDB.create()`
+- Refactor core interfaces 
+
 ## [1.0.0-rc.9] 2021-06-15
 
 - Update type checking logics (now based on `typeof`)

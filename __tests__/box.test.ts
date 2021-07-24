@@ -25,14 +25,14 @@ const builder = new BoxBuilder({} as BoxTransaction);
 describe('Box', () => {
   const Box = builder.build(modelArgs.targetVersion, modelArgs.storeName, modelArgs.scheme);
 
-  describe('when craete box via BoxBuilder', () => {
+  describe('when create box via BoxBuilder', () => {
     it('create model and prototype check', () => {
       expect(Box.getVersion()).toBe(modelArgs.targetVersion);
       expect(Box.getName()).toBe(modelArgs.storeName);
     });
   });
 
-  describe('when craete box data via model', () => {
+  describe('when create box data via model', () => {
     it('should returns box data', () => {
       expect(() => {
         new Box({

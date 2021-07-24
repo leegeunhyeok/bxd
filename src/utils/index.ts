@@ -1,31 +1,32 @@
-import {
-  IDBValue,
-  IDBArgument,
-  BoxSchema,
-  BoxRange,
-  BoxCursorDirections,
-  BoxFilterFunction,
-  CursorTransactionTask,
-  TransactionType,
-  BoxContext,
-  BoxCursorHandler,
-  TransactionCursorHandler,
-} from '../types';
+import { BoxContext, BoxCursorHandler, TransactionCursorHandler } from '../core/box';
+import { BoxIndexConfig, BoxMeta } from '../core/database';
+import { BoxRange, BoxCursorTask, FilterFunction, TaskParameter } from '../core/transaction';
+import { ConfiguredSchema, Schema } from '../types/schema';
+import { TransactionType } from '../types/transaction';
 
-export type TaskArguments<S extends BoxSchema> = {
-  args?: IDBArgument;
-  direction?: BoxCursorDirections | null;
-  filter?: BoxFilterFunction<S>[];
-  range?: BoxRange<S> | null;
-  limit?: number;
-  updateValue?: IDBValue;
+export const toBoxMeta = ({
+  name,
+  schema = null,
+  inKey,
+  outKey,
+  index,
+  force = false,
+}: {
+  name: string;
+  schema?: ConfiguredSchema | null;
+  inKey: string | null;
+  outKey: boolean;
+  index: BoxIndexConfig[];
+  force?: boolean;
+}): BoxMeta => {
+  return { name, schema, inKey, outKey, index, force };
 };
 
 export const getCursorHandler = (
   context: BoxContext,
-  range?: BoxRange<BoxSchema> | null,
-  filter?: BoxFilterFunction<BoxSchema>[],
-): BoxCursorHandler<BoxSchema> => {
+  range?: BoxRange<Schema> | null,
+  filter?: FilterFunction<Schema>[],
+): BoxCursorHandler<Schema> => {
   return {
     get(order, limit) {
       return context.$(TransactionType.$GET, {
@@ -47,9 +48,9 @@ export const getCursorHandler = (
 
 export const getTransactionCursorHandler = (
   context: BoxContext,
-  range?: BoxRange<BoxSchema> | null,
-  filter?: BoxFilterFunction<BoxSchema>[],
-): TransactionCursorHandler<BoxSchema> => {
+  range?: BoxRange<Schema> | null,
+  filter?: FilterFunction<Schema>[],
+): TransactionCursorHandler<Schema> => {
   return {
     update(value) {
       context.pass(value, false);
@@ -65,11 +66,11 @@ export const getTransactionCursorHandler = (
   };
 };
 
-export const createTask = <S extends BoxSchema>(
+export const createTask = <S extends Schema>(
   type: TransactionType,
   name: string,
-  taskArgs?: TaskArguments<S>,
-): CursorTransactionTask<S> => {
+  taskArgs?: TaskParameter<S>,
+): BoxCursorTask<S> => {
   const { args, direction, filter, range, limit, updateValue } = taskArgs || {};
   return {
     type,

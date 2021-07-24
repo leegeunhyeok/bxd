@@ -8,7 +8,7 @@ const userList = UserFactory.buildList(50);
 
 describe('Transaction', () => {
   const db = new BoxDB('transaction-db', 1);
-  const User = db.box('user', {
+  const User = db.create('user', {
     _id: {
       type: BoxDB.Types.NUMBER,
       key: true,
@@ -24,7 +24,7 @@ describe('Transaction', () => {
     age: BoxDB.Types.NUMBER,
   });
 
-  describe('when to transaction bafore database is opened', () => {
+  describe('when to transaction before database is opened', () => {
     it('should throw error', async () => {
       await expect(async () => {
         await User.add({

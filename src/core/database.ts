@@ -1,42 +1,46 @@
-import BoxTransaction from './transaction';
-import BoxBuilder, { rangeBuilder } from './box';
+import Database, { ModelOption } from '../types/database';
+import BoxBuilder, { Box, rangeBuilder } from './box';
+import BoxTransaction, { BoxTask, CursorDirection } from './transaction';
+import { toBoxMeta, createTask } from '../utils';
 import { BoxDBError } from './errors';
-import {
-  Box,
-  BoxSchema,
-  BoxDataTypes,
-  BoxOptions,
-  BoxMeta,
-  BoxIndexConfig,
-  ConfiguredBoxSchema,
-  BoxCursorDirections,
-  TransactionTask,
-  TransactionType,
-} from '../types';
-import { createTask } from '../utils';
+import { Schema, ConfiguredSchema, DataType, TransactionType } from '../types';
 
-export interface BoxOption {
+export interface BoxOption extends ModelOption {
   autoIncrement?: boolean;
   force?: boolean;
 }
+
+export type BoxIndexConfig = {
+  keyPath: string;
+  unique: boolean;
+};
+
+export type BoxMeta = {
+  name: string;
+  schema: ConfiguredSchema | null;
+  inKey: string | null;
+  outKey: boolean;
+  index: BoxIndexConfig[];
+  force: boolean;
+};
 
 interface BoxMetaMap {
   [storeName: string]: BoxMeta;
 }
 
-export type BoxDBType = typeof BoxDB;
-
-class BoxDB {
-  public static Types = BoxDataTypes;
-  public static Order = BoxCursorDirections;
+export default class BoxDB extends Database<IDBDatabase> {
+  public static Types = DataType;
+  public static Order = CursorDirection;
   public static Range = rangeBuilder;
-  private name: string;
-  private version: number;
-  private metas: BoxMetaMap = {};
-  private tx: BoxTransaction;
+  public db: IDBDatabase | null = null;
+  public tx: BoxTransaction;
+  public ready = false;
+  public name: string;
+  public version: number;
+  private meta: BoxMetaMap = {};
   private builder: BoxBuilder;
-  private idb: IDBDatabase | null = null;
-  private ready = false;
+
+  public static create;
 
   /**
    * @constructor
@@ -44,6 +48,7 @@ class BoxDB {
    * @param version IDB version
    */
   constructor(databaseName: string, version: number) {
+    super();
     this.name = databaseName;
     this.version = version;
     this.tx = new BoxTransaction();
@@ -51,7 +56,7 @@ class BoxDB {
   }
 
   getDB(): IDBDatabase | null {
-    return this.idb;
+    return this.db;
   }
 
   getName(): string {
@@ -69,7 +74,7 @@ class BoxDB {
   /**
    * Returns interrupt task for abort transaction
    */
-  static interrupt(): TransactionTask {
+  static interrupt(): BoxTask {
     return createTask(TransactionType.INTERRUPT, ''); // empty object store name
   }
 
@@ -85,7 +90,7 @@ class BoxDB {
 
       openRequest.onsuccess = (event) => {
         this.ready = true;
-        this.idb = openRequest.result;
+        this.db = openRequest.result;
         this.tx.init(openRequest.result);
         resolve(event);
       };
@@ -116,16 +121,16 @@ class BoxDB {
    * @param schema model schema
    * @param options box options
    */
-  box<S extends BoxSchema>(storeName: string, schema: S, options?: BoxOption): Box<S> {
+  create<S extends Schema>(storeName: string, schema: S, option?: BoxOption): Box<S> {
     if (this.ready) {
       throw new BoxDBError('Cannot define box after database opened');
     }
 
-    if (!options?.force && this.metas[storeName]) {
+    if (!option?.force && this.meta[storeName]) {
       throw new BoxDBError(storeName + ' box already defined');
     }
 
-    this.metas[storeName] = this.toMeta(storeName, schema, options);
+    this.meta[storeName] = this.toMeta(storeName, schema, option);
     return this.builder.build(this.version, storeName, schema);
   }
 
@@ -134,7 +139,7 @@ class BoxDB {
    *
    * @param tasks Transaction tasks
    */
-  transaction(...tasks: TransactionTask[]): Promise<void> {
+  transaction(...tasks: BoxTask[]): Promise<void> {
     return this.tx.run(...tasks).then(() => void 0);
   }
 
@@ -142,53 +147,12 @@ class BoxDB {
    * Close database connection
    */
   close(): void {
-    if (!this.ready || !this.idb) {
+    if (!this.ready || !this.db) {
       throw new BoxDBError('Database not ready');
     }
     this.tx.close();
-    this.idb.close();
+    this.db.close();
     this.ready = false;
-  }
-
-  /**
-   * Create BoxMeta object
-   *
-   * @param name
-   * @param schema
-   * @param keyPath
-   * @param autoIncrement
-   * @param index
-   * @param force
-   * @returns
-   */
-  private meta(
-    name: string,
-    schema: ConfiguredBoxSchema | null,
-    inKey: string | null,
-    outKey: boolean,
-    index: BoxIndexConfig[],
-    force: boolean,
-  ): BoxMeta {
-    return { name, schema, inKey, outKey, index, force };
-  }
-
-  /**
-   * Extract metadata from IDBObjectStore
-   *
-   * @param objectStore object store
-   */
-  private convert(objectStore: IDBObjectStore): BoxMeta {
-    return this.meta(
-      objectStore.name,
-      null,
-      objectStore.keyPath as string, // assertion (origin: string[] | string)
-      objectStore.autoIncrement,
-      Array.from(objectStore.indexNames).map((name) => {
-        const idx = objectStore.index(name);
-        return { keyPath: idx.keyPath, unique: idx.unique } as BoxIndexConfig;
-      }),
-      false,
-    );
   }
 
   /**
@@ -198,7 +162,7 @@ class BoxDB {
    * @param schema box schema
    * @param options box option
    */
-  private toMeta(storeName: string, schema: BoxSchema, options?: BoxOptions): BoxMeta {
+  private toMeta(storeName: string, schema: Schema, options?: BoxOption): BoxMeta {
     let primaryKeyPath: string | null = null;
     const indexList: { keyPath: string; unique: boolean }[] = [];
 
@@ -227,16 +191,16 @@ class BoxDB {
       }
 
       return prev;
-    }, {} as ConfiguredBoxSchema);
+    }, {} as ConfiguredSchema);
 
-    return this.meta(
-      storeName,
-      configuredSchema,
-      primaryKeyPath,
-      !!options?.autoIncrement,
-      indexList,
-      !!options?.force,
-    );
+    return toBoxMeta({
+      name: storeName,
+      schema: configuredSchema,
+      inKey: primaryKeyPath,
+      outKey: !!options?.autoIncrement,
+      index: indexList,
+      force: !!options?.force,
+    });
   }
 
   /**
@@ -254,16 +218,24 @@ class BoxDB {
     // Object store names in IDB
     const objectStoreNames = Array.from(db.objectStoreNames);
     // defined box(object store) names
-    const boxStoreNames = Object.keys(this.metas);
+    const boxStoreNames = Object.keys(this.meta);
     // Helper function that get metadata of defined box
-    const getBoxMeta = (name: string) => this.metas[name];
+    const getBoxMeta = (name: string) => this.meta[name];
 
     objectStoreNames.forEach((name, idx) => {
       // Update exist object store
       if (boxStoreNames.includes(name)) {
         const { inKey, outKey, index, force } = getBoxMeta(name);
         const objectStore = tx.objectStore(name);
-        const objectStoreMeta = this.convert(objectStore);
+        const objectStoreMeta = toBoxMeta({
+          name: objectStore.name,
+          inKey: objectStore.keyPath as string, // assertion (origin: string[] | string)
+          outKey: objectStore.autoIncrement,
+          index: Array.from(objectStore.indexNames).map((name) => {
+            const idx = objectStore.index(name);
+            return { keyPath: idx.keyPath, unique: idx.unique } as BoxIndexConfig;
+          }),
+        });
 
         // Delete exist object store
         if (force) {
@@ -334,5 +306,3 @@ class BoxDB {
       });
   }
 }
-
-export default BoxDB;

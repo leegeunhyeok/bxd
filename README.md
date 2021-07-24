@@ -2,7 +2,7 @@
 
 # bxd
 
-<img src="https://user-images.githubusercontent.com/26512984/113550066-6b21bd00-962d-11eb-8e27-835d543199fe.png" width="250">
+<img alt="bxd" src="./bxd.gif">
 
 BoxDB is a promise-based browser ORM for [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API)
 
@@ -19,7 +19,13 @@ BoxDB is a promise-based browser ORM for [IndexedDB](https://developer.mozilla.o
     <img src="https://img.shields.io/npm/v/bxd">
   </a>
   <a href="https://www.npmjs.com/package/bxd">
+    <img alt="npm bundle size" src="https://img.shields.io/bundlephobia/minzip/bxd">
+  </a>
+  <a href="https://www.npmjs.com/package/bxd">
     <img alt="npm bundle size" src="https://img.shields.io/bundlephobia/min/bxd">
+  </a>
+  <a href="https://www.npmjs.com/package/bxd">
+    <img alt="zero dependency" src="https://badgen.net/bundlephobia/dependency-count/bxd">
   </a>
   <img src="https://img.shields.io/github/license/leegeunhyeok/bxd">
   <img src="https://badgen.net/badge/-/TypeScript/blue?icon=typescript&label" alt="typescript">
@@ -29,10 +35,10 @@ BoxDB is a promise-based browser ORM for [IndexedDB](https://developer.mozilla.o
 ```typescript
 import BoxDB from 'bxd';
 
-const db = new BoxDB('my-datebase', 1);
+const db = new BoxDB('my-database', 1);
 
 // Define your box (Object store)
-const User = db.box('user', {
+const User = db.create('user', {
   id: {
     type: BoxDB.Types.NUMBER,
     key: true, // This property is in-line-key
@@ -103,7 +109,7 @@ await User.clear(); // Clear all records
 - [Browsers Support](#-browsers-support)
 - [Installation](#-installation)
 - [Documentation](#-documentation)
-- [Examples](#-examples)
+- [Example](#-example)
 - [Issue](#-issue)
 - [Development](#-development)
 - [Resources](#-resources)
@@ -114,12 +120,12 @@ await User.clear(); // Clear all records
 - Promise based ORM
 - User friendly and easy to use
 - Lightweight(< 10kb) IndexedDB wrapper
-- Zero dependencies
+- Zero dependency
 - Database and object store version management
 - Data validation and transaction control via model (box)
 - ACID(Atomicity, Consistency, Isolation, Durability) guaranteed with transaction
 - Supports TypeScript
-- Works on [Web Workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API)
+- Works on [Web workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API)
 
 ## 🌍 Browsers Support
 
@@ -127,7 +133,8 @@ await User.clear(); // Clear all records
 | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 11                                                                                                                                                               | 12~                                                                                                                                                                | 10~                                                                                                                                                                      | 23~                                                                                                                                                                    | 10~                                                                                                                                                                    | 10~                                                                                                                                                                            | 4~                                                                                                                                                                       | 15~                                                                                                                                                                  |
 
-- Checkout `IE11` test [here](IE.md)
+- Test features in your browser [here](https://bxd.vercel.app/demo.html).
+- Checkout `IE11` test [here](https://bxd.vercel.app/ie).
 
 ## 🛠 Installation
 
@@ -138,50 +145,18 @@ npm install bxd
 In script tag:
 
 ```html
-<script src="/path/to/bxd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bxd@latest/dist/bxd.min.js"></script>
 ```
 
-In script tag (legacy - like an IE11):
-
-```html
-<!-- Polyfills required -->
-<script src="https://polyfill.io/v3/polyfill.min.js?features=Array.from%2CSymbol%2CSymbol.asyncIterator%2CSymbol.prototype.description%2CSymbol.iterator%2CArray.prototype.some%2CArray.prototype.includes%2CArray.prototype.every%2CArray.prototype.find%2CArray.isArray%2CArray.prototype.%40%40iterator%2CString.prototype.%40%40iterator%2CObject.assign%2CObject.entries%2CObject.getOwnPropertyDescriptor%2CObject.getPrototypeOf%2CObject.setPrototypeOf%2CPromise
-"></script>
-<script src="/path/to/bxd.js">
-```
-
-🔽 `IE11` targeted polyfills (Based on core-js 3)
-
-| Polyfill                              |
-| :------------------------------------ |
-| es.symbol                             |
-| es.symbol.description                 |
-| es.symbol.async-iterator              |
-| es.symbol.iterator                    |
-| es.array.concat                       |
-| es.array.every                        |
-| es.array.find                         |
-| es.array.from                         |
-| es.array.is-array                     |
-| es.array.iterator                     |
-| es.array.some                         |
-| es.string.iterator                    |
-| es.object.assign                      |
-| es.object.entries                     |
-| es.object.get-own-property-descriptor |
-| es.object.get-prototype-of            |
-| es.object.set-prototype-of            |
-| es.object.to-string                   |
-| es.promise                            |
-| web.dom-collections.iterator          |
+Looking for IE? Go to [this page](https://bxd.vercel.app/ie)
 
 ## 📖 Documentation
 
-BoxDB documentation is on [wiki](https://github.com/leegeunhyeok/bxd/wiki)!
+Go to [documentation](https://bxd.vercel.app)!
 
-## 🌱 Examples
+## 🌱 Example
 
-[Examples](https://github.com/leegeunhyeok/bxd/wiki/examples)
+[Example](https://bxd.vercel.app/example)
 
 ## 🔥 Issue
 
