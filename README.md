@@ -35,10 +35,10 @@ BoxDB is a promise-based browser ORM for [IndexedDB](https://developer.mozilla.o
 ```typescript
 import BoxDB from 'bxd';
 
-const db = new BoxDB('my-datebase', 1);
+const db = new BoxDB('my-database', 1);
 
 // Define your box (Object store)
-const User = db.box('user', {
+const User = db.create('user', {
   id: {
     type: BoxDB.Types.NUMBER,
     key: true, // This property is in-line-key
