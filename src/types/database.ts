@@ -1,7 +1,7 @@
 import { Model } from './model';
 import { Schema } from './schema';
-import { Task } from './task';
 import { Transaction } from './transaction';
+import { Task } from './task';
 
 export interface ModelOption {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -22,6 +22,7 @@ export default abstract class Database<DB> {
     schema: S,
     option?: M,
   ): Model<S>;
+  public abstract transaction(...tasks: Task[]): Promise<void>;
   public abstract open(): Promise<Event>;
   public abstract close<T>(): void | Promise<T>;
 }

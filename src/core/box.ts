@@ -127,22 +127,22 @@ const typeValidator = (type: DataType, value: UncheckedData[string]): boolean =>
  *
  * @param this Box
  * @param target Target data
- * @param strict Enable strict mode (disabled: check properties(like optinal) / enabled: +types)
+ * @param strict Enable strict mode (disabled: check field names / enabled: type checking included)
  */
 function schemaValidator(this: BoxContext, target: UncheckedData, strict = true): void | never {
   const schemaKeys = Object.keys(this.__schema);
   const targetKeys = Object.keys(target);
 
   // Checking in strict mode
-  const samekeyLength = !strict || schemaKeys.length === targetKeys.length;
+  const isMatchKeyCount = !strict || schemaKeys.length === targetKeys.length;
   const correctValueTypes =
     !strict ||
     Object.entries(this.__schema).every(([k, v]) =>
       typeValidator(typeof v === 'string' ? v : v.type, target[k]),
     );
 
-  if (!(samekeyLength && correctValueTypes && targetKeys.every((k) => schemaKeys.includes(k)))) {
-    throw new BoxDBError('Data not valid');
+  if (!(isMatchKeyCount && correctValueTypes && targetKeys.every((k) => schemaKeys.includes(k)))) {
+    throw new BoxDBError('Data is not valid');
   }
 }
 
@@ -215,8 +215,8 @@ const boxHandler: BoxHandler<IDBData> = {
   },
 };
 
-// BoxTask
-const boxTask: BoxTaskHandler<IDBData> = {
+// BoxTaskHandler
+const boxTaskHandler: BoxTaskHandler<IDBData> = {
   $add(this: BoxContext, value, key) {
     this.pass(value);
     return createTask(TransactionType.ADD, this.__name, { args: [value, key] });
@@ -269,7 +269,7 @@ export default class BoxBuilder {
     context.__version = targetVersion;
 
     // Handlers
-    const handler = Object.assign(context, boxHandler, boxTask);
+    const handler = Object.assign(context, boxHandler, boxTaskHandler);
     Object.setPrototypeOf(Model, handler);
     Object.setPrototypeOf(Model.prototype, context);
 
