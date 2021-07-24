@@ -8,7 +8,7 @@ const userList = UserFactory.buildList(50);
 
 describe('Transaction', () => {
   const db = new BoxDB('transaction-db', 1);
-  const User = db.box('user', {
+  const User = db.create('user', {
     _id: {
       type: BoxDB.Types.NUMBER,
       key: true,

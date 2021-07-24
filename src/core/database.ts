@@ -40,6 +40,8 @@ export default class BoxDB extends Database<IDBDatabase> {
   private meta: BoxMetaMap = {};
   private builder: BoxBuilder;
 
+  public static create;
+
   /**
    * @constructor
    * @param databaseName IDB name
@@ -119,7 +121,7 @@ export default class BoxDB extends Database<IDBDatabase> {
    * @param schema model schema
    * @param options box options
    */
-  box<S extends Schema>(storeName: string, schema: S, option?: BoxOption): Box<S> {
+  create<S extends Schema>(storeName: string, schema: S, option?: BoxOption): Box<S> {
     if (this.ready) {
       throw new BoxDBError('Cannot define box after database opened');
     }

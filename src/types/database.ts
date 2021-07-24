@@ -17,7 +17,7 @@ export default abstract class Database<DB> {
   public abstract isReady(): boolean;
   public abstract getName(): string;
   public abstract getDB(): DB | null;
-  public abstract box<S extends Schema, M extends ModelOption>(
+  public abstract create<S extends Schema, M extends ModelOption>(
     name: string,
     schema: S,
     option?: M,
