@@ -152,7 +152,11 @@ Looking for IE? Go to [this page](https://bxd.vercel.app/ie)
 
 ## 📖 Documentation
 
-Go to [documentation](https://bxd.vercel.app)!
+Go to documentation!
+
+- [EN](https://bxd.vercel.app) | [KR](https://bxd.vercel.app/kr) 
+
+
 
 ## 🌱 Example
 
