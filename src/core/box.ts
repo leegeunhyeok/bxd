@@ -2,6 +2,7 @@ import {
   Schema,
   Model,
   Data,
+  NullableData,
   OptionalData,
   DataType,
   Transaction,
@@ -20,7 +21,7 @@ interface BoxPrototype {
   tx: Transaction<BoxTask>;
   $(type: TransactionType, args?: TaskParameter<Schema>): Promise<void | IDBData | IDBData[]>;
   pass(target: UncheckedData, strict?: boolean): void | never;
-  data<T extends Schema>(initialData?: Data<T>): Data<T>;
+  data<T extends Schema>(initialData?: Data<T>): NullableData<T>;
 }
 
 interface BoxProperty {
@@ -152,8 +153,8 @@ function schemaValidator(this: BoxContext, target: UncheckedData, strict = true)
  * @param baseObject
  * @param targetObject
  */
-function createBoxData<T extends Schema>(this: BoxContext, initialData?: Data<T>): Data<T> {
-  const boxData = {} as Data<T>;
+function createBoxData<T extends Schema>(this: BoxContext, initialData?: Data<T>): NullableData<T> {
+  const boxData = {} as NullableData<T>;
   Object.keys(this.__schema).forEach(
     (k) => (boxData[k as keyof T] = (initialData && initialData[k]) ?? null),
   );

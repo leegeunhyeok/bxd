@@ -40,6 +40,10 @@ type AsType<T extends DataType, V = unknown> = T extends DataType.BOOLEAN
 type PickType<P> = P extends ConfiguredType ? P['type'] : P extends DataType ? P : never;
 
 export type Data<S extends Schema> = {
+  [field in keyof S]: AsType<PickType<S[field]>>;
+};
+
+export type NullableData<S extends Schema> = {
   [field in keyof S]: AsType<PickType<S[field]>> | null;
 };
 

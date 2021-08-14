@@ -38,7 +38,7 @@ export enum CursorDirection {
 
 export type BoxRange<S extends Schema> = {
   index?: Extract<keyof S, string>;
-  value: IDBKeyRange;
+  value: IDBKeyRange | IDBData;
 };
 
 export type FilterFunction<S extends Schema> = (value: Data<S>) => boolean;
