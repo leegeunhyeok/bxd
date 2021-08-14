@@ -1,6 +1,6 @@
 {
   "name": "bxd",
-  "version": "1.0.0-rc.10",
+  "version": "1.0.0",
   "description": "Object relational mapping for IndexedDB",
   "main": "dist/bxd.esm.js",
   "types": "types/index.d.ts",
