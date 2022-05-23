@@ -6,8 +6,14 @@
 
 BoxDB is a promise-based browser ORM for [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API)
 
+  <br>
   <a href="https://github.com/leegeunhyeok/bxd/actions?query=workflow:build" alt="Github actions">
     <img src="https://github.com/leegeunhyeok/bxd/workflows/build/badge.svg">
+  </a>
+  <br>
+  <br>
+  <a href="https://www.codefactor.io/repository/github/leegeunhyeok/bxd">
+     <img src="https://www.codefactor.io/repository/github/leegeunhyeok/bxd/badge">
   </a>
   <a href="https://lgtm.com/projects/g/leegeunhyeok/bxd/context:javascript" alt="lgtm">
     <img src="https://img.shields.io/lgtm/grade/javascript/g/leegeunhyeok/bxd.svg?logo=lgtm&logoWidth=18">
@@ -15,6 +21,7 @@ BoxDB is a promise-based browser ORM for [IndexedDB](https://developer.mozilla.o
   <a href="https://codecov.io/gh/leegeunhyeok/bxd" alt="codecov">
     <img src="https://codecov.io/gh/leegeunhyeok/bxd/branch/dev/graph/badge.svg?token=I5YZWY8PGT">
   </a>
+  <br>
   <a href="https://www.npmjs.com/package/bxd" alt="npm">
     <img src="https://img.shields.io/npm/v/bxd">
   </a>
@@ -27,6 +34,7 @@ BoxDB is a promise-based browser ORM for [IndexedDB](https://developer.mozilla.o
   <a href="https://www.npmjs.com/package/bxd">
     <img alt="zero dependency" src="https://badgen.net/bundlephobia/dependency-count/bxd">
   </a>
+  <br>
   <img src="https://img.shields.io/github/license/leegeunhyeok/bxd">
   <img src="https://badgen.net/badge/-/TypeScript/blue?icon=typescript&label" alt="typescript">
 
